@@ -28,12 +28,6 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-Future<CameraDescription> getCamera() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  List<CameraDescription> cameras = await availableCameras();
-  return cameras[0];
-}
-
 class _MainPageState extends State<MainPage> {
   Wallet wallet = new Wallet("todo");
 
@@ -53,18 +47,9 @@ class _MainPageState extends State<MainPage> {
         ),
         body: TabBarView(
           children: [
-            FutureBuilder(
-                future: getCamera(),
-                builder: (context, data) {
-                  if (data.hasData) {
-                    return SendTab(
-                      wallet: wallet,
-                      camera: data.data,
-                    );
-                  } else {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                }),
+            SendTab(
+              wallet: wallet,
+            ),
             Icon(Icons.directions_transit),
             BalanceTab(balance: wallet.balanceSatoshis().toString()),
           ],
@@ -80,6 +65,10 @@ class Wallet {
   int balanceSatoshis() {
     return 1000;
   }
+
+  void send(String address, int satoshis) {
+    // TODO
+  }
 }
 
 class BalanceTab extends StatelessWidget {
@@ -93,17 +82,91 @@ class BalanceTab extends StatelessWidget {
   }
 }
 
-class SendTab extends StatefulWidget {
-  SendTab({Key key, this.wallet, this.camera}) : super(key: key);
+Future<CameraDescription> getCamera() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  List<CameraDescription> cameras = await availableCameras();
+  return cameras[0];
+}
 
+class SendTab extends StatelessWidget {
+  SendTab({Key key, this.wallet, this.camera}) : super(key: key);
   final Wallet wallet;
   final CameraDescription camera;
 
   @override
-  _SendTabState createState() => _SendTabState();
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        FutureBuilder(
+            future: getCamera(),
+            builder: (context, data) {
+              if (data.hasData) {
+                return QRScanner(
+                  camera: data.data,
+                );
+              } else {
+                return Center(child: CircularProgressIndicator());
+              }
+            }),
+        SendWidget()
+      ],
+    );
+  }
 }
 
-class _SendTabState extends State<SendTab> {
+class SendWidget extends StatefulWidget {
+  SendWidget({Key key, this.wallet}) : super(key: key);
+
+  final Wallet wallet;
+
+  @override
+  _SendWidgetState createState() => _SendWidgetState();
+}
+
+class _SendWidgetState extends State<SendWidget> {
+  TextEditingController _controller;
+
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            new Flexible(
+                child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                  border: InputBorder.none, hintText: 'Enter an address'),
+            )),
+            IconButton(
+              icon: Icon(Icons.send),
+              onPressed: () => {widget.wallet.send(_controller.text, 0)},
+            )
+          ],
+        ));
+  }
+}
+
+class QRScanner extends StatefulWidget {
+  QRScanner({Key key, this.camera}) : super(key: key);
+
+  final CameraDescription camera;
+
+  @override
+  _QRScannerState createState() => _QRScannerState();
+}
+
+class _QRScannerState extends State<QRScanner> {
   CameraController controller;
 
   @override
