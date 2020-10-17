@@ -1,2 +1,4 @@
-# cashew
-A simple Bitcoin Cash wallet
+# Cashew
+
+Cashew is a simple Bitcoin-compatible wallet that uses fulcrum
+as a backend.
