@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
   runApp(CashewApp());
 }
+
+const cardElevation = 6.0;
+const cardPadding = EdgeInsets.all(12.0);
 
 class CashewApp extends StatelessWidget {
   @override
@@ -50,8 +54,8 @@ class _MainPageState extends State<MainPage> {
             SendTab(
               wallet: wallet,
             ),
-            Icon(Icons.directions_transit),
-            BalanceTab(balance: wallet.balanceSatoshis().toString()),
+            ReceiveTab(wallet: wallet),
+            BalanceTab(wallet: wallet),
           ],
         ),
       ),
@@ -66,19 +70,89 @@ class Wallet {
     return 1000;
   }
 
+  String getAddress() {
+    return "bchtest:dsajkdsa";
+  }
+
   void send(String address, int satoshis) {
     // TODO
   }
 }
 
-class BalanceTab extends StatelessWidget {
-  BalanceTab({Key key, this.balance}) : super(key: key);
+class ReceiveTab extends StatelessWidget {
+  ReceiveTab({Key key, this.wallet}) : super(key: key);
 
-  final String balance;
+  final Wallet wallet;
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text(this.balance));
+    final address = wallet.getAddress();
+    final qrCard = Card(
+      child: QrImage(data: address, version: QrVersions.auto),
+      elevation: cardElevation,
+    );
+    final _controller = TextEditingController(text: wallet.getAddress());
+    return Column(
+      children: [
+        Padding(
+          padding: cardPadding,
+          child: qrCard,
+        ),
+        TextField(
+          controller: _controller,
+          readOnly: true,
+          decoration: InputDecoration(border: OutlineInputBorder()),
+        ),
+      ],
+    );
+  }
+}
+
+class BalanceTab extends StatelessWidget {
+  BalanceTab({Key key, this.wallet}) : super(key: key);
+
+  final Wallet wallet;
+
+  @override
+  Widget build(BuildContext context) {
+    final balance = wallet.balanceSatoshis();
+    final balanceCard = Card(
+      child: Column(
+        children: [
+          ListTile(
+            title: const Text("Balance"),
+            subtitle: Text("in satoshis"),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              balance.toString(),
+              style:
+                  TextStyle(fontSize: 24, color: Colors.black.withOpacity(0.6)),
+            ),
+          )
+        ],
+      ),
+      elevation: cardElevation,
+    );
+
+    final historyCard = Card(
+      child: Column(
+        children: [
+          ListTile(
+            title: const Text("History"),
+          )
+        ],
+      ),
+      elevation: cardElevation,
+    );
+
+    return Column(
+      children: [
+        Padding(child: balanceCard, padding: cardPadding),
+        Expanded(child: Padding(child: historyCard, padding: cardPadding)),
+      ],
+    );
   }
 }
 
@@ -95,7 +169,7 @@ class SendTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return ListView(
       children: [
         FutureBuilder(
             future: getCamera(),
@@ -108,7 +182,7 @@ class SendTab extends StatelessWidget {
                 return Center(child: CircularProgressIndicator());
               }
             }),
-        SendWidget()
+        Expanded(child: SendWidget())
       ],
     );
   }
@@ -142,11 +216,11 @@ class _SendWidgetState extends State<SendWidget> {
         padding: EdgeInsets.all(8.0),
         child: Row(
           children: [
-            new Flexible(
+            Expanded(
                 child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                  border: InputBorder.none, hintText: 'Enter an address'),
+                  border: OutlineInputBorder(), hintText: 'Enter an address'),
             )),
             IconButton(
               icon: Icon(Icons.send),
