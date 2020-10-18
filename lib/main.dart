@@ -71,7 +71,7 @@ class Wallet {
   }
 
   String getAddress() {
-    return "bchtest:dsajkdsa";
+    return "bchtest:dsajkdsaadfghfgfhhggjkhgjhjghjbhjk";
   }
 
   void send(String address, int satoshis) {
@@ -87,24 +87,39 @@ class ReceiveTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final address = wallet.getAddress();
+    final _controller = TextEditingController(text: wallet.getAddress());
+
+    final manualCard = Card(
+        child: Column(children: [
+          ListTile(
+            title: const Text("Text Address"),
+          ),
+          Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _controller,
+                readOnly: true,
+                decoration: InputDecoration(border: OutlineInputBorder()),
+              ))
+        ]),
+        elevation: cardElevation);
+
     final qrCard = Card(
-      child: QrImage(data: address, version: QrVersions.auto),
+      child: Column(children: [
+        ListTile(
+          title: const Text("QR Address"),
+        ),
+        QrImage(data: address, version: QrVersions.auto)
+      ]),
       elevation: cardElevation,
     );
-    final _controller = TextEditingController(text: wallet.getAddress());
-    return Column(
-      children: [
-        Padding(
-          padding: cardPadding,
-          child: qrCard,
-        ),
-        TextField(
-          controller: _controller,
-          readOnly: true,
-          decoration: InputDecoration(border: OutlineInputBorder()),
-        ),
-      ],
-    );
+    return Column(children: [
+      Padding(
+        padding: cardPadding,
+        child: qrCard,
+      ),
+      Padding(padding: cardPadding, child: manualCard)
+    ]);
   }
 }
 
