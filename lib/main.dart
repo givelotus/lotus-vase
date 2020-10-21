@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 void main() {
   runApp(CashewApp());
@@ -171,33 +171,53 @@ class BalanceTab extends StatelessWidget {
   }
 }
 
-Future<CameraDescription> getCamera() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  List<CameraDescription> cameras = await availableCameras();
-  return cameras[0];
+class SendTab extends StatefulWidget {
+  SendTab({Key key, this.wallet}) : super(key: key);
+  final Wallet wallet;
+
+  @override
+  _SendTabState createState() => _SendTabState();
 }
 
-class SendTab extends StatelessWidget {
-  SendTab({Key key, this.wallet, this.camera}) : super(key: key);
-  final Wallet wallet;
-  final CameraDescription camera;
+class _SendTabState extends State<SendTab> {
+  QRViewController controller;
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  var qrText = '';
+
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      setState(() {
+        qrText = scanData;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    final overlay = QrScannerOverlayShape(
+      borderColor: Colors.red,
+      borderRadius: 10,
+      borderLength: 30,
+      borderWidth: 10,
+      cutOutSize: 300,
+    );
+    return Column(
       children: [
-        FutureBuilder(
-            future: getCamera(),
-            builder: (context, data) {
-              if (data.hasData) {
-                return QRScanner(
-                  camera: data.data,
-                );
-              } else {
-                return Center(child: CircularProgressIndicator());
-              }
-            }),
-        Expanded(child: SendWidget())
+        Expanded(
+            flex: 5,
+            child: QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              overlay: overlay,
+            )),
+        Expanded(flex: 1, child: SendWidget())
       ],
     );
   }
@@ -243,46 +263,5 @@ class _SendWidgetState extends State<SendWidget> {
             )
           ],
         ));
-  }
-}
-
-class QRScanner extends StatefulWidget {
-  QRScanner({Key key, this.camera}) : super(key: key);
-
-  final CameraDescription camera;
-
-  @override
-  _QRScannerState createState() => _QRScannerState();
-}
-
-class _QRScannerState extends State<QRScanner> {
-  CameraController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = CameraController(widget.camera, ResolutionPreset.medium);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    controller?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!controller.value.isInitialized) {
-      return Container();
-    }
-    return AspectRatio(
-        aspectRatio: controller.value.aspectRatio,
-        child: CameraPreview(controller));
   }
 }
