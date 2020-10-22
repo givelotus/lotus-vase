@@ -13,7 +13,7 @@ class SendTab extends StatefulWidget {
 class _SendTabState extends State<SendTab> {
   QRViewController controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  var qrText = '';
+  String qrText = '';
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
@@ -48,33 +48,18 @@ class _SendTabState extends State<SendTab> {
               onQRViewCreated: _onQRViewCreated,
               overlay: overlay,
             )),
-        Expanded(flex: 1, child: SendWidget())
+        Expanded(flex: 1, child: SendWidget(qrText: qrText))
       ],
     );
   }
 }
 
-class SendWidget extends StatefulWidget {
-  SendWidget({Key key, this.wallet}) : super(key: key);
+class SendWidget extends StatelessWidget {
+  final String qrText;
+
+  SendWidget({Key key, this.wallet, this.qrText}) : super(key: key);
 
   final Wallet wallet;
-
-  @override
-  _SendWidgetState createState() => _SendWidgetState();
-}
-
-class _SendWidgetState extends State<SendWidget> {
-  TextEditingController _controller;
-
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,13 +69,13 @@ class _SendWidgetState extends State<SendWidget> {
           children: [
             Expanded(
                 child: TextField(
-              controller: _controller,
+              controller: TextEditingController(text: this.qrText),
               decoration: InputDecoration(
                   border: OutlineInputBorder(), hintText: 'Enter an address'),
             )),
             IconButton(
               icon: Icon(Icons.send),
-              onPressed: () => {widget.wallet.send(_controller.text, 0)},
+              onPressed: () => {}, //widget.wallet.send(this.qrText.value, 0)},
             )
           ],
         ));
