@@ -13,13 +13,13 @@ class SendTab extends StatefulWidget {
 class _SendTabState extends State<SendTab> {
   QRViewController controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  var qrText = '';
+  final ValueNotifier<String> qrText = ValueNotifier<String>('');
 
   void _onQRViewCreated(QRViewController controller) {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
-        qrText = scanData;
+        qrText.value = scanData;
       });
     });
   }
@@ -48,27 +48,36 @@ class _SendTabState extends State<SendTab> {
               onQRViewCreated: _onQRViewCreated,
               overlay: overlay,
             )),
-        Expanded(flex: 1, child: SendWidget())
+        Expanded(flex: 1, child: SendWidget(qrText: qrText))
       ],
     );
   }
 }
 
 class SendWidget extends StatefulWidget {
-  SendWidget({Key key, this.wallet}) : super(key: key);
+  final ValueNotifier<String> qrText;
+
+  SendWidget({Key key, this.wallet, this.qrText}) : super(key: key);
 
   final Wallet wallet;
 
   @override
-  _SendWidgetState createState() => _SendWidgetState();
+  _SendWidgetState createState() => _SendWidgetState(qrText: qrText);
 }
 
 class _SendWidgetState extends State<SendWidget> {
   TextEditingController _controller;
+  final ValueNotifier<String> qrText;
+
+  _SendWidgetState({this.qrText}) : super() {
+    _controller = TextEditingController(text: this.qrText.value);
+    qrText.addListener(() {
+      _controller.text = this.qrText.value;
+    });
+  }
 
   void initState() {
     super.initState();
-    _controller = TextEditingController();
   }
 
   void dispose() {
