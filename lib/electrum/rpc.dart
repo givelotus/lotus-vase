@@ -1,10 +1,7 @@
-import 'dart:_http';
 import 'dart:convert';
 
-import 'package:flutter/services.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/html.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'rpc.g.dart';

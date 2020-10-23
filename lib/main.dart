@@ -1,8 +1,12 @@
+import 'package:cashew/electrum.dart';
 import 'package:cashew/tabs/balance.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send.dart';
 import 'package:cashew/wallet.dart';
 import 'package:flutter/material.dart';
+import 'package:cashew/electrum/rpc.dart';
+
+import 'constants.dart';
 
 void main() {
   runApp(CashewApp());
@@ -33,6 +37,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Wallet wallet = new Wallet("todo");
+  ElectrumClient client = new ElectrumClient.connect(electrumUrl);
 
   @override
   Widget build(BuildContext context) {
