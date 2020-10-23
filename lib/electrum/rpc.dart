@@ -15,9 +15,9 @@ class RpcRequest {
   final String jsonrpc = "2.0";
   @JsonKey(disallowNullValue: true)
   final String method;
-  @JsonKey(nullable: true)
+  @JsonKey(includeIfNull: true)
   final int id;
-  @JsonKey(nullable: true)
+  @JsonKey(includeIfNull: true)
   final Object params; // nullable
 
   RpcRequest(this.method, {this.id, this.params});
@@ -34,12 +34,28 @@ class RequestConverter extends Converter<Map<String, dynamic>, RpcRequest> {
 }
 
 @JsonSerializable()
+class Error {
+  @JsonKey(disallowNullValue: true)
+  final int code;
+  @JsonKey(disallowNullValue: true)
+  final String message;
+  @JsonKey(includeIfNull: true)
+  final Object data;
+
+  Error(this.code, this.message, {this.data});
+  factory Error.fromJson(Map<String, dynamic> json) => _$ErrorFromJson(json);
+  Map<String, dynamic> toJson() => _$ErrorToJson(this);
+}
+
+@JsonSerializable()
 class RpcResponse {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = "2.0";
+  @JsonKey(includeIfNull: true)
   final Object result;
-  final Object error;
-  @JsonKey(nullable: true)
+  @JsonKey(includeIfNull: true)
+  final Error error;
+  @JsonKey(includeIfNull: true)
   final int id;
 
   RpcResponse(this.result, {this.id, this.error});
