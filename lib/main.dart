@@ -1,16 +1,16 @@
-import 'package:cashew/electrum.dart';
+// import 'package:cashew/electrum.dart';
 import 'package:cashew/tabs/balance.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send.dart';
 import 'package:cashew/wallet.dart';
 import 'package:flutter/material.dart';
-import 'package:cashew/electrum/rpc.dart';
+// import 'package:cashew/electrum/rpc.dart';
 
 import 'constants.dart';
 
-void main() {
-  runApp(CashewApp());
-}
+// void main() {
+//   runApp(CashewApp());
+// }
 
 class CashewApp extends StatelessWidget {
   @override

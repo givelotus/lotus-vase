@@ -1,7 +1,5 @@
 import 'dart:convert';
-
-import 'package:stream_channel/stream_channel.dart';
-import 'package:web_socket_channel/html.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'rpc.g.dart';
@@ -61,40 +59,49 @@ class RpcResponse {
   Map<String, dynamic> toJson() => _$RpcResponseToJson(this);
 }
 
-class ResponseConverter extends Converter<Map<String, dynamic>, RpcResponse> {
-  @override
-  convert(input) {
-    return RpcResponse.fromJson(input);
+typedef void ResponseHandler(RpcResponse data);
+
+class ElectrumRPCChannel {
+  WebSocketChannel channel;
+  Map<int, ResponseHandler> callbacks = new Map();
+  var currentRequestId = 0;
+
+  ElectrumRPCChannel();
+
+  void connect(Uri address) {
+    channel = WebSocketChannel.connect(Uri.parse("wss://echo.websocket.org"));
+
+    channel.stream.listen((dynamic data) {
+      final text = data as String;
+      if (!callbacks.containsKey(text)) {
+        print('callback missing');
+        return;
+      }
+      Map<String, dynamic> jsonResult = jsonDecode(data);
+      print(jsonResult);
+      final response = RpcResponse.fromJson(jsonResult);
+      print(response);
+      final callback = callbacks[response.id] ?? (data) {};
+      callbacks.remove(response.id);
+      callback(response);
+    }, onError: (Object error) {
+      print(error);
+    }, onDone: () {
+      print('done');
+    });
   }
-}
 
-class JsonRpcCodec extends Codec {
-  @override
-  Converter get decoder {
-    return ResponseConverter();
+  void sendMessage(String text) {
+    final requestId = currentRequestId++;
+    callbacks[requestId] = (response) {
+      print(requestId);
+      print(response.id);
+    };
+    channel.sink.add(
+        jsonEncode(RpcRequest("echo", id: requestId, params: []).toJson()));
   }
 
-  @override
-  Converter get encoder {
-    return RequestConverter();
-  }
-}
-
-class RpcChannel extends HtmlWebSocketChannel {
-  RpcChannel.connect(url) : super.connect(url);
-
-  RpcChannel connect(String address) {
-    final socket = HtmlWebSocketChannel.connect(address);
-
-    // Transform to JSON
-    final jsonTransformer = StreamChannelTransformer.fromCodec(
-        JsonCodec.withReviver((key, value) => null));
-    final jsonSocket = socket.transform(jsonTransformer);
-
-    // Transform to JSONRPC
-    final rpcTransformer = StreamChannelTransformer.fromCodec(JsonRpcCodec());
-    final rpcSocket = jsonSocket.transform(rpcTransformer);
-
-    return rpcSocket;
+  void dispose() {
+    channel.sink.close();
   }
 }
