@@ -69,7 +69,7 @@ class ElectrumRPCChannel {
   ElectrumRPCChannel();
 
   void connect(Uri address) {
-    channel = WebSocketChannel.connect(Uri.parse("wss://echo.websocket.org"));
+    channel = WebSocketChannel.connect(address);
 
     channel.stream.listen((dynamic data) {
       final text = data as String;
@@ -97,8 +97,10 @@ class ElectrumRPCChannel {
       print(requestId);
       print(response.id);
     };
-    channel.sink.add(
-        jsonEncode(RpcRequest("echo", id: requestId, params: []).toJson()));
+    final payload =
+        jsonEncode(RpcRequest("echo", id: requestId, params: []).toJson());
+    print(payload);
+    channel.sink.add(payload);
   }
 
   void dispose() {

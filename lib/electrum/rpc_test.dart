@@ -6,7 +6,7 @@ void main() {
   HttpServer server;
   Uri url;
   setUp(() async {
-    server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
+    server = await HttpServer.bind(InternetAddress.anyIPv4, 0);
     url = Uri.parse('ws://${server.address.host}:${server.port}');
     server.listen((HttpRequest request) {
       print(request);
@@ -31,9 +31,8 @@ void main() {
     final client = ElectrumRPCChannel();
     client.connect(url);
     sleep(const Duration(seconds: 1));
-    client.sendMessage('hello world 2');
-    sleep(const Duration(seconds: 60));
-    print('hrm');
+    client.sendMessage('Here is a param');
+    sleep(const Duration(seconds: 1));
     client.dispose();
   });
 }
