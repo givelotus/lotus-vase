@@ -7,7 +7,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'rpc.g.dart';
 
 @JsonSerializable()
-class RpcRequest {
+class RPCRequest {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = "2.0";
   @JsonKey(disallowNullValue: true)
@@ -15,18 +15,18 @@ class RpcRequest {
   @JsonKey(includeIfNull: true)
   final int id;
   @JsonKey(includeIfNull: true)
-  final Object params; // nullable
+  final List params;
 
-  RpcRequest(this.method, {this.id, this.params});
-  factory RpcRequest.fromJson(Map<String, dynamic> json) =>
-      _$RpcRequestFromJson(json);
-  Map<String, dynamic> toJson() => _$RpcRequestToJson(this);
+  RPCRequest(this.method, {this.id, this.params});
+  factory RPCRequest.fromJson(Map<String, dynamic> json) =>
+      _$RPCRequestFromJson(json);
+  Map<String, dynamic> toJson() => _$RPCRequestToJson(this);
 }
 
-class RequestConverter extends Converter<Map<String, dynamic>, RpcRequest> {
+class RequestConverter extends Converter<Map<String, dynamic>, RPCRequest> {
   @override
   convert(input) {
-    return RpcRequest.fromJson(input);
+    return RPCRequest.fromJson(input);
   }
 }
 
@@ -45,7 +45,7 @@ class Error {
 }
 
 @JsonSerializable()
-class RpcResponse {
+class RPCResponse {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = "2.0";
   @JsonKey(includeIfNull: true)
@@ -55,26 +55,26 @@ class RpcResponse {
   @JsonKey(includeIfNull: true)
   final int id;
 
-  RpcResponse(this.result, {this.id, this.error});
-  factory RpcResponse.fromJson(Map<String, dynamic> json) =>
-      _$RpcResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$RpcResponseToJson(this);
+  RPCResponse(this.result, {this.id, this.error});
+  factory RPCResponse.fromJson(Map<String, dynamic> json) =>
+      _$RPCResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$RPCResponseToJson(this);
 }
 
-typedef void ResponseHandler(RpcResponse data);
+typedef void ResponseHandler(RPCResponse data);
 
-class ElectrumRPCChannel {
+class JSONRPCWebsocket {
   WebSocket channel;
   Map<int, Completer<Object>> completers = new Map();
   var currentRequestId = 0;
 
-  ElectrumRPCChannel();
+  JSONRPCWebsocket();
 
   connect(Uri address) async {
     channel = await WebSocket.connect(address.toString());
     channel.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      final response = RpcResponse.fromJson(jsonResult);
+      final response = RPCResponse.fromJson(jsonResult);
       if (!completers.containsKey(response.id)) {
         print('Missing completion');
         return;
@@ -89,13 +89,13 @@ class ElectrumRPCChannel {
     }, cancelOnError: false);
   }
 
-  Future<Object> sendMessage(String text) {
+  Future<Object> sendMessage(String method, List<dynamic> params) {
     final requestId = currentRequestId++;
-    Completer<Object> completer = new Completer();
+    Completer completer = new Completer();
 
     completers[requestId] = completer;
     final payload =
-        jsonEncode(RpcRequest("echo", id: requestId, params: [text]).toJson());
+        jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
     channel.add(payload);
 
     return completer.future;

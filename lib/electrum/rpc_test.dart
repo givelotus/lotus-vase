@@ -61,10 +61,9 @@ void main() {
   test('electrum rpcs are handled', () async {
     print(url);
 
-    final client = ElectrumRPCChannel();
+    final client = JSONRPCWebsocket();
     await client.connect(url);
-    final result = await client.sendMessage('Here is a param');
-    print("hrm?");
+    final result = await client.sendMessage('echo', ['poop']);
     print(result);
     await Future.delayed(Duration(seconds: 10));
     client.dispose();

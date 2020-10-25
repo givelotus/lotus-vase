@@ -6,16 +6,16 @@ part of 'rpc.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-RpcRequest _$RpcRequestFromJson(Map<String, dynamic> json) {
+RPCRequest _$RPCRequestFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['method']);
-  return RpcRequest(
+  return RPCRequest(
     json['method'] as String,
     id: json['id'] as int,
     params: json['params'],
   );
 }
 
-Map<String, dynamic> _$RpcRequestToJson(RpcRequest instance) {
+Map<String, dynamic> _$RPCRequestToJson(RPCRequest instance) {
   final val = <String, dynamic>{};
 
   void writeNotNull(String key, dynamic value) {
@@ -54,8 +54,8 @@ Map<String, dynamic> _$ErrorToJson(Error instance) {
   return val;
 }
 
-RpcResponse _$RpcResponseFromJson(Map<String, dynamic> json) {
-  return RpcResponse(
+RPCResponse _$RPCResponseFromJson(Map<String, dynamic> json) {
+  return RPCResponse(
     json['result'],
     id: json['id'] as int,
     error: json['error'] == null
@@ -64,7 +64,7 @@ RpcResponse _$RpcResponseFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$RpcResponseToJson(RpcResponse instance) =>
+Map<String, dynamic> _$RPCResponseToJson(RPCResponse instance) =>
     <String, dynamic>{
       'result': instance.result,
       'error': instance.error,
