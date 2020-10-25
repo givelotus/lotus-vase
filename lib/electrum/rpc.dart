@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'package:json_annotation/json_annotation.dart';
-
 import 'dart:io';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/status.dart' as status;
+import 'dart:async';
+
+import 'package:json_annotation/json_annotation.dart';
 
 part 'rpc.g.dart';
 
@@ -66,7 +65,7 @@ typedef void ResponseHandler(RpcResponse data);
 
 class ElectrumRPCChannel {
   WebSocket channel;
-  Map<int, ResponseHandler> callbacks = new Map();
+  Map<int, Completer<Object>> completers = new Map();
   var currentRequestId = 0;
 
   ElectrumRPCChannel();
@@ -74,19 +73,15 @@ class ElectrumRPCChannel {
   connect(Uri address) async {
     channel = await WebSocket.connect(address.toString());
     channel.listen((dynamic data) {
-      print('got something?');
-      final text = data as String;
-      if (!callbacks.containsKey(text)) {
-        print('callback missing');
+      Map<String, dynamic> jsonResult = jsonDecode(data);
+      final response = RpcResponse.fromJson(jsonResult);
+      if (!completers.containsKey(response.id)) {
+        print('Missing completion');
         return;
       }
-      Map<String, dynamic> jsonResult = jsonDecode(data);
-      print(jsonResult);
-      final response = RpcResponse.fromJson(jsonResult);
-      print(response);
-      final callback = callbacks[response.id] ?? (data) {};
-      callbacks.remove(response.id);
-      callback(response);
+      final completer = completers[response.id] ?? new Completer();
+      completers.remove(response.id);
+      completer.complete(response.result);
     }, onError: (Object error) {
       print(error);
     }, onDone: () {
@@ -94,16 +89,16 @@ class ElectrumRPCChannel {
     }, cancelOnError: false);
   }
 
-  void sendMessage(String text) {
+  Future<Object> sendMessage(String text) {
     final requestId = currentRequestId++;
-    callbacks[requestId] = (response) {
-      print(requestId);
-      print(response.id);
-    };
+    Completer<Object> completer = new Completer();
+
+    completers[requestId] = completer;
     final payload =
         jsonEncode(RpcRequest("echo", id: requestId, params: [text]).toJson());
-    print(payload);
     channel.add(payload);
+
+    return completer.future;
   }
 
   void dispose() {

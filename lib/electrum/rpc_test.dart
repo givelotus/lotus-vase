@@ -29,12 +29,8 @@ void runFakeElectrum(SendPort sendPort) async {
 }
 
 void handleWebSocket(WebSocket socket) {
-  print('Client connected!');
   socket.listen((dynamic s) {
-    print(' Client sent: $s');
-    socket.add('echo: $s');
-    print('Echo\'d');
-    socket.add('hmm');
+    socket.add('{"id": 0, "result": ["poop"], "jsonrpc": "2.0"}');
   }, onDone: () {
     print('Client disconnected');
   });
@@ -67,8 +63,10 @@ void main() {
 
     final client = ElectrumRPCChannel();
     await client.connect(url);
-    client.sendMessage('Here is a param');
-    client.sendMessage('Here is another param');
+    final result = await client.sendMessage('Here is a param');
+    print("hrm?");
+    print(result);
+    await Future.delayed(Duration(seconds: 10));
     client.dispose();
   });
 }
