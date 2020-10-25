@@ -1,12 +1,12 @@
 class Wallet {
-  Wallet(String walletPath) {}
+  Wallet(String walletPath);
 
   int balanceSatoshis() {
     return 1000;
   }
 
   String getAddress() {
-    return "bchtest:dsajkdsaadfghfgfhhggjkhgjhjghjbhjk";
+    return 'bchtest:dsajkdsaadfghfgfhhggjkhgjhjghjbhjk';
   }
 
   void send(String address, int satoshis) {

@@ -16,7 +16,7 @@ class ReceiveTab extends StatelessWidget {
     final manualCard = Card(
         child: Column(children: [
           ListTile(
-            title: const Text("Text Address"),
+            title: const Text('Text Address'),
           ),
           Padding(
               padding: const EdgeInsets.all(16.0),
@@ -31,7 +31,7 @@ class ReceiveTab extends StatelessWidget {
     final qrCard = Card(
       child: Column(children: [
         ListTile(
-          title: const Text("QR Address"),
+          title: const Text('QR Address'),
         ),
         QrImage(data: address, version: QrVersions.auto)
       ]),
