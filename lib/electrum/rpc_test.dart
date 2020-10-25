@@ -5,14 +5,13 @@ import 'package:cashew/electrum/rpc.dart';
 
 void runFakeElectrum(SendPort sendPort) async {
   HttpServer httpServer = await HttpServer.bind(InternetAddress.anyIPv4, 0);
-  Uri url = Uri.parse('ws://${httpServer.address.host}:${httpServer.port}');
+  Uri url = Uri.parse('ws://${httpServer.address.host}:${httpServer.port}/');
 
   print("HttpServer listening...");
   httpServer.serverHeader = "PoopHeader";
   print(url);
 
   httpServer.listen((HttpRequest request) {
-    print('got a request');
     if (WebSocketTransformer.isUpgradeRequest(request)) {
       WebSocketTransformer.upgrade(request).then(handleWebSocket);
     } else {
@@ -32,8 +31,10 @@ void runFakeElectrum(SendPort sendPort) async {
 void handleWebSocket(WebSocket socket) {
   print('Client connected!');
   socket.listen((dynamic s) {
-    print('Client sent: $s');
+    print(' Client sent: $s');
     socket.add('echo: $s');
+    print('Echo\'d');
+    socket.add('hmm');
   }, onDone: () {
     print('Client disconnected');
   });
@@ -61,13 +62,13 @@ void main() {
     url = null;
   });
 
-  test('electrum rpcs are handled', () {
+  test('electrum rpcs are handled', () async {
     print(url);
 
     final client = ElectrumRPCChannel();
-    client.connect(url);
+    await client.connect(url);
     client.sendMessage('Here is a param');
-    sleep(const Duration(seconds: 60));
+    client.sendMessage('Here is another param');
     client.dispose();
   });
 }

@@ -1,6 +1,9 @@
 import 'dart:convert';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'dart:io';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/status.dart' as status;
 
 part 'rpc.g.dart';
 
@@ -62,15 +65,16 @@ class RpcResponse {
 typedef void ResponseHandler(RpcResponse data);
 
 class ElectrumRPCChannel {
-  WebSocketChannel channel;
+  WebSocket channel;
   Map<int, ResponseHandler> callbacks = new Map();
   var currentRequestId = 0;
 
   ElectrumRPCChannel();
 
-  void connect(Uri address) {
-    channel = WebSocketChannel.connect(address);
-    channel.stream.listen((dynamic data) {
+  connect(Uri address) async {
+    channel = await WebSocket.connect(address.toString());
+    channel.listen((dynamic data) {
+      print('got something?');
       final text = data as String;
       if (!callbacks.containsKey(text)) {
         print('callback missing');
@@ -87,7 +91,7 @@ class ElectrumRPCChannel {
       print(error);
     }, onDone: () {
       print('done');
-    });
+    }, cancelOnError: false);
   }
 
   void sendMessage(String text) {
@@ -99,10 +103,10 @@ class ElectrumRPCChannel {
     final payload =
         jsonEncode(RpcRequest("echo", id: requestId, params: [text]).toJson());
     print(payload);
-    channel.sink.add(payload);
+    channel.add(payload);
   }
 
   void dispose() {
-    channel.sink.close();
+    channel.close();
   }
 }
