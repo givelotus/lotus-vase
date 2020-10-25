@@ -32,7 +32,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  Wallet wallet = new Wallet("todo");
+  Wallet wallet = Wallet('todo');
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +42,9 @@ class _MainPageState extends State<MainPage> {
         appBar: AppBar(
           title: TabBar(
             tabs: [
-              Tab(icon: Text("Send")),
-              Tab(icon: Text("Receive")),
-              Tab(icon: Text("Balance")),
+              Tab(icon: Text('Send')),
+              Tab(icon: Text('Receive')),
+              Tab(icon: Text('Balance')),
             ],
           ),
         ),

@@ -69,7 +69,7 @@ class SendWidget extends StatelessWidget {
           children: [
             Expanded(
                 child: TextField(
-              controller: TextEditingController(text: this.qrText),
+              controller: TextEditingController(text: qrText),
               decoration: InputDecoration(
                   border: OutlineInputBorder(), hintText: 'Enter an address'),
             )),
