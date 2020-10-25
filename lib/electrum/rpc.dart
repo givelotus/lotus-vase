@@ -64,15 +64,15 @@ class RPCResponse {
 typedef void ResponseHandler(RPCResponse data);
 
 class JSONRPCWebsocket {
-  WebSocket channel;
+  WebSocket rpcSocket;
   Map<int, Completer<Object>> completers = new Map();
   var currentRequestId = 0;
 
   JSONRPCWebsocket();
 
   connect(Uri address) async {
-    channel = await WebSocket.connect(address.toString());
-    channel.listen((dynamic data) {
+    rpcSocket = await WebSocket.connect(address.toString());
+    rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
       final response = RPCResponse.fromJson(jsonResult);
       if (!completers.containsKey(response.id)) {
@@ -89,19 +89,19 @@ class JSONRPCWebsocket {
     }, cancelOnError: false);
   }
 
-  Future<Object> sendMessage(String method, List<dynamic> params) {
+  Future<Object> callMethod(String method, List<dynamic> params) {
     final requestId = currentRequestId++;
     Completer completer = new Completer();
 
     completers[requestId] = completer;
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    channel.add(payload);
+    rpcSocket.add(payload);
 
     return completer.future;
   }
 
   void dispose() {
-    channel.close();
+    rpcSocket.close();
   }
 }

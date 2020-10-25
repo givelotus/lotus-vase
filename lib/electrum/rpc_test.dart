@@ -1,22 +1,35 @@
 import 'dart:isolate';
-import 'package:test/test.dart';
 import 'dart:io';
+import 'dart:async';
+import 'package:test/test.dart';
 import 'package:cashew/electrum/rpc.dart';
 
-void runFakeElectrum(SendPort sendPort) async {
+class FakeElectrumParams {
+  final SendPort sendPort;
+  final List<Object> responses;
+  FakeElectrumParams({this.sendPort, this.responses});
+}
+
+void runFakeElectrum(FakeElectrumParams params) async {
   HttpServer httpServer = await HttpServer.bind(InternetAddress.anyIPv4, 0);
   Uri url = Uri.parse('ws://${httpServer.address.host}:${httpServer.port}/');
 
-  print("HttpServer listening...");
-  httpServer.serverHeader = "PoopHeader";
-  print(url);
+  httpServer.serverHeader = "Fake Electrum Server";
 
   httpServer.listen((HttpRequest request) {
     if (WebSocketTransformer.isUpgradeRequest(request)) {
-      WebSocketTransformer.upgrade(request).then(handleWebSocket);
+      WebSocketTransformer.upgrade(request).then((WebSocket socket) {
+        socket.listen((dynamic s) {
+          socket.add('{"id": 0, "result": ["poop"], "jsonrpc": "2.0"}');
+        }, onDone: () {
+          print('Client disconnected');
+        });
+      });
     } else {
       print("Regular ${request.method} request for: ${request.uri.path}");
-      serveRequest(request);
+      request.response.statusCode = HttpStatus.forbidden;
+      request.response.reasonPhrase = "WebSocket connections only";
+      request.response.close();
     }
   }, onError: (error) {
     print('some error');
@@ -25,47 +38,40 @@ void runFakeElectrum(SendPort sendPort) async {
     print('done');
   });
 
-  sendPort.send(url);
+  params.sendPort.send(url);
 }
 
-void handleWebSocket(WebSocket socket) {
-  socket.listen((dynamic s) {
-    socket.add('{"id": 0, "result": ["poop"], "jsonrpc": "2.0"}');
-  }, onDone: () {
-    print('Client disconnected');
-  });
-}
+typedef Future<void> RPCServerClientCallback(Uri url);
 
-void serveRequest(HttpRequest request) {
-  request.response.statusCode = HttpStatus.forbidden;
-  request.response.reasonPhrase = "WebSocket connections only";
-  request.response.close();
+withRPCServer(List<Object> responses, RPCServerClientCallback clientTest) {
+  return () async {
+    ReceivePort receivePort = ReceivePort();
+    Isolate isolate = await Isolate.spawn(
+        runFakeElectrum,
+        FakeElectrumParams(
+            sendPort: receivePort.sendPort, responses: responses));
+    Uri url = await receivePort.first;
+    try {
+      await clientTest(url);
+    } finally {
+      isolate.kill();
+    }
+  };
 }
 
 void main() {
-  ReceivePort receivePort;
-  Uri url;
-  Isolate isolate;
-
-  setUp(() async {
-    receivePort = ReceivePort();
-    isolate = await Isolate.spawn(runFakeElectrum, receivePort.sendPort);
-    url = await receivePort.first;
-  });
-
-  tearDown(() async {
-    isolate.kill();
-    url = null;
-  });
-
-  test('electrum rpcs are handled', () async {
-    print(url);
-
-    final client = JSONRPCWebsocket();
-    await client.connect(url);
-    final result = await client.sendMessage('echo', ['poop']);
-    print(result);
-    await Future.delayed(Duration(seconds: 10));
-    client.dispose();
-  });
+  test(
+      'electrum rpcs are handled',
+      withRPCServer([
+        {
+          "id": 0,
+          "result": ["poop"]
+        }
+      ], (Uri url) async {
+        final client = JSONRPCWebsocket();
+        await client.connect(url);
+        final result = await client.callMethod('echo', ['poop']);
+        expect(result, ['poop']);
+        client.dispose();
+      }));
 }
