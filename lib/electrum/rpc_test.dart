@@ -1,5 +1,6 @@
 import 'dart:isolate';
 import 'dart:io';
+import 'dart:convert';
 import 'dart:async';
 import 'package:test/test.dart';
 import 'package:cashew/electrum/rpc.dart';
@@ -20,7 +21,8 @@ void runFakeElectrum(FakeElectrumParams params) async {
     if (WebSocketTransformer.isUpgradeRequest(request)) {
       WebSocketTransformer.upgrade(request).then((WebSocket socket) {
         socket.listen((dynamic s) {
-          socket.add('{"id": 0, "result": ["poop"], "jsonrpc": "2.0"}');
+          socket.add(jsonEncode(params.responses.first));
+          params.responses.removeAt(0);
         }, onDone: () {
           print('Client disconnected');
         });
@@ -61,16 +63,17 @@ withRPCServer(List<Object> responses, RPCServerClientCallback clientTest) {
 
 void main() {
   test(
-      'electrum rpcs are handled',
+      'json rpc happy-path works',
       withRPCServer([
         {
           "id": 0,
           "result": ["poop"]
-        }
+        },
+        {"id": 1, "result": []}
       ], (Uri url) async {
         final client = JSONRPCWebsocket();
         await client.connect(url);
-        final result = await client.callMethod('echo', ['poop']);
+        final result = await client.callMethod('poop', []);
         expect(result, ['poop']);
         client.dispose();
       }));
