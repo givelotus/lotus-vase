@@ -14,8 +14,8 @@ class BalanceTab extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            title: const Text("Balance"),
-            subtitle: Text("in satoshis"),
+            title: const Text('Balance'),
+            subtitle: Text('in satoshis'),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -34,7 +34,7 @@ class BalanceTab extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            title: const Text("History"),
+            title: const Text('History'),
           )
         ],
       ),
