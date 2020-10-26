@@ -86,6 +86,25 @@ class Address {
     _publicKeyHash = HEX.encode(hash160(pubkeyBytes));
   }
 
+  /// Constructs a new Address object from a compressed public key value
+  ///
+  /// [addressBytes] is a byte-buffer of an address
+  ///
+  /// [addressType] is used to distinguish between P2PKH and P2SH.
+  ///
+  /// See also [AddressType]
+  ///
+  /// [networkType] is used to distinguish between MAINNET and TESTNET.
+  ///
+  /// Also see [NetworkType]
+  Address.fromAddressBytes(List<int> addressBytes,
+      {AddressType addressType = AddressType.PUBKEY_HASH,
+      NetworkType networkType = NetworkType.MAIN}) {
+    _publicKeyHash = HEX.encode(addressBytes);
+    _networkType = networkType;
+    _addressType = addressType;
+  }
+
   /// Constructs a new Address object from a base58-encoded string.
   ///
   /// Base58-encoded strings are the "standard" means of sharing bitoin addresses amongst
@@ -135,7 +154,7 @@ class Address {
 
   String _getEncoded(List<int> hashAddress) {
     var addressBytes = List<int>(1 + hashAddress.length + 4);
-    addressBytes[0] = _version;
+    addressBytes[0] = legacyVersionByte;
 
     // copy all of raw address content, taking care not to
     // overwrite the version byte at start
@@ -234,4 +253,41 @@ class Address {
   ///
   /// See documentation for [Transaction]
   AddressType get addressType => _addressType;
+
+  /// Returns the legacy version byte for toBase58.
+  int get legacyVersionByte {
+    // TODO: This isn't respecting the addresstype, nor is it exhaustive
+    if (networkType == NetworkType.MAIN &&
+        addressType == AddressType.SCRIPT_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.MAIN_P2SH) & 0xFF;
+    }
+
+    if (networkType == NetworkType.MAIN &&
+        addressType == AddressType.PUBKEY_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.MAIN_PKH) & 0xFF;
+    }
+
+    if (networkType == NetworkType.TEST &&
+        addressType == AddressType.SCRIPT_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.TEST_P2SH) & 0xFF;
+    }
+
+    if (networkType == NetworkType.TEST &&
+        addressType == AddressType.PUBKEY_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.TEST_PKH) & 0xFF;
+    }
+
+    if (networkType == NetworkType.REGTEST &&
+        addressType == AddressType.SCRIPT_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.TEST_P2SH) & 0xFF;
+    }
+
+    if (networkType == NetworkType.REGTEST &&
+        addressType == AddressType.PUBKEY_HASH) {
+      return Networks.getNetworkVersion(NetworkAddressType.TEST_PKH) & 0xFF;
+    }
+
+    assert(false, 'Invalid network/address type combo');
+    return 0;
+  }
 }
