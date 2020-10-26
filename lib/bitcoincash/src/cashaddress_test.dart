@@ -16,4 +16,12 @@ void main() {
             .toBase58(),
         legacy);
   });
+
+  test('can decode and encode cashaddresses', () async {
+    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    var address = Decode(cashaddr, 'bitcoincash');
+    var encodedCashaddr = Encode(address);
+
+    expect(encodedCashaddr, cashaddr);
+  });
 }
