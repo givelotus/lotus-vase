@@ -8,6 +8,21 @@ class RawCashAddress {
   NetworkType networkType;
   List<int> addressBytes;
 
+  String get prefix {
+    return 'bitcoincash';
+  }
+
+  int get version {
+    switch (addressType) {
+      case AddressType.PUBKEY_HASH:
+        return 0;
+      case AddressType.SCRIPT_HASH:
+        return 1;
+      default:
+        throw AddressFormatException('Unknown address type');
+    }
+  }
+
   RawCashAddress({this.addressType, this.networkType, this.addressBytes});
 }
 
@@ -161,4 +176,76 @@ RawCashAddress unpackAddress(List<int> packedaddr, String prefix) {
       addressBytes: output.sublist(1),
       networkType: getNetworkTypeFromPrefix(prefix),
       addressType: getAddressTypeFromByte(addrtype));
+}
+
+// ToCashAddr expects a RawAddress and a prefix, and returns the CashAddr URI,
+// and possibly an error.
+String Encode(RawCashAddress address) {
+  final packed = packAddress(address);
+  final paddingForChecksum = packed.sublist(0);
+  paddingForChecksum.addAll([0, 0, 0, 0, 0, 0, 0, 0]);
+
+  // Calculate the a checksum.  Provide 8 bytes of padding.
+  final poly = calculateChecksum(address.prefix, paddingForChecksum);
+  final wchk = appendChecksum(packed, poly);
+  final base32 = toBase32(wchk);
+
+  return '${address.prefix}:${base32}';
+}
+
+// packAddress takes a RawAddress and converts it's payload to a 5-bit packed
+// representation.  The first byte represents the address type, and the size
+// of the payload.
+List<int> packAddress(RawCashAddress address) {
+  final version = address.version << 3;
+  final size = address.addressBytes.length;
+  var encodedSize = 0;
+  switch (size * 8) {
+    case 160:
+      encodedSize = 0;
+      break;
+    case 192:
+      encodedSize = 1;
+      break;
+    case 224:
+      encodedSize = 2;
+      break;
+    case 256:
+      encodedSize = 3;
+      break;
+    case 320:
+      encodedSize = 4;
+      break;
+    case 384:
+      encodedSize = 5;
+      break;
+    case 448:
+      encodedSize = 6;
+      break;
+    case 512:
+      encodedSize = 7;
+      break;
+    default:
+      throw AddressFormatException('invalid address size');
+  }
+
+  final version_byte = version | encodedSize;
+  final input = <int>[];
+  input.add(version_byte);
+  input.addAll(address.addressBytes);
+  final out = ConvertBits(8, 5, input, true);
+
+  return out;
+}
+
+// appendChecksum returns packedaddr with 8 appended checksum bytes from
+// PolyMod.
+List<int> appendChecksum(List<int> packedAddress, int poly) {
+  var chkarr = <int>[];
+  for (var i = 0; i < 8; i++) {
+    chkarr.add((poly >> (5 * (7 - i))) & 0x1F);
+  }
+  var withChecksum = packedAddress.sublist(0);
+  withChecksum.addAll(chkarr);
+  return withChecksum;
 }

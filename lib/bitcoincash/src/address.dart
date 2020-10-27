@@ -147,6 +147,15 @@ class Address {
     return _getEncoded(rawHash);
   }
 
+  /// Serialise this address object to a cashaddr encoded string
+  ///
+  String toCashAddress() {
+    return cash_address.Encode(cash_address.RawCashAddress(
+        addressBytes: HEX.decode(_publicKeyHash),
+        networkType: networkType,
+        addressType: addressType));
+  }
+
   /// Serialise this address object to a base58-encoded string.
   /// This method is an alias for the [toBase58()] method
   @override
