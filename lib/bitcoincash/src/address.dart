@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'networks.dart';
 import 'exceptions.dart';
 
+import 'cashaddress.dart' as cash_address;
+
 /// This class abstracts away the internals of address encoding and provides
 /// a convenient means to both encode and decode information from a bitcoin address.
 ///
@@ -37,10 +39,15 @@ class Address {
 
   /// Constructs a new Address object
   ///
-  /// [address] is the base58encoded bitcoin address.
+  /// [address] is the base58, or cashaddr, encoded bitcoin address.
   ///
   Address(String address) {
-    _fromBase58(address);
+    try {
+      _fromCashAddress(address);
+      return;
+    } catch (e) {
+      _fromBase58(address);
+    }
   }
 
   /// Constructs a new Address object from a public key.
@@ -190,6 +197,13 @@ class Address {
         versionAndDataBytes.sublist(1, versionAndDataBytes.length);
     _publicKeyHash =
         HEX.encode(stripVersion.map((elem) => elem.toUnsigned(8)).toList());
+  }
+
+  void _fromCashAddress(String address) {
+    final rawAddressData = cash_address.Decode(address);
+    _networkType = rawAddressData.networkType;
+    _addressType = rawAddressData.addressType;
+    _publicKeyHash = HEX.encode(rawAddressData.addressBytes);
   }
 
   void _createFromScript(BCHScript script, NetworkType networkType) {
