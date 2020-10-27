@@ -29,4 +29,12 @@ void main() {
 
     expect(address.toBase58(), legacy);
   });
+
+  test('can decode from base58 and encode to cashaddress', () async {
+    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    final legacy = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
+    var address = Address(legacy);
+
+    expect(address.toCashAddress(), cashaddr);
+  });
 }
