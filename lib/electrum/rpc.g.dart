@@ -55,22 +55,28 @@ Map<String, dynamic> _$ErrorToJson(Error instance) {
 }
 
 RPCResponse _$RPCResponseFromJson(Map<String, dynamic> json) {
+  $checkKeys(json, disallowNullValues: const ['id']);
   return RPCResponse(
     json['result'],
     id: json['id'] as int,
     error: json['error'] == null
         ? null
         : Error.fromJson(json['error'] as Map<String, dynamic>),
-    method: json['method'] as String,
-    params: json['params'] as List,
   );
 }
 
-Map<String, dynamic> _$RPCResponseToJson(RPCResponse instance) =>
-    <String, dynamic>{
-      'result': instance.result,
-      'error': instance.error,
-      'id': instance.id,
-      'method': instance.method,
-      'params': instance.params,
-    };
+Map<String, dynamic> _$RPCResponseToJson(RPCResponse instance) {
+  final val = <String, dynamic>{
+    'result': instance.result,
+    'error': instance.error,
+  };
+
+  void writeNotNull(String key, dynamic value) {
+    if (value != null) {
+      val[key] = value;
+    }
+  }
+
+  writeNotNull('id', instance.id);
+  return val;
+}
