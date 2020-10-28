@@ -1,3 +1,4 @@
+import 'bitcoincash/bitcoincash.dart';
 import 'constants.dart';
 import 'electrum/rpc.dart';
 
@@ -5,6 +6,8 @@ class Wallet {
   Wallet(String walletPath);
 
   int _balance;
+  List<BCHPrivateKey> externalKeys;
+  List<BCHPrivateKey> changeKeys;
   ElectrumClient client = ElectrumClient();
 
   Future<void> refreshWallet() async {
@@ -18,6 +21,21 @@ class Wallet {
   }
 
   Future<void> initWallet() async {
+    // TODO: Load from disk or generate
+    const bip39Seed =
+        'witch collapse practice feed shame open despair creek road again ice least';
+    final seed = Mnemonic().toSeedHex(bip39Seed);
+
+    final rootKey = HDPrivateKey.fromSeed(seed, bitcoinNetwork);
+
+    // TODO: Do this with child numbers
+    final parentKey = rootKey.deriveChildKey("m/44'/145'");
+    final parentExternalKey = parentKey.deriveChildNumber(0);
+    externalKeys = List<BCHPrivateKey>.generate(
+        32, (index) => parentExternalKey.deriveChildNumber(index).privateKey);
+    final parentChangeKey = parentKey.deriveChildKey("1'");
+    changeKeys = List<BCHPrivateKey>.generate(
+        32, (index) => parentExternalKey.deriveChildNumber(index).privateKey);
     await client.connect(Uri.parse(electrumUrl));
     await refreshWallet();
   }
