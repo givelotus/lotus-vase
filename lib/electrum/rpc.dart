@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:async';
 
@@ -114,7 +113,6 @@ class JSONRPCWebsocket {
     rpcSocket = await WebSocket.connect(address.toString());
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      print(jsonResult);
       try {
         // Attempt to deserialize response
         final response = RPCResponse.fromJson(jsonResult);
