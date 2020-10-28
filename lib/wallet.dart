@@ -6,6 +6,8 @@ class Wallet {
   Wallet(String walletPath);
 
   int _balance;
+  String bip39Seed =
+      'witch collapse practice feed shame open despair creek road again ice least';
   List<BCHPrivateKey> externalKeys;
   List<BCHPrivateKey> changeKeys;
   ElectrumClient client = ElectrumClient();
@@ -22,8 +24,6 @@ class Wallet {
 
   Future<void> initWallet() async {
     // TODO: Load from disk or generate
-    const bip39Seed =
-        'witch collapse practice feed shame open despair creek road again ice least';
     final seed = Mnemonic().toSeedHex(bip39Seed);
 
     final rootKey = HDPrivateKey.fromSeed(seed, bitcoinNetwork);
