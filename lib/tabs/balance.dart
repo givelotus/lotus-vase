@@ -45,6 +45,18 @@ class BalanceTab extends StatelessWidget {
       children: [
         Padding(child: balanceCard, padding: cardPadding),
         Expanded(child: Padding(child: historyCard, padding: cardPadding)),
+        Row(
+          children: [
+            Expanded(
+                child: Padding(
+                    padding: cardPadding,
+                    child: RaisedButton(
+                        color: Colors.blue,
+                        elevation: cardElevation,
+                        onPressed: () => {}, // TODO: Show seed
+                        child: Text('Show Seed'))))
+          ],
+        )
       ],
     );
   }
