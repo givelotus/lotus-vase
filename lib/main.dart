@@ -1,12 +1,12 @@
-// import 'package:cashew/electrum.dart';
 import 'package:cashew/tabs/balance.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send.dart';
 import 'package:cashew/wallet.dart';
 import 'package:flutter/material.dart';
-import 'package:cashew/electrum/rpc.dart';
 
-import 'constants.dart';
+void main() {
+  runApp(CashewApp());
+}
 
 class CashewApp extends StatelessWidget {
   @override
@@ -22,6 +22,13 @@ class CashewApp extends StatelessWidget {
   }
 }
 
+class ConnectingBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(height: 25, child: Center(child: Text('Connecting...')));
+  }
+}
+
 class MainPage extends StatefulWidget {
   MainPage({Key key, this.title}) : super(key: key);
 
@@ -33,12 +40,14 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Wallet wallet = Wallet('todo');
-  ElectrumClient client = ElectrumClient();
+  Future<bool> connected;
 
   @override
   void initState() {
     super.initState();
-    client.connect(Uri.parse(electrumUrl));
+    connected = wallet.initWallet().then((_) {
+      return true;
+    });
   }
 
   @override
@@ -46,6 +55,16 @@ class _MainPageState extends State<MainPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        // Show loading bottom bar while electrum hasn't
+        bottomNavigationBar: FutureBuilder(
+            future: connected,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return ConnectingBottomSheet();
+              } else {
+                return Container(height: 0);
+              }
+            }),
         appBar: AppBar(
           title: TabBar(
             tabs: [
