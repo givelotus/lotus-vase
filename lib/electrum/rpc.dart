@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:async';
 
@@ -66,14 +67,10 @@ class RPCResponse {
   final Object result;
   @JsonKey(includeIfNull: true)
   final Error error;
-  @JsonKey(includeIfNull: true)
+  @JsonKey(disallowNullValue: true)
   final int id;
-  @JsonKey(includeIfNull: true)
-  final String method;
-  @JsonKey(includeIfNull: true)
-  final List<Object> params;
 
-  RPCResponse(this.result, {this.id, this.error, this.method, this.params});
+  RPCResponse(this.result, {this.id, this.error});
   factory RPCResponse.fromJson(Map<String, dynamic> json) =>
       _$RPCResponseFromJson(json);
   Map<String, dynamic> toJson() => _$RPCResponseToJson(this);
@@ -81,6 +78,13 @@ class RPCResponse {
 
 typedef ResponseHandler = void Function(RPCResponse response);
 typedef SubscriptionHandler = void Function(List<Object> result);
+
+class GetBalanceResponse {
+  GetBalanceResponse(this.confirmed, this.unconfirmed);
+
+  int confirmed;
+  int unconfirmed;
+}
 
 class JSONRPCWebsocket {
   WebSocket rpcSocket;
@@ -90,33 +94,35 @@ class JSONRPCWebsocket {
 
   JSONRPCWebsocket();
 
-  void connect(Uri address) async {
+  void _handleResponse(RPCResponse response) {
+    final handler = outstandingRequests[response.id] ??
+        (RPCResponse _response) {
+          // TODO: Log error here - electrum misbehaving.
+        };
+    handler(response);
+  }
+
+  void _handleNotification(RPCRequest notification) {
+    final handler = subscriptions[notification.method] ??
+        (List<Object> params) {
+          // TODO: Log error here - electrum misbehaving.
+        };
+    handler(notification.params);
+  }
+
+  Future<void> connect(Uri address) async {
     rpcSocket = await WebSocket.connect(address.toString());
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      final response = RPCResponse.fromJson(jsonResult);
-      if (response.id == null && response.method == null) {
-        throw UnhandledElectrumMessage('Missing response handler', data);
-        return;
-      }
-      if (outstandingRequests.containsKey(response.id)) {
-        final handler = outstandingRequests[response.id] ??
-            (RPCResponse _response) {
-              assert(false,
-                  'We should not be here. Checked above. This code was for type-safety');
-            };
-        handler(response);
-        return;
-      }
-
-      if (subscriptions.containsKey(response.method)) {
-        final handler = subscriptions[response.method] ??
-            (List<Object> params) {
-              assert(false,
-                  'We should not be here. Checked above. This code was for type-safety');
-            };
-        handler(response.params);
-        return;
+      print(jsonResult);
+      try {
+        // Attempt to deserialize response
+        final response = RPCResponse.fromJson(jsonResult);
+        _handleResponse(response);
+      } catch (_) {
+        // Attempt to deserialize notifcation
+        final notification = RPCRequest.fromJson(jsonResult);
+        _handleNotification(notification);
       }
     }, onError: (Object error) {
       throw UnknownElectrumError('Websocket errored to electrum server', error);
@@ -130,7 +136,12 @@ class JSONRPCWebsocket {
     final completer = Completer();
 
     outstandingRequests[requestId] = (RPCResponse response) {
-      completer.complete(response.result);
+      if (response.result != null) {
+        completer.complete(response.result);
+      } else {
+        completer.completeError(response.error);
+      }
+
       outstandingRequests.remove(requestId);
     };
 
@@ -173,6 +184,20 @@ class ElectrumClient extends JSONRPCWebsocket {
   Future<Object> blockchainScripthashListunspent(String scriptHash) {
     // TODO: Add interface here for this call specifically
     return call('blockchain.scripthash.listunspent', [scriptHash]);
+  }
+
+  Future<GetBalanceResponse> blockchainScripthashGetBalance(
+      String scripthash) async {
+    final Map<String, dynamic> response =
+        await call('blockchain.scripthash.get_balance', [scripthash]);
+    return GetBalanceResponse(response['confirmed'], response['unconfirmed']);
+  }
+
+  Future<List<String>> serverVersion(
+      String ownVersion, String supportedVersion) async {
+    final List<dynamic> response =
+        await call('server.version', [ownVersion, supportedVersion]);
+    return response.cast<String>();
   }
 
   Future<Object> blockchainScripthashSubscribe(
