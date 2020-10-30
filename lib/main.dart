@@ -1,7 +1,7 @@
 import 'package:cashew/tabs/balance.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send.dart';
-import 'package:cashew/wallet.dart';
+import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 
 void main() {
