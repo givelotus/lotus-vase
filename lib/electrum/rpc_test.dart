@@ -7,10 +7,6 @@ import 'package:test/test.dart';
 import 'client.dart';
 import 'rpc.dart';
 
-import 'client.dart';
-
-import 'client.dart';
-
 class FakeElectrumParams {
   final SendPort sendPort;
   final List<dynamic> responses;
