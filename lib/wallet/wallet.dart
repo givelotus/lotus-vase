@@ -36,15 +36,13 @@ class Wallet {
   String newSeed() {
     // TODO: Randomize and can we move to bytes
     // rather than string (crypto API awkard)?
-    String bip39Seed =
-        'witch collapse practice feed shame open despair creek road again ice least';
-    return bip39Seed;
+    return 'witch collapse practice feed shame open despair creek road again ice least';
   }
 
   /// Generate new wallet from scratch.
   Future<void> generateWallet() async {
-    final seed = newSeed();
-    keys = await Keys.construct(seed);
+    bip39Seed = newSeed();
+    keys = await Keys.construct(bip39Seed);
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
