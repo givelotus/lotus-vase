@@ -1,8 +1,12 @@
+import 'package:cashew/electrum/client.dart';
+import 'package:cashew/loading_page.dart';
 import 'package:cashew/tabs/balance.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send.dart';
-import 'package:cashew/wallet.dart';
+import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
+
+import 'constants.dart';
 
 void main() {
   runApp(CashewApp());
@@ -39,51 +43,59 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  Wallet wallet = Wallet('todo');
-  Future<bool> connected;
+  Wallet wallet;
+  Future<bool> initialized;
 
   @override
   void initState() {
     super.initState();
-    connected = wallet.initWallet().then((_) {
-      return true;
-    });
+    final electrumFactory = ElectrumFactory(Uri.parse(electrumUrl));
+    wallet = Wallet('todo path', electrumFactory);
+    initialized = wallet.initialize();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        // Show loading bottom bar while electrum hasn't
-        bottomNavigationBar: FutureBuilder(
-            future: connected,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return ConnectingBottomSheet();
-              } else {
-                return Container(height: 0);
-              }
-            }),
-        appBar: AppBar(
-          title: TabBar(
-            tabs: [
-              Tab(icon: Text('Send')),
-              Tab(icon: Text('Receive')),
-              Tab(icon: Text('Balance')),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            SendTab(
-              wallet: wallet,
-            ),
-            ReceiveTab(wallet: wallet),
-            BalanceTab(wallet: wallet),
-          ],
-        ),
-      ),
-    );
+    return FutureBuilder(
+        future: initialized,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return DefaultTabController(
+              length: 3,
+              child: Scaffold(
+                // Show loading bottom bar while electrum hasn't
+                bottomNavigationBar: FutureBuilder(
+                    future: initialized,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return ConnectingBottomSheet();
+                      } else {
+                        return Container(height: 0);
+                      }
+                    }),
+                appBar: AppBar(
+                  title: TabBar(
+                    tabs: [
+                      Tab(icon: Text('Send')),
+                      Tab(icon: Text('Receive')),
+                      Tab(icon: Text('Balance')),
+                    ],
+                  ),
+                ),
+                body: TabBarView(
+                  children: [
+                    SendTab(
+                      wallet: wallet,
+                    ),
+                    ReceiveTab(wallet: wallet),
+                    BalanceTab(wallet: wallet),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            return LoadingPage();
+          }
+        });
   }
 }
