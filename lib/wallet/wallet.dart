@@ -48,12 +48,17 @@ class Wallet {
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
-  Future<void> initialize() async {
+  Future<bool> initialize() async {
     final loaded = await loadFromDisk();
     if (!loaded) {
       await generateWallet();
     }
-    await refreshBalance();
+    try {
+      await refreshBalance();
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   int balanceSatoshis() {
