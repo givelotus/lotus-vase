@@ -5,6 +5,8 @@ import 'dart:async';
 import 'package:test/test.dart';
 import 'package:cashew/electrum/rpc.dart';
 
+import 'client.dart';
+
 class FakeElectrumParams {
   final SendPort sendPort;
   final List<dynamic> responses;
