@@ -29,7 +29,20 @@ class CashewApp extends StatelessWidget {
 class ConnectingBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(height: 25, child: Center(child: Text('Connecting...')));
+    return Container(
+        color: Colors.greenAccent,
+        height: 25,
+        child: Center(child: Text('Connecting...')));
+  }
+}
+
+class DisconnectedBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        color: Colors.redAccent,
+        height: 25,
+        child: Center(child: Text('Unable to connect. Retrying...')));
   }
 }
 
@@ -68,7 +81,11 @@ class _MainPageState extends State<MainPage> {
                     future: initialized,
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
-                        return ConnectingBottomSheet();
+                        if (snapshot.data) {
+                          return ConnectingBottomSheet();
+                        } else {
+                          return DisconnectedBottomSheet();
+                        }
                       } else {
                         return Container(height: 0);
                       }
