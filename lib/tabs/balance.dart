@@ -1,5 +1,5 @@
 import 'package:cashew/constants.dart';
-import 'package:cashew/wallet.dart';
+import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 
 class BalanceTab extends StatelessWidget {
@@ -9,6 +9,7 @@ class BalanceTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _controller = TextEditingController(text: wallet.bip39Seed);
     final balance = wallet.balanceSatoshis();
     final balanceCard = Card(
       child: Column(
@@ -30,6 +31,27 @@ class BalanceTab extends StatelessWidget {
       elevation: cardElevation,
     );
 
+    void showSeedDialog() {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return SimpleDialog(
+              title: const Text('Seed Phrase'),
+              children: <Widget>[
+                Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      maxLines: null,
+                      minLines: 2,
+                      controller: _controller,
+                      readOnly: true,
+                      decoration: InputDecoration(border: OutlineInputBorder()),
+                    ))
+              ],
+            );
+          });
+    }
+
     final historyCard = Card(
       child: Column(
         children: [
@@ -45,6 +67,18 @@ class BalanceTab extends StatelessWidget {
       children: [
         Padding(child: balanceCard, padding: cardPadding),
         Expanded(child: Padding(child: historyCard, padding: cardPadding)),
+        Row(
+          children: [
+            Expanded(
+                child: Padding(
+                    padding: cardPadding,
+                    child: RaisedButton(
+                        color: Colors.blue,
+                        elevation: cardElevation,
+                        onPressed: () => showSeedDialog(),
+                        child: Text('Show Seed'))))
+          ],
+        )
       ],
     );
   }
