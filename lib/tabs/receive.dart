@@ -10,8 +10,9 @@ class ReceiveTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final address = wallet.getAddress();
-    final _controller = TextEditingController(text: wallet.getAddress());
+    final address = wallet.keys.getExternalAddress(0);
+    final strAddress = address.toCashAddress();
+    final _controller = TextEditingController(text: strAddress);
 
     final manualCard = Card(
         child: Column(children: [
@@ -33,7 +34,7 @@ class ReceiveTab extends StatelessWidget {
         ListTile(
           title: const Text('QR Address'),
         ),
-        QrImage(data: address, version: QrVersions.auto)
+        QrImage(data: strAddress, version: QrVersions.auto)
       ]),
       elevation: cardElevation,
     );
