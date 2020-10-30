@@ -1,4 +1,4 @@
-import 'package:cashew/wallet.dart';
+import 'package:cashew/wallet/wallet.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:flutter/material.dart';
 

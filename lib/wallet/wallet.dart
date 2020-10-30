@@ -1,13 +1,11 @@
-import 'constants.dart';
-import 'electrum/client.dart';
+import '../constants.dart';
+import '../electrum/rpc.dart';
 
 class Wallet {
   Wallet(String walletPath);
 
   int _balance;
   ElectrumClient client = ElectrumClient();
-  String bip39Seed =
-      'witch collapse practice feed shame open despair creek road again ice least';
 
   Future<void> refreshWallet() async {
     const exampleScriptHash =
