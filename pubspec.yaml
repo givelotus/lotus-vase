@@ -50,6 +50,13 @@ dev_dependencies:
   mockito: ^4.0.0
   build_runner: ^1.0.0
   json_serializable: ^3.0.0
+  flutter_launcher_icons: "^0.8.0"
+
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/cashew_logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
