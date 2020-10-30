@@ -1,15 +1,16 @@
-import '../constants.dart';
-import '../electrum/rpc.dart';
+import 'keys.dart';
+import '../electrum/client.dart';
 
 class Wallet {
-  Wallet(String walletPath);
+  Wallet(String walletPath, ElectrumFactory electrumFactory);
 
   int _balance;
-  ElectrumClient client = ElectrumClient();
-  String bip39Seed =
-      'witch collapse practice feed shame open despair creek road again ice least';
+  ElectrumFactory electrumFactory;
+  Keys keys;
+  String bip39Seed;
 
-  Future<void> refreshWallet() async {
+  Future<void> refreshBalance() async {
+    final client = await electrumFactory.build();
     const exampleScriptHash =
         '8b01df4e368ea28f8dc0423bcf7a4923e3a12d307c875e47a0cfbf90b5c39161';
     final response =
@@ -19,17 +20,40 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  Future<void> initWallet() async {
-    await client.connect(Uri.parse(electrumUrl));
-    await refreshWallet();
+  /// Read wallet file from disk. Returns true if successful.
+  Future<bool> loadFromDisk() async {
+    // TODO
+  }
+
+  Future<void> writeToDisk() async {
+    // TODO
+  }
+
+  /// Generate new random seed.
+  String newSeed() {
+    // TODO: Randomize and can we move to bytes
+    // rather than string (crypto API awkard)?
+    String bip39Seed =
+        'witch collapse practice feed shame open despair creek road again ice least';
+    return bip39Seed;
+  }
+
+  /// Generate new wallet from scratch.
+  Future<void> generateWallet() async {
+    final seed = newSeed();
+    keys = await Keys.construct(seed);
+  }
+
+  /// Attempts to load wallet from disk, else constructs a new wallet.
+  Future<void> initialize() async {
+    final loaded = await loadFromDisk();
+    if (!loaded) {
+      await generateWallet();
+    }
   }
 
   int balanceSatoshis() {
     return _balance;
-  }
-
-  String getAddress() {
-    return 'bchtest:dsajkdsaadfghfgfhhggjkhgjhjghjbhjk';
   }
 
   void send(String address, int satoshis) {
