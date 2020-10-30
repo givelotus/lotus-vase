@@ -51,9 +51,7 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     final electrumFactory = ElectrumFactory(Uri.parse(electrumUrl));
     wallet = Wallet('todo path', electrumFactory);
-    initialized = wallet.initialize().then((_) {
-      return true;
-    });
+    initialized = wallet.initialize();
   }
 
   @override
