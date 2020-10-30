@@ -60,32 +60,31 @@ class _SendTabState extends State<SendTab> {
       borderWidth: 10,
       cutOutSize: 300,
     );
-    final qrWidget = QRView(
-      key: qrKey,
-      onQRViewCreated: _onQRViewCreated,
-      overlay: overlay,
-    );
+    // final qrWidget = QRView(
+    //   key: qrKey,
+    //   onQRViewCreated: _onQRViewCreated,
+    //   overlay: overlay,
+    // );
+    final qrWidget = Text('hello');
     final addressRow = AddressRow(qrText: qrText);
     final amountRow = AmountRow(_amountController);
     final buttonRow = ButtonRow(widget.wallet, amount, qrText);
-    final sendSheet = Column(
+    final sendRows = Column(
       children: [addressRow, amountRow, buttonRow],
     );
+    final bottomSheet = DraggableScrollableSheet(
+        initialChildSize: 0.125,
+        minChildSize: 0.125,
+        maxChildSize: 0.4,
+        builder: (context, scrollController) {
+          return SingleChildScrollView(
+            controller: scrollController,
+            child: sendRows,
+          );
+        });
+
     return Stack(
-      fit: StackFit.expand,
-      children: [
-        Expanded(child: qrWidget),
-        DraggableScrollableSheet(
-            initialChildSize: 0.125,
-            minChildSize: 0.125,
-            maxChildSize: 0.4,
-            builder: (context, scrollController) {
-              return SingleChildScrollView(
-                controller: scrollController,
-                child: sendSheet,
-              );
-            })
-      ],
+      children: [Expanded(child: qrWidget), bottomSheet],
     );
   }
 }

@@ -6,9 +6,9 @@ import '../../wallet/wallet.dart';
 
 class ButtonRow extends StatelessWidget {
   ButtonRow(this.wallet, this.amount, this.address);
-  Wallet wallet;
-  int amount;
-  String address;
+  final Wallet wallet;
+  final int amount;
+  final String address;
 
   @override
   Widget build(BuildContext context) {

@@ -23,7 +23,7 @@ class AddressRow extends StatelessWidget {
             )),
             IconButton(
               icon: Icon(Icons.contacts),
-              onPressed: () => {}, //widget.wallet.send(this.qrText.value, 0)},
+              onPressed: () => {},
             )
           ],
         ));
