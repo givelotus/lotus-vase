@@ -1,5 +1,5 @@
 import 'package:cashew/constants.dart';
-import 'package:cashew/wallet.dart';
+import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 
 class BalanceTab extends StatelessWidget {
