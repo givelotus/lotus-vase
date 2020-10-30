@@ -2,9 +2,11 @@ import 'keys.dart';
 import '../electrum/client.dart';
 
 class Wallet {
-  Wallet(String walletPath, ElectrumFactory electrumFactory);
+  Wallet(this.walletPath, this.electrumFactory);
 
-  int _balance;
+  String walletPath;
+
+  int _balance = 0;
   ElectrumFactory electrumFactory;
   Keys keys;
   String bip39Seed;
@@ -23,6 +25,7 @@ class Wallet {
   /// Read wallet file from disk. Returns true if successful.
   Future<bool> loadFromDisk() async {
     // TODO
+    return false;
   }
 
   Future<void> writeToDisk() async {
@@ -50,6 +53,7 @@ class Wallet {
     if (!loaded) {
       await generateWallet();
     }
+    await refreshBalance();
   }
 
   int balanceSatoshis() {
