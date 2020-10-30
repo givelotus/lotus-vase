@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
 import 'package:test/test.dart';
-import 'package:cashew/electrum/rpc.dart';
+
+import 'client.dart';
+import 'rpc.dart';
 
 class FakeElectrumParams {
   final SendPort sendPort;

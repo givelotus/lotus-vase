@@ -1,5 +1,5 @@
 import 'constants.dart';
-import 'electrum/rpc.dart';
+import 'electrum/client.dart';
 
 class Wallet {
   Wallet(String walletPath);
