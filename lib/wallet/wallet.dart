@@ -43,8 +43,8 @@ class Wallet {
 
   /// Generate new wallet from scratch.
   Future<void> generateWallet() async {
-    final seed = newSeed();
-    keys = await Keys.construct(seed);
+    bip39Seed = newSeed();
+    keys = await Keys.construct(bip39Seed);
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
