@@ -80,7 +80,7 @@ class _MainPageState extends State<MainPage> {
                 bottomNavigationBar: FutureBuilder(
                     future: initialized,
                     builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
+                      if (snapshot.hasData) {
                         if (snapshot.data) {
                           return ConnectingBottomSheet();
                         } else {
