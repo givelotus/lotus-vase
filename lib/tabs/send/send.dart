@@ -1,3 +1,4 @@
+import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:flutter/material.dart';
 
@@ -60,31 +61,32 @@ class _SendTabState extends State<SendTab> {
       borderWidth: 10,
       cutOutSize: 300,
     );
-    // final qrWidget = QRView(
-    //   key: qrKey,
-    //   onQRViewCreated: _onQRViewCreated,
-    //   overlay: overlay,
-    // );
-    final qrWidget = Text('hello');
-    final addressRow = AddressRow(qrText: qrText);
-    final amountRow = AmountRow(_amountController);
-    final buttonRow = ButtonRow(widget.wallet, amount, qrText);
-    final sendRows = Column(
-      children: [addressRow, amountRow, buttonRow],
+    final qrWidget = QRView(
+      key: qrKey,
+      onQRViewCreated: _onQRViewCreated,
+      overlay: overlay,
     );
-    final bottomSheet = DraggableScrollableSheet(
-        initialChildSize: 0.125,
-        minChildSize: 0.125,
-        maxChildSize: 0.4,
-        builder: (context, scrollController) {
-          return SingleChildScrollView(
-            controller: scrollController,
-            child: sendRows,
-          );
-        });
 
-    return Stack(
-      children: [Expanded(child: qrWidget), bottomSheet],
+    final persistentHeader = Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10.0), topRight: Radius.circular(10.0)),
+          color: Colors.white,
+        ),
+        child: AddressRow(qrText: qrText));
+
+    final expandableContent = Container(
+        color: Colors.white,
+        child: Column(
+          children: [
+            AmountRow(_amountController),
+            ButtonRow(widget.wallet, amount, qrText)
+          ],
+        ));
+    return ExpandableBottomSheet(
+      background: Expanded(child: qrWidget),
+      persistentHeader: persistentHeader,
+      expandableContent: expandableContent,
     );
   }
 }
