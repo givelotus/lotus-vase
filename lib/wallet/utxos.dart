@@ -21,14 +21,21 @@ class UtxoStorage {
     return utxoPool[key];
   }
 
-  List<TransactionOutput> collectOutputs(BigInt amount) {
+  /// Collect enough outputs to cover the [amount] and any additional fees.
+  ///
+  /// The [baseFee] is the fee for the desired transaction ignoring inputs.
+  /// The [feePerInput] is the cost per input.
+  List<TransactionOutput> collectOutputs(
+      BigInt amount, BigInt baseFee, BigInt feePerInput) {
     // Create an intermediate pool which is commit on success
     var pool = utxoPool;
 
     var utxos = [];
-    var remainingAmount = amount;
+    var remainingAmount = amount + baseFee;
 
     while (true) {
+      remainingAmount += feePerInput;
+
       // Check whether there's a perfect sized UTXO
       final exactOutput = utxoPool[remainingAmount];
       if (exactOutput != null) {
