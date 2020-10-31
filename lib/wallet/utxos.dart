@@ -1,34 +1,56 @@
 import 'dart:collection';
+import 'dart:ffi';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:dartz/dartz.dart';
+
+class Outpoint {
+  String transactionId;
+  Uint32 vout;
+}
+
+class SpendableOutput {
+  Outpoint outpoint;
+  TransactionOutput output;
+
+  /// Is an external output? Else a change output.
+  bool externalOutput;
+
+  /// Index of the associated private key.
+  int keyIndex;
+}
 
 class UtxoStorage {
-  UtxoStorage(Iterable<TransactionOutput> utxos) {
-    final zipped = {for (final utxo in utxos) utxo.satoshis: utxo};
+  UtxoStorage(Iterable<SpendableOutput> bundles) {
+    final zipped = {
+      for (final bundle in bundles) bundle.output.satoshis: bundle
+    };
     _utxoPool = SplayTreeMap.from(zipped);
   }
-  SplayTreeMap<BigInt, TransactionOutput> _utxoPool;
+  SplayTreeMap<BigInt, SpendableOutput> _utxoPool;
 
   /// Gets the smallest output more than a specific amount.
-  TransactionOutput smallestAbove(BigInt amount) {
+  SpendableOutput smallestAbove(BigInt amount) {
     final key = _utxoPool.firstKeyAfter(amount);
     return _utxoPool[key];
   }
 
   /// Gets the largest output below a specific amount.
-  TransactionOutput largestBelow(BigInt amount) {
+  SpendableOutput largestBelow(BigInt amount) {
     final key = _utxoPool.lastKeyBefore(amount);
     return _utxoPool[key];
   }
 
   /// Add transaction output.
-  void add(TransactionOutput utxo) {
-    _utxoPool[utxo.satoshis] = utxo;
+  void add(SpendableOutput bundle) {
+    _utxoPool[bundle.output.satoshis] = bundle;
   }
 
   /// Add transaction outputs.
-  void addAll(Iterable<TransactionOutput> utxos) {
-    final zipped = {for (final utxo in utxos) utxo.satoshis: utxo};
+  void addAll(Iterable<SpendableOutput> bundles) {
+    final zipped = {
+      for (final bundle in bundles) bundle.output.satoshis: bundle
+    };
     _utxoPool.addAll(zipped);
   }
 
@@ -36,7 +58,7 @@ class UtxoStorage {
   ///
   /// The [baseFee] is the fee for the desired transaction ignoring inputs.
   /// The [feePerInput] is the cost per input.
-  List<TransactionOutput> collectOutputs(
+  List<SpendableOutput> collectOutputs(
       BigInt amount, BigInt baseFee, BigInt feePerInput) {
     // Create an intermediate pool which is commit on success
     var pool = _utxoPool;
@@ -70,7 +92,7 @@ class UtxoStorage {
         throw Exception('Insufficient balance');
       }
       utxos.add(belowOutput);
-      remainingAmount -= belowOutput.satoshis;
+      remainingAmount -= belowOutput.output.satoshis;
     }
   }
 }
