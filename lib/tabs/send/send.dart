@@ -45,7 +45,6 @@ class SendTab extends StatefulWidget {
 
 class _SendTabState extends State<SendTab> {
   QRViewController controller;
-  GlobalKey<ExpandableBottomSheetState> key = GlobalKey();
 
   final _amountController = TextEditingController();
   int amount;
