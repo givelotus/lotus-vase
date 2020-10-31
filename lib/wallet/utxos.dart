@@ -29,6 +29,14 @@ class UtxoStorage {
     var remainingAmount = amount;
 
     while (true) {
+      // Check whether there's a perfect sized UTXO
+      final exactOutput = utxoPool[remainingAmount];
+      if (exactOutput != null) {
+        utxos.add(exactOutput);
+        utxoPool = pool;
+        return utxos;
+      }
+
       // Check whether large enough UTXO exists
       final aboveOutput = smallestAbove(remainingAmount);
       if (aboveOutput != null) {
@@ -37,7 +45,7 @@ class UtxoStorage {
         return utxos;
       }
 
-      // Find largest UTXO below the remaining amount.
+      // Find largest UTXO below the remaining amount
       final belowOutput = largestBelow(remainingAmount);
       if (belowOutput == null) {
         // No UTXOs left
