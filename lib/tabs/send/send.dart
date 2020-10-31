@@ -39,7 +39,7 @@ class _SendTabState extends State<SendTab> {
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    this._qrController = controller;
+    _qrController = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         qrText = scanData;
