@@ -5,20 +5,31 @@ import 'package:cashew/bitcoincash/bitcoincash.dart';
 class UtxoStorage {
   UtxoStorage(Iterable<TransactionOutput> utxos) {
     final zipped = {for (final utxo in utxos) utxo.satoshis: utxo};
-    utxoPool = SplayTreeMap.from(zipped);
+    _utxoPool = SplayTreeMap.from(zipped);
   }
-  SplayTreeMap<BigInt, TransactionOutput> utxoPool;
+  SplayTreeMap<BigInt, TransactionOutput> _utxoPool;
 
   /// Gets the smallest output more than a specific amount.
   TransactionOutput smallestAbove(BigInt amount) {
-    final key = utxoPool.firstKeyAfter(amount);
-    return utxoPool[key];
+    final key = _utxoPool.firstKeyAfter(amount);
+    return _utxoPool[key];
   }
 
   /// Gets the largest output below a specific amount.
   TransactionOutput largestBelow(BigInt amount) {
-    final key = utxoPool.lastKeyBefore(amount);
-    return utxoPool[key];
+    final key = _utxoPool.lastKeyBefore(amount);
+    return _utxoPool[key];
+  }
+
+  /// Add transaction output.
+  void add(TransactionOutput utxo) {
+    _utxoPool[utxo.satoshis] = utxo;
+  }
+
+  /// Add transaction outputs.
+  void addAll(Iterable<TransactionOutput> utxos) {
+    final zipped = {for (final utxo in utxos) utxo.satoshis: utxo};
+    _utxoPool.addAll(zipped);
   }
 
   /// Collect enough outputs to cover the [amount] and any additional fees.
@@ -28,7 +39,7 @@ class UtxoStorage {
   List<TransactionOutput> collectOutputs(
       BigInt amount, BigInt baseFee, BigInt feePerInput) {
     // Create an intermediate pool which is commit on success
-    var pool = utxoPool;
+    var pool = _utxoPool;
 
     var utxos = [];
     var remainingAmount = amount + baseFee;
@@ -37,10 +48,10 @@ class UtxoStorage {
       remainingAmount += feePerInput;
 
       // Check whether there's a perfect sized UTXO
-      final exactOutput = utxoPool[remainingAmount];
+      final exactOutput = _utxoPool[remainingAmount];
       if (exactOutput != null) {
         utxos.add(exactOutput);
-        utxoPool = pool;
+        _utxoPool = pool;
         return utxos;
       }
 
@@ -48,7 +59,7 @@ class UtxoStorage {
       final aboveOutput = smallestAbove(remainingAmount);
       if (aboveOutput != null) {
         utxos.add(aboveOutput);
-        utxoPool = pool; // Commit
+        _utxoPool = pool; // Commit
         return utxos;
       }
 
