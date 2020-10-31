@@ -76,6 +76,7 @@ class _MainPageState extends State<MainPage> {
             return DefaultTabController(
               length: 3,
               child: Scaffold(
+                resizeToAvoidBottomInset: false,
                 // Show loading bottom bar while electrum hasn't
                 bottomNavigationBar: FutureBuilder(
                     future: initialized,
