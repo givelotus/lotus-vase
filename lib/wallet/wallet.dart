@@ -1,3 +1,5 @@
+import 'package:cashew/bitcoincash/bitcoincash.dart';
+
 import 'keys.dart';
 import '../electrum/client.dart';
 
@@ -63,7 +65,7 @@ class Wallet {
     return _balance;
   }
 
-  void send(String address, int satoshis) {
+  Future<Transaction> send(Address address, int satoshis) {
     // TODO
   }
 }

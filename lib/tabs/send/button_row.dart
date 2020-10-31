@@ -1,24 +1,48 @@
+import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:flutter/material.dart';
 import 'package:slider_button/slider_button.dart';
 
 import '../../constants.dart';
 import '../../wallet/wallet.dart';
 
+Future showReceipt(BuildContext context, Transaction transaction) {
+  // TODO: Create nice looking receipt dialog.
+  return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Receipt'),
+          content: Text('TODO'),
+        );
+      });
+}
+
 class ButtonRow extends StatelessWidget {
-  ButtonRow(this.wallet, this.amount, this.address);
+  ButtonRow(this.wallet, this.amount, this.strAddress);
   final Wallet wallet;
   final int amount;
-  final String address;
+  final String strAddress;
 
   @override
   Widget build(BuildContext context) {
-    var sliderButtonColor;
-    if (amount != null) {
-      sliderButtonColor = Colors.blue;
-    } else {
-      sliderButtonColor = Colors.blueGrey;
+    var sliderButtonColor = Colors.blueGrey;
+    var action = () {};
+    var vibrationFlag = false;
+    final primaryValidation = (amount != null && amount > 0);
+    if (primaryValidation) {
+      try {
+        final address = Address(strAddress);
+        sliderButtonColor = Colors.blue;
+        vibrationFlag = true;
+        action = () {
+          wallet
+              .send(address, amount)
+              .then((transaction) => showReceipt(context, transaction));
+        };
+      } catch (e) {}
     }
     final sliderButton = SliderButton(
+      vibrationFlag: vibrationFlag,
       buttonColor: sliderButtonColor,
       dismissible: false,
       shimmer: false,
@@ -32,12 +56,12 @@ class ButtonRow extends StatelessWidget {
         Icons.send,
         color: Colors.white,
       )),
-      action: () {
-        print(amount);
-      },
+      action: action,
     );
-    return Row(children: [
-      Expanded(child: Padding(padding: stdPadding, child: sliderButton))
-    ]);
+    return Container(
+        color: Colors.white,
+        child: Row(children: [
+          Expanded(child: Padding(padding: stdPadding, child: sliderButton))
+        ]));
   }
 }

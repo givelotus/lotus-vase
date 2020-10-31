@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../constants.dart';
 
 class AddressRow extends StatelessWidget {
-  final String qrText;
+  final _addressController;
 
-  AddressRow({Key key, this.qrText}) : super(key: key);
+  AddressRow(this._addressController, {Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class AddressRow extends StatelessWidget {
             Expanded(
                 child: TextField(
               keyboardType: TextInputType.text,
-              controller: TextEditingController(text: qrText),
+              controller: _addressController,
               decoration: InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Enter recipient address'),

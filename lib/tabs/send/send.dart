@@ -17,9 +17,10 @@ class SendTab extends StatefulWidget {
 }
 
 class _SendTabState extends State<SendTab> {
-  QRViewController controller;
+  QRViewController _qrController;
 
   final _amountController = TextEditingController();
+  final _addressController = TextEditingController();
   int amount;
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -38,17 +39,22 @@ class _SendTabState extends State<SendTab> {
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
+    this._qrController = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         qrText = scanData;
+      });
+    });
+    _addressController.addListener(() {
+      setState(() {
+        qrText = _addressController.text;
       });
     });
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    _qrController?.dispose();
     _amountController.dispose();
     super.dispose();
   }
@@ -73,7 +79,7 @@ class _SendTabState extends State<SendTab> {
         SliverFillRemaining(child: qrWidget),
         SliverList(
             delegate: SliverChildListDelegate([
-          AddressRow(qrText: qrText),
+          AddressRow(_addressController),
           AmountRow(_amountController),
           ButtonRow(widget.wallet, amount, qrText)
         ]))
