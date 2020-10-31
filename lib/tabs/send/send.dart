@@ -1,4 +1,5 @@
-import 'package:expandable_bottom_sheet/expandable_bottom_sheet.dart';
+import 'dart:math' as math;
+
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,33 @@ import '../../wallet/wallet.dart';
 import 'address_row.dart';
 import 'amount_row.dart';
 import 'button_row.dart';
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate({
+    @required this.minHeight,
+    @required this.maxHeight,
+    @required this.child,
+  });
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+  @override
+  double get minExtent => minHeight;
+  @override
+  double get maxExtent => math.max(maxHeight, minHeight);
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
 
 class SendTab extends StatefulWidget {
   SendTab({Key key, this.wallet}) : super(key: key);
@@ -68,27 +96,16 @@ class _SendTabState extends State<SendTab> {
       overlay: overlay,
     );
 
-    final persistentHeader = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10.0), topRight: Radius.circular(10.0)),
-          color: Colors.white,
-        ),
-        child: AddressRow(qrText: qrText));
-
-    final expandableContent = Container(
-        color: Colors.white,
-        child: Column(
-          children: [
-            AmountRow(_amountController),
-            ButtonRow(widget.wallet, amount, qrText)
-          ],
-        ));
-    return ExpandableBottomSheet(
-      key: key,
-      background: Expanded(child: qrWidget),
-      persistentHeader: persistentHeader,
-      expandableContent: expandableContent,
+    return CustomScrollView(
+      slivers: [
+        SliverFillRemaining(child: qrWidget),
+        SliverList(
+            delegate: SliverChildListDelegate([
+          AddressRow(qrText: qrText),
+          AmountRow(_amountController),
+          ButtonRow(widget.wallet, amount, qrText)
+        ]))
+      ],
     );
   }
 }
