@@ -27,7 +27,7 @@ class ReceiveTab extends StatelessWidget {
                 decoration: InputDecoration(border: OutlineInputBorder()),
               ))
         ]),
-        elevation: cardElevation);
+        elevation: stdElevation);
 
     final qrCard = Card(
       child: Column(children: [
@@ -36,14 +36,14 @@ class ReceiveTab extends StatelessWidget {
         ),
         QrImage(data: strAddress, version: QrVersions.auto)
       ]),
-      elevation: cardElevation,
+      elevation: stdElevation,
     );
     return Column(children: [
       Padding(
-        padding: cardPadding,
+        padding: stdPadding,
         child: qrCard,
       ),
-      Padding(padding: cardPadding, child: manualCard)
+      Padding(padding: stdPadding, child: manualCard)
     ]);
   }
 }

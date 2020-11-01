@@ -1,3 +1,5 @@
+import 'package:cashew/bitcoincash/bitcoincash.dart';
+
 import 'keys.dart';
 import '../electrum/client.dart';
 
@@ -36,9 +38,7 @@ class Wallet {
   String newSeed() {
     // TODO: Randomize and can we move to bytes
     // rather than string (crypto API awkard)?
-    String bip39Seed =
-        'witch collapse practice feed shame open despair creek road again ice least';
-    return bip39Seed;
+    return 'witch collapse practice feed shame open despair creek road again ice least';
   }
 
   /// Generate new wallet from scratch.
@@ -65,7 +65,7 @@ class Wallet {
     return _balance;
   }
 
-  void send(String address, int satoshis) {
+  Future<Transaction> send(Address address, int satoshis) {
     // TODO
   }
 }

@@ -28,7 +28,7 @@ class BalanceTab extends StatelessWidget {
           )
         ],
       ),
-      elevation: cardElevation,
+      elevation: stdElevation,
     );
 
     void showSeedDialog() {
@@ -60,21 +60,21 @@ class BalanceTab extends StatelessWidget {
           )
         ],
       ),
-      elevation: cardElevation,
+      elevation: stdElevation,
     );
 
     return Column(
       children: [
-        Padding(child: balanceCard, padding: cardPadding),
-        Expanded(child: Padding(child: historyCard, padding: cardPadding)),
+        Padding(child: balanceCard, padding: stdPadding),
+        Expanded(child: Padding(child: historyCard, padding: stdPadding)),
         Row(
           children: [
             Expanded(
                 child: Padding(
-                    padding: cardPadding,
+                    padding: stdPadding,
                     child: RaisedButton(
                         color: Colors.blue,
-                        elevation: cardElevation,
+                        elevation: stdElevation,
                         onPressed: () => showSeedDialog(),
                         child: Text('Show Seed'))))
           ],
