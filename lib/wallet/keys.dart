@@ -6,8 +6,8 @@ import 'package:cashew/bitcoincash/bitcoincash.dart';
 class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.sendPort,
       {this.network = NetworkType.TEST,
-      this.changeKeyCount = 8,
-      this.externalKeyCount = 8});
+      this.changeKeyCount = 1,
+      this.externalKeyCount = 1});
   String seed;
   SendPort sendPort;
   NetworkType network;
