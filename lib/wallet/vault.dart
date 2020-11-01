@@ -23,7 +23,7 @@ class Utxo {
 /// information required to spend them.
 class Vault {
   Vault(Iterable<Utxo> utxos) {
-    Map zipped;
+    Map zipped = Map();
     for (final utxo in utxos) {
       zipped.update(
         utxo.outpoint.amount,
