@@ -1,9 +1,10 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:flutter/material.dart';
 import 'package:slider_button/slider_button.dart';
+import 'package:cashew/viewmodel.dart';
+import 'package:provider/provider.dart';
 
 import '../../constants.dart';
-import '../../wallet/wallet.dart';
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
@@ -18,29 +19,29 @@ Future showReceipt(BuildContext context, Transaction transaction) {
 }
 
 class ButtonRow extends StatelessWidget {
-  ButtonRow(this.wallet, this.amount, this.strAddress);
-  final Wallet wallet;
-  final int amount;
-  final String strAddress;
+  ButtonRow();
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<CashewModel>(context);
+
     var sliderButtonColor = Colors.blueGrey;
     var action = () {};
     var vibrationFlag = false;
-    final primaryValidation = (amount != null && amount > 0);
+    final primaryValidation = (viewModel.sendAmount > 0);
     if (primaryValidation) {
       try {
-        final address = Address(strAddress);
+        final address = Address(viewModel.sendToAddress);
         sliderButtonColor = Colors.blue;
         vibrationFlag = true;
         action = () {
-          wallet
-              .send(address, amount)
+          viewModel.activeWallet
+              .send(address, viewModel.sendAmount)
               .then((transaction) => showReceipt(context, transaction));
         };
       } catch (e) {}
     }
+
     final sliderButton = SliderButton(
       vibrationFlag: vibrationFlag,
       buttonColor: sliderButtonColor,
