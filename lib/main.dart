@@ -1,5 +1,5 @@
 import 'package:cashew/electrum/client.dart';
-import 'package:cashew/tabs/balance.dart';
+import 'package:cashew/tabs/settings.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send/send.dart';
 import 'package:cashew/wallet/wallet.dart';
@@ -63,6 +63,7 @@ class _MainPageState extends State<MainPage> {
       final wallet = model.activeWallet;
       return DefaultTabController(
         length: 3,
+        initialIndex: 1,
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           // Show loading bottom bar while electrum hasn't
@@ -75,19 +76,19 @@ class _MainPageState extends State<MainPage> {
           appBar: AppBar(
             title: TabBar(
               tabs: [
+                Tab(icon: Text('Settings')),
                 Tab(icon: Text('Send')),
                 Tab(icon: Text('Receive')),
-                Tab(icon: Text('Balance')),
               ],
             ),
           ),
           body: TabBarView(
             children: [
+              SettingsTab(wallet: wallet),
               SendTab(
                 wallet: wallet,
               ),
               ReceiveTab(wallet: wallet),
-              BalanceTab(wallet: wallet),
             ],
           ),
         ),

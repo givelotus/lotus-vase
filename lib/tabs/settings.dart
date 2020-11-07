@@ -2,8 +2,8 @@ import 'package:cashew/constants.dart';
 import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 
-class BalanceTab extends StatelessWidget {
-  BalanceTab({Key key, this.wallet}) : super(key: key);
+class SettingsTab extends StatelessWidget {
+  SettingsTab({Key key, this.wallet}) : super(key: key);
 
   final Wallet wallet;
 
