@@ -1,13 +1,23 @@
 import 'package:cashew/electrum/rpc.dart';
 
+class ListUnspentResponseItem {
+  int height;
+  int tx_pos;
+  String tx_hash;
+  BigInt value;
+}
+
 class ElectrumClient extends JSONRPCWebsocket {
   Future<Object> blockchainTransactionBroadcast(String transaction) {
     return call('blockchain.transaction.broadcast', [transaction]);
   }
 
-  Future<Object> blockchainScripthashListunspent(String scriptHash) {
+  Future<List<ListUnspentResponseItem>> blockchainScripthashListunspent(
+      String scriptHash) async {
     // TODO: Add interface here for this call specifically
-    return call('blockchain.scripthash.listunspent', [scriptHash]);
+    final List<dynamic> response =
+        await call('blockchain.scripthash.listunspent', [scriptHash]);
+    return response.cast<ListUnspentResponseItem>();
   }
 
   Future<GetBalanceResponse> blockchainScripthashGetBalance(

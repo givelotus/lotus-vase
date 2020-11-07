@@ -1,17 +1,94 @@
+import 'dart:typed_data';
+
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:cashew/wallet/vault.dart';
+import 'package:pointycastle/digests/sha256.dart';
+import 'package:convert/convert.dart';
 
 import 'keys.dart';
 import '../electrum/client.dart';
 
+Uint8List calculateScriptHash(Address address) {
+  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
+  final rawScriptPubkey = scriptPubkey.buffer;
+  final digest = SHA256Digest().process(rawScriptPubkey);
+  final reversedDigest = digest.reversed.toList() as Uint8List;
+  return reversedDigest;
+}
+
 class Wallet {
-  Wallet(this.walletPath, this.electrumFactory);
+  Wallet(this.walletPath, this.electrumFactory, {this.network});
 
+  NetworkType network;
   String walletPath;
-
-  int _balance = 0;
   ElectrumFactory electrumFactory;
+
   Keys keys;
   String bip39Seed;
+
+  Vault _vault = Vault([]);
+
+  final BigInt _feePerByte = BigInt.one;
+  int _balance = 0;
+
+  /// Gets the fees per byte.
+  Future<BigInt> feePerByte() async {
+    // TODO: Refresh from electrum.
+    return _feePerByte;
+  }
+
+  /// Fetch UTXOs from electrum then update vault.
+  Future<void> updateUtxos() async {
+    final clientFuture = electrumFactory.build();
+    final externalScriptHashes = keys.externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+    final changeScriptHashes = keys.changeKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+
+    final client = await clientFuture;
+    final externalFuts = externalScriptHashes.map((scriptHash) {
+      final hexScriptHash = hex.encode(scriptHash);
+      return client.blockchainScripthashListunspent(hexScriptHash);
+    });
+    final changeFuts = changeScriptHashes.map((scriptHash) {
+      final hexScriptHash = hex.encode(scriptHash);
+      return client.blockchainScripthashListunspent(hexScriptHash);
+    });
+    final externalUnspent = await Future.wait(externalFuts);
+    final changeUnspent = await Future.wait(changeFuts);
+
+    // Collect external unspent
+    var keyIndex = 0;
+    for (final unspentList in externalUnspent) {
+      for (final unspent in unspentList) {
+        final outpoint =
+            Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+
+        final spendable = Utxo(outpoint, true, keyIndex);
+
+        _vault.add(spendable);
+      }
+      keyIndex += 1;
+    }
+
+    // Collect change unspent
+    keyIndex = 0;
+    for (final unspentList in changeUnspent) {
+      for (final unspent in unspentList) {
+        final outpoint =
+            Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+
+        final spendable = Utxo(outpoint, false, keyIndex);
+
+        _vault.add(spendable);
+      }
+      keyIndex += 1;
+    }
+  }
 
   Future<void> refreshBalance() async {
     final client = await electrumFactory.build();
@@ -48,24 +125,21 @@ class Wallet {
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
-  Future<bool> initialize() async {
+  Future<void> initialize() async {
     final loaded = await loadFromDisk();
     if (!loaded) {
       await generateWallet();
     }
-    try {
-      await refreshBalance();
-      return true;
-    } catch (err) {
-      return false;
-    }
   }
+
+  /// Use electrum to update wallet.
+  Future<void> updateWallet() async {}
 
   int balanceSatoshis() {
     return _balance;
   }
 
-  Future<Transaction> send(Address address, int satoshis) {
+  Future<Transaction> send(Address address, int satoshis) async {
     // TODO
   }
 }
