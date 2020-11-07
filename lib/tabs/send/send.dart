@@ -1,66 +1,23 @@
-import 'dart:math' as math;
+import 'package:cashew/viewmodel.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:flutter/material.dart';
 
-import '../../wallet/wallet.dart';
 import 'address_row.dart';
 import 'amount_row.dart';
 import 'button_row.dart';
 
-class SendTab extends StatefulWidget {
-  SendTab({Key key, this.wallet}) : super(key: key);
-  final Wallet wallet;
-
-  @override
-  _SendTabState createState() => _SendTabState();
-}
-
-class _SendTabState extends State<SendTab> {
-  QRViewController _qrController;
-
-  final _amountController = TextEditingController();
-  final _addressController = TextEditingController();
-  int amount;
+class SendTab extends StatelessWidget {
+  SendTab({Key key}) : super(key: key);
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
-  String qrText = '';
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Attempt to parse on amount text changee
-    _amountController.addListener(() {
-      setState(() {
-        amount = int.tryParse(_amountController.text);
-      });
-    });
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    _qrController = controller;
-    controller.scannedDataStream.listen((scanData) {
-      setState(() {
-        qrText = scanData;
-      });
-    });
-    _addressController.addListener(() {
-      setState(() {
-        qrText = _addressController.text;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _qrController?.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<CashewModel>(context, listen: false);
+
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.red,
       borderRadius: 10,
@@ -68,11 +25,28 @@ class _SendTabState extends State<SendTab> {
       borderWidth: 10,
       cutOutSize: 300,
     );
+
+    final _amountController = TextEditingController();
+    final _addressController = TextEditingController();
+
     final qrWidget = QRView(
       key: qrKey,
-      onQRViewCreated: _onQRViewCreated,
+      onQRViewCreated: (QRViewController controller) {
+        controller.scannedDataStream.listen((scanData) {
+          viewModel.sendToAddress = scanData;
+          _addressController.text = scanData;
+        });
+      },
       overlay: overlay,
     );
+
+    _amountController.addListener(() {
+      viewModel.sendAmount = int.tryParse(_amountController.text);
+    });
+
+    _addressController.addListener(() {
+      viewModel.sendToAddress = _addressController.text;
+    });
 
     return CustomScrollView(
       slivers: [
@@ -81,7 +55,7 @@ class _SendTabState extends State<SendTab> {
             delegate: SliverChildListDelegate([
           AddressRow(_addressController),
           AmountRow(_amountController),
-          ButtonRow(widget.wallet, amount, qrText)
+          ButtonRow()
         ]))
       ],
     );
