@@ -57,14 +57,14 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   Wallet wallet;
-  Future<bool> initialized;
+  Future<void> initialized;
 
   @override
   void initState() {
     super.initState();
     final electrumFactory = ElectrumFactory(Uri.parse(electrumUrl));
     wallet = Wallet('todo path', electrumFactory);
-    initialized = wallet.initialize();
+    initialized = wallet.initialize().then((value) => true);
   }
 
   @override
