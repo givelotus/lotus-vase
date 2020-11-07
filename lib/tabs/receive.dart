@@ -10,6 +10,10 @@ class ReceiveTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (wallet == null) {
+      return Container();
+    }
+
     final address = wallet.keys.getExternalAddress(0);
     final strAddress = address.toCashAddress();
     final _controller = TextEditingController(text: strAddress);
@@ -38,6 +42,7 @@ class ReceiveTab extends StatelessWidget {
       ]),
       elevation: stdElevation,
     );
+
     return Column(children: [
       Padding(
         padding: stdPadding,
