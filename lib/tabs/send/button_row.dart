@@ -35,9 +35,8 @@ class ButtonRow extends StatelessWidget {
         sliderButtonColor = Colors.blue;
         vibrationFlag = true;
         action = () {
-          final bigAmount = BigInt.from(amount);
           wallet
-              .send(address, bigAmount)
+              .send(address, amount)
               .then((transaction) => showReceipt(context, transaction));
         };
       } catch (e) {}
