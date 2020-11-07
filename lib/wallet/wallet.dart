@@ -12,7 +12,7 @@ Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
   final rawScriptPubkey = scriptPubkey.buffer;
   final digest = SHA256Digest().process(rawScriptPubkey);
-  final reversedDigest = digest.reversed.toList() as Uint8List;
+  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
   return reversedDigest;
 }
 
@@ -90,14 +90,34 @@ class Wallet {
     }
   }
 
-  Future<void> refreshBalance() async {
-    final client = await electrumFactory.build();
-    const exampleScriptHash =
-        '8b01df4e368ea28f8dc0423bcf7a4923e3a12d307c875e47a0cfbf90b5c39161';
-    final response =
-        await client.blockchainScripthashGetBalance(exampleScriptHash);
+  /// Use locally stored UTXOs to refresh balance.
+  void refreshBalanceLocal() {
+    _balance = _vault.calculateBalance().toInt();
+  }
 
-    final totalBalance = response.confirmed + response.unconfirmed;
+  /// Use electrum to refresh balance.
+  Future<void> refreshBalanceRemote() async {
+    final clientFuture = electrumFactory.build();
+
+    final externalScriptHashes = keys.externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+    final changeScriptHashes = keys.changeKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+    final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
+
+    final client = await clientFuture;
+    final responses = await Future.wait(scriptHashes.map((scriptHash) {
+      final scriptHashHex = hex.encode(scriptHash);
+      return client.blockchainScripthashGetBalance(scriptHashHex);
+    }));
+
+    final totalBalance = responses
+        .map((response) => response.confirmed + response.unconfirmed)
+        .fold(0, (p, c) => p + c);
     _balance = totalBalance;
   }
 
@@ -115,7 +135,7 @@ class Wallet {
   String newSeed() {
     // TODO: Randomize and can we move to bytes
     // rather than string (crypto API awkard)?
-    return 'witch collapse practice feed shame open despair creek road again ice least';
+    return 'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal';
   }
 
   /// Generate new wallet from scratch.
@@ -139,7 +159,57 @@ class Wallet {
     return _balance;
   }
 
-  Future<Transaction> send(Address address, int satoshis) async {
-    // TODO
+  Transaction _constructTransaction(Address recipientAddress, BigInt amount) {
+    final feePerInput = BigInt.from(130);
+    final baseFee = BigInt.one;
+
+    // Collect UTXOs required for transaction
+    final utxos = _vault.collectUtxos(amount, baseFee, feePerInput);
+
+    var tx = Transaction();
+    var privateKeys = [];
+
+    // Add inputs
+    for (final utxo in utxos) {
+      // Get private key from store
+      BCHPrivateKey privateKey;
+      if (utxo.externalOutput) {
+        privateKey = keys.externalKeys[utxo.keyIndex];
+      } else {
+        privateKey = keys.changeKeys[utxo.keyIndex];
+      }
+      privateKeys.add(privateKey);
+
+      // Create input
+      final address = privateKey.toAddress(networkType: network);
+      tx = tx.spendFromMap({
+        'satoshis': utxo.outpoint.amount,
+        'txId': utxo.outpoint.transactionId,
+        'outputIndex': utxo.outpoint.vout,
+        'scriptPubKey': P2PKHLockBuilder(address).getScriptPubkey().toHex()
+      });
+    }
+    final changeAddress = keys.getChangeAddress(0);
+    tx = tx.spendTo(recipientAddress, amount);
+    tx = tx.sendChangeTo(changeAddress);
+
+    // Sign transaction
+    privateKeys.asMap().forEach((index, privateKey) {
+      tx.signInput(index, privateKey);
+    });
+
+    return tx;
+  }
+
+  Future<Transaction> sendTransaction(
+      Address recipientAddress, BigInt amount) async {
+    final clientFuture = electrumFactory.build();
+    final transaction = _constructTransaction(recipientAddress, amount);
+
+    final transactionHex = transaction.serialize();
+    final client = await clientFuture;
+
+    await client.blockchainTransactionBroadcast(transactionHex);
+    return transaction;
   }
 }

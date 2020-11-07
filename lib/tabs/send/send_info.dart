@@ -33,7 +33,7 @@ class SendInfo extends StatelessWidget {
       // TODO: Need address validation here. Should attach to entry field
       // somehow to indicate the address is bad.
       wallet
-          .send(Address(address), amount)
+          .sendTransaction(Address(address), BigInt.from(amount))
           .then((transaction) => showReceipt(context, transaction));
     } catch (e) {}
   }
