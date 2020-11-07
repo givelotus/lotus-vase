@@ -2,12 +2,11 @@ import 'package:cashew/viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:cashew/bitcoincash/src/address.dart';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-import 'address_row.dart';
-import 'amount_row.dart';
-import 'button_row.dart';
+import './send_info.dart';
 
 class SendTab extends StatelessWidget {
   SendTab({Key key}) : super(key: key);
@@ -16,7 +15,7 @@ class SendTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<CashewModel>(context, listen: false);
+    final viewModel = Provider.of<CashewModel>(context);
 
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.red,
@@ -26,38 +25,40 @@ class SendTab extends StatelessWidget {
       cutOutSize: 300,
     );
 
-    final _amountController = TextEditingController();
-    final _addressController = TextEditingController();
-
     final qrWidget = QRView(
       key: qrKey,
       onQRViewCreated: (QRViewController controller) {
         controller.scannedDataStream.listen((scanData) {
+          try {
+            // Try parsing
+            // TODO: We need a tryParse function. Exceptions for validity check is
+            // not desirable.
+            Address(scanData);
+            if (scanData != viewModel.sendToAddress) {
+              viewModel.showSendInfoScreen = true;
+            }
+          } catch (e) {
+            print('error parsing address');
+          }
           viewModel.sendToAddress = scanData;
-          _addressController.text = scanData;
         });
       },
       overlay: overlay,
     );
 
-    _amountController.addListener(() {
-      viewModel.sendAmount = int.tryParse(_amountController.text);
-    });
-
-    _addressController.addListener(() {
-      viewModel.sendToAddress = _addressController.text;
-    });
-
-    return CustomScrollView(
-      slivers: [
-        SliverFillRemaining(child: qrWidget),
-        SliverList(
-            delegate: SliverChildListDelegate([
-          AddressRow(_addressController),
-          AmountRow(_amountController),
-          ButtonRow()
-        ]))
-      ],
-    );
+    return (Column(
+        children: viewModel.showSendInfoScreen
+            ? [SendInfo()]
+            : [
+                Expanded(child: qrWidget),
+                Row(children: [
+                  Expanded(
+                      child: ElevatedButton(
+                    autofocus: true,
+                    onPressed: () => viewModel.showSendInfoScreen = true,
+                    child: Text('Enter Address'),
+                  ))
+                ]),
+              ]));
   }
 }
