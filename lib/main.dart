@@ -59,15 +59,16 @@ class _MainPageState extends State<MainPage> {
       return CashewModel(
           '', Wallet('todo path', ElectrumFactory(Uri.parse(electrumUrl))));
     }, builder: (context, child) {
-      final model = Provider.of<CashewModel>(context);
-      final wallet = model.activeWallet;
+      final wallet =
+          Provider.of<CashewModel>(context, listen: false).activeWallet;
       return DefaultTabController(
         length: 3,
         initialIndex: 1,
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           // Show loading bottom bar while electrum hasn't
-          bottomNavigationBar: FutureBuilder(builder: (context, snapshot) {
+          bottomNavigationBar:
+              Consumer<CashewModel>(builder: (context, model, child) {
             if (!model.initialized) {
               return DisconnectedBottomSheet();
             }
@@ -85,9 +86,7 @@ class _MainPageState extends State<MainPage> {
           body: TabBarView(
             children: [
               SettingsTab(wallet: wallet),
-              SendTab(
-                wallet: wallet,
-              ),
+              SendTab(),
               ReceiveTab(wallet: wallet),
             ],
           ),
