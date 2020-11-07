@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:cashew/wallet/wallet.dart';
+import 'package:cashew/bitcoincash/src/address.dart';
 
 class CashewModel with ChangeNotifier {
   String _sendToAddress;
@@ -7,11 +8,12 @@ class CashewModel with ChangeNotifier {
 
   Wallet _activeWallet;
   bool _initialized = false;
+  bool _showSendInfoScreen = false;
 
   CashewModel(sendToAddress, activeWallet) {
     this.sendToAddress = _sendToAddress;
     this.activeWallet = activeWallet;
-    _sendAmount = 0;
+    _sendAmount = null;
     this.activeWallet.initialize().then((value) => initialized = true);
   }
 
@@ -33,6 +35,13 @@ class CashewModel with ChangeNotifier {
 
   set activeWallet(Wallet newValue) {
     _activeWallet = newValue;
+    notifyListeners();
+  }
+
+  bool get showSendInfoScreen => _showSendInfoScreen;
+
+  set showSendInfoScreen(bool newValue) {
+    _showSendInfoScreen = newValue;
     notifyListeners();
   }
 
