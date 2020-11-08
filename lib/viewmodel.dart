@@ -8,7 +8,6 @@ class CashewModel with ChangeNotifier {
 
   Wallet _activeWallet;
   bool _initialized = false;
-  bool _showSendInfoScreen = false;
 
   CashewModel(sendToAddress, activeWallet) {
     this.sendToAddress = _sendToAddress;
@@ -35,13 +34,6 @@ class CashewModel with ChangeNotifier {
 
   set activeWallet(Wallet newValue) {
     _activeWallet = newValue;
-    notifyListeners();
-  }
-
-  bool get showSendInfoScreen => _showSendInfoScreen;
-
-  set showSendInfoScreen(bool newValue) {
-    _showSendInfoScreen = newValue;
     notifyListeners();
   }
 

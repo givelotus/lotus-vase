@@ -8,14 +8,29 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import './send_info.dart';
 
-class SendTab extends StatelessWidget {
+class SendTab extends StatefulWidget {
   SendTab({Key key}) : super(key: key);
 
+  @override
+  _SendTabState createState() => _SendTabState();
+}
+
+class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+
+  ValueNotifier<bool> showSendInfoScreen;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    showSendInfoScreen = ValueNotifier<bool>(false);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<CashewModel>(context);
+    // WE don't want to be redrawing
+    final viewModel = Provider.of<CashewModel>(context, listen: false);
 
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.red,
@@ -35,7 +50,7 @@ class SendTab extends StatelessWidget {
             // not desirable.
             Address(scanData);
             if (scanData != viewModel.sendToAddress) {
-              viewModel.showSendInfoScreen = true;
+              showSendInfoScreen.value = true;
             }
           } catch (e) {
             print('error parsing address');
@@ -46,19 +61,21 @@ class SendTab extends StatelessWidget {
       overlay: overlay,
     );
 
-    return (Column(
-        children: viewModel.showSendInfoScreen
-            ? [SendInfo()]
-            : [
-                Expanded(child: qrWidget),
-                Row(children: [
-                  Expanded(
-                      child: ElevatedButton(
-                    autofocus: true,
-                    onPressed: () => viewModel.showSendInfoScreen = true,
-                    child: Text('Enter Address'),
-                  ))
-                ]),
-              ]));
+    return ValueListenableBuilder(
+        valueListenable: showSendInfoScreen,
+        builder: (context, shouldShowSendInfoScreen, child) => Column(
+            children: shouldShowSendInfoScreen
+                ? [SendInfo(visible: showSendInfoScreen)]
+                : [
+                    Expanded(child: qrWidget),
+                    Row(children: [
+                      Expanded(
+                          child: ElevatedButton(
+                        autofocus: true,
+                        onPressed: () => showSendInfoScreen.value = true,
+                        child: Text('Enter Address'),
+                      ))
+                    ]),
+                  ]));
   }
 }
