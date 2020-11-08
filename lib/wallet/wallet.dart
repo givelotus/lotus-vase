@@ -77,9 +77,6 @@ class Wallet {
     }
   }
 
-  ///
-  // Future<void> _updateUtxo(Int index, String scriptHashHex, )
-
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos() async {
     final clientFuture = electrumFactory.build();
@@ -226,7 +223,7 @@ class Wallet {
           scriptBuilder: unlockBuilder);
     }
 
-    final changeAddress = keys.changeAddresses[0];
+    final changeAddress = keys.changeAddresses[0]; // TODO: Randomize
     tx = tx
         .spendTo(recipientAddress, amount)
         .sendChangeTo(changeAddress)
