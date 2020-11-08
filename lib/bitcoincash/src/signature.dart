@@ -228,7 +228,7 @@ class BCHSignature {
     seq.add(ASN1Integer(_r));
     seq.add(ASN1Integer(_s));
 
-    return seq.encodedBytes;
+    return seq.encode();
   }
 
   /// [ported from moneybutton/bsv]
