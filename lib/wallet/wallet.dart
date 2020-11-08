@@ -9,14 +9,6 @@ import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 
-Uint8List calculateScriptHash(Address address) {
-  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
-  final rawScriptPubkey = scriptPubkey.buffer;
-  final digest = SHA256Digest().process(rawScriptPubkey);
-  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
-  return reversedDigest;
-}
-
 class Wallet {
   Wallet(this.walletPath, this.electrumFactory, {this.network});
 
@@ -37,17 +29,63 @@ class Wallet {
     return BigInt.from(defaultFeePerByte);
   }
 
+  /// Start UTXO listeners.
+  Future<void> startUtxoListeners() async {
+    final clientFuture = electrumFactory.build();
+    final externalScriptHashes = keys.getExternalScriptHashes();
+    final changeScriptHashes = keys.getChangeScriptHashes();
+
+    final client = await clientFuture;
+    var keyIndex = 0;
+    for (final scriptHash in externalScriptHashes) {
+      final hexScriptHash = hex.encode(scriptHash);
+      await client.blockchainScripthashSubscribe(hexScriptHash, (result) async {
+        _vault.removeByKeyIndex(keyIndex, true);
+
+        final unspentList =
+            await client.blockchainScripthashListunspent(hexScriptHash);
+        for (final unspent in unspentList) {
+          final outpoint =
+              Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+
+          final spendable = Utxo(outpoint, true, keyIndex);
+
+          _vault.add(spendable);
+        }
+      });
+      keyIndex += 1;
+    }
+
+    keyIndex = 0;
+    for (final scriptHash in changeScriptHashes) {
+      final hexScriptHash = hex.encode(scriptHash);
+      await client.blockchainScripthashSubscribe(hexScriptHash, (result) async {
+        _vault.removeByKeyIndex(keyIndex, false);
+
+        final unspentList =
+            await client.blockchainScripthashListunspent(hexScriptHash);
+        for (final unspent in unspentList) {
+          final outpoint =
+              Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+
+          final spendable = Utxo(outpoint, false, keyIndex);
+
+          _vault.add(spendable);
+        }
+      });
+      keyIndex += 1;
+    }
+  }
+
+  ///
+  // Future<void> _updateUtxo(Int index, String scriptHashHex, )
+
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos() async {
     final clientFuture = electrumFactory.build();
-    final externalScriptHashes = keys.externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-    final changeScriptHashes = keys.changeKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
+
+    final externalScriptHashes = keys.getExternalScriptHashes();
+    final changeScriptHashes = keys.getChangeScriptHashes();
 
     final client = await clientFuture;
     final externalFuts = externalScriptHashes.map((scriptHash) {
@@ -99,14 +137,9 @@ class Wallet {
   Future<void> refreshBalanceRemote() async {
     final clientFuture = electrumFactory.build();
 
-    final externalScriptHashes = keys.externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-    final changeScriptHashes = keys.changeKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
+    final externalScriptHashes = keys.getExternalScriptHashes();
+    final changeScriptHashes = keys.getChangeScriptHashes();
+
     final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
 
     final client = await clientFuture;

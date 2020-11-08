@@ -1,7 +1,17 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:pointycastle/digests/sha256.dart';
+
+Uint8List calculateScriptHash(Address address) {
+  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
+  final rawScriptPubkey = scriptPubkey.buffer;
+  final digest = SHA256Digest().process(rawScriptPubkey);
+  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
+  return reversedDigest;
+}
 
 class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.sendPort,
@@ -59,6 +69,27 @@ class Keys {
 
   Address getExternalAddress(int index) {
     return externalKeys[index].toAddress(networkType: network);
+  }
+
+  Iterable<Uint8List> getExternalScriptHashesPairs() {
+    return externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+  }
+
+  Iterable<Uint8List> getExternalScriptHashes() {
+    return externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+  }
+
+  Iterable<Uint8List> getChangeScriptHashes() {
+    return externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
   }
 
   Address getChangeAddress(int index) {

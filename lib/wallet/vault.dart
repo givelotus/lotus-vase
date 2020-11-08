@@ -50,6 +50,16 @@ class Vault {
     return popAt(key);
   }
 
+  /// Remove all UTXOs under a specific key.
+  void removeByKeyIndex(int keyIndex, bool externalOutput) {
+    _pool.updateAll((key, utxos) {
+      utxos.removeWhere((utxo) =>
+          (utxo.externalOutput == externalOutput) &&
+          (utxo.keyIndex == keyIndex));
+      return utxos;
+    });
+  }
+
   /// Add a utxo output.
   void add(Utxo utxo) {
     _pool.update(
