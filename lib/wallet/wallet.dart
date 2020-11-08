@@ -32,8 +32,8 @@ class Wallet {
   /// Start UTXO listeners.
   Future<void> startUtxoListeners() async {
     final clientFuture = electrumFactory.build();
-    final externalScriptHashes = keys.getExternalScriptHashes();
-    final changeScriptHashes = keys.getChangeScriptHashes();
+    final externalScriptHashes = keys.externalScriptHashes;
+    final changeScriptHashes = keys.changeScriptHashes;
 
     final client = await clientFuture;
     var keyIndex = 0;
@@ -84,8 +84,8 @@ class Wallet {
   Future<void> updateUtxos() async {
     final clientFuture = electrumFactory.build();
 
-    final externalScriptHashes = keys.getExternalScriptHashes();
-    final changeScriptHashes = keys.getChangeScriptHashes();
+    final externalScriptHashes = keys.externalScriptHashes;
+    final changeScriptHashes = keys.changeScriptHashes;
 
     final client = await clientFuture;
     final externalFuts = externalScriptHashes.map((scriptHash) {
@@ -137,8 +137,8 @@ class Wallet {
   Future<void> refreshBalanceRemote() async {
     final clientFuture = electrumFactory.build();
 
-    final externalScriptHashes = keys.getExternalScriptHashes();
-    final changeScriptHashes = keys.getChangeScriptHashes();
+    final externalScriptHashes = keys.externalScriptHashes;
+    final changeScriptHashes = keys.changeScriptHashes;
 
     final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
 

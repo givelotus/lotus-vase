@@ -71,21 +71,21 @@ class Keys {
     return externalKeys[index].toAddress(networkType: network);
   }
 
-  Iterable<Uint8List> getExternalScriptHashesPairs() {
+  Iterable<Uint8List> get externalScriptHashesPairs {
     return externalKeys.map((privateKey) {
       final address = privateKey.toAddress(networkType: network);
       return calculateScriptHash(address);
     });
   }
 
-  Iterable<Uint8List> getExternalScriptHashes() {
+  Iterable<Uint8List> get externalScriptHashes {
     return externalKeys.map((privateKey) {
       final address = privateKey.toAddress(networkType: network);
       return calculateScriptHash(address);
     });
   }
 
-  Iterable<Uint8List> getChangeScriptHashes() {
+  Iterable<Uint8List> get changeScriptHashes {
     return externalKeys.map((privateKey) {
       final address = privateKey.toAddress(networkType: network);
       return calculateScriptHash(address);
