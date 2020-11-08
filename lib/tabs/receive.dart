@@ -1,4 +1,5 @@
 import 'package:cashew/wallet/wallet.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:cashew/constants.dart';
@@ -21,8 +22,35 @@ class ReceiveTab extends StatelessWidget {
     final manualCard = Card(
       child: Column(
         children: [
-          ListTile(
-            title: const Text('Text Address'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: const Text('Text Address'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Clipboard.setData(
+                      ClipboardData(
+                        text: strAddress,
+                      ),
+                    );
+
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Copied address to Clipboard'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                  child: Text('Copy'),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
