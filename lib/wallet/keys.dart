@@ -46,7 +46,7 @@ void _constructKeys(KeyIsolateInput input) {
   final parentChangeKey = parentKey.deriveChildNumber(1);
   final changeKeys = List<BCHPrivateKey>.generate(input.changeKeyCount,
       (index) => parentChangeKey.deriveChildNumber(index).privateKey);
-  final changeAddresses = externalKeys
+  final changeAddresses = changeKeys
       .map((key) => key.toAddress(networkType: input.network))
       .toList();
   final changeScriptHashes =

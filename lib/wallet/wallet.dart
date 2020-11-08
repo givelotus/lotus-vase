@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:cashew/wallet/vault.dart';
-import 'package:pointycastle/digests/sha256.dart';
 import 'package:convert/convert.dart';
 
 import '../constants.dart';
@@ -34,30 +31,11 @@ class Wallet {
     final clientFuture = electrumFactory.build();
     final externalScriptHashes = keys.externalScriptHashes;
     final changeScriptHashes = keys.changeScriptHashes;
+    final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
 
     final client = await clientFuture;
-    var keyIndex = 0;
-    for (final scriptHash in externalScriptHashes) {
-      final hexScriptHash = hex.encode(scriptHash);
-      await client.blockchainScripthashSubscribe(hexScriptHash, (result) async {
-        _vault.removeByKeyIndex(keyIndex, true);
 
-        final unspentList =
-            await client.blockchainScripthashListunspent(hexScriptHash);
-        for (final unspent in unspentList) {
-          final outpoint =
-              Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
-
-          final spendable = Utxo(outpoint, true, keyIndex);
-
-          _vault.add(spendable);
-        }
-      });
-      keyIndex += 1;
-    }
-
-    keyIndex = 0;
-    for (final scriptHash in changeScriptHashes) {
+    for (final scriptHash in scriptHashes) {
       final hexScriptHash = hex.encode(scriptHash);
 
       // TODO: Set up handler only once
@@ -94,7 +72,6 @@ class Wallet {
           _vault.add(spendable);
         }
       });
-      keyIndex += 1;
     }
   }
 
