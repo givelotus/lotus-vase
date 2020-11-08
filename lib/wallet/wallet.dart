@@ -59,16 +59,37 @@ class Wallet {
     keyIndex = 0;
     for (final scriptHash in changeScriptHashes) {
       final hexScriptHash = hex.encode(scriptHash);
-      await client.blockchainScripthashSubscribe(hexScriptHash, (result) async {
-        _vault.removeByKeyIndex(keyIndex, false);
 
+      // TODO: Set up handler only once
+      await client.blockchainScripthashSubscribe(hexScriptHash, (result) async {
+        // Extract script hash from result (of form [scripthash, status])
+        final scriptHash = result[0];
+
+        // Lookup script hash
+        var isExternal = true;
+        var keyIndex;
+        keyIndex = keys.findIndexByScriptHash(scriptHash, true);
+        if (keyIndex == null) {
+          keyIndex = keys.findIndexByScriptHash(scriptHash, true);
+          isExternal = false;
+        }
+
+        if (keyIndex == null) {
+          throw Exception(
+              'Script hash not found'); // TODO: Handle this gracefully
+        }
+
+        // Remove all UTXOs at that index
+        _vault.removeByKeyIndex(keyIndex, isExternal);
+
+        // Refresh UTXOs
         final unspentList =
             await client.blockchainScripthashListunspent(hexScriptHash);
         for (final unspent in unspentList) {
           final outpoint =
               Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
 
-          final spendable = Utxo(outpoint, false, keyIndex);
+          final spendable = Utxo(outpoint, isExternal, keyIndex);
 
           _vault.add(spendable);
         }

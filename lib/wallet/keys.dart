@@ -72,7 +72,14 @@ class Keys {
   List<Address> changeAddresses;
   List<Uint8List> changeScriptHashes;
 
-  // TODO: Cache addresses
+  /// Find the index of a script hash.
+  int findIndexByScriptHash(Uint8List scriptHash, bool isExternal) {
+    if (isExternal) {
+      return externalScriptHashes.indexOf(scriptHash);
+    } else {
+      return changeScriptHashes.indexOf(scriptHash);
+    }
+  }
 
   static Future<Keys> construct(String seedHex) async {
     final receivePort = ReceivePort();
