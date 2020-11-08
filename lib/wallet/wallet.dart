@@ -201,7 +201,8 @@ class Wallet {
 
     // Sign transaction
     privateKeys.asMap().forEach((index, privateKey) {
-      tx.signInput(index, privateKey);
+      tx.signInput(index, privateKey,
+          sighashType: SighashType.SIGHASH_ALL | SighashType.SIGHASH_FORKID);
     });
 
     return tx;
