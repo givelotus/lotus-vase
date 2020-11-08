@@ -19,36 +19,52 @@ class ReceiveTab extends StatelessWidget {
     final _controller = TextEditingController(text: strAddress);
 
     final manualCard = Card(
-        child: Column(children: [
+      child: Column(
+        children: [
           ListTile(
             title: const Text('Text Address'),
           ),
           Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _controller,
-                readOnly: true,
-                decoration: InputDecoration(border: OutlineInputBorder()),
-              ))
-        ]),
-        elevation: stdElevation);
-
-    final qrCard = Card(
-      child: Column(children: [
-        ListTile(
-          title: const Text('QR Address'),
-        ),
-        QrImage(data: strAddress, version: QrVersions.auto)
-      ]),
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _controller,
+              readOnly: true,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+              ),
+            ),
+          )
+        ],
+      ),
       elevation: stdElevation,
     );
 
-    return Column(children: [
-      Padding(
-        padding: stdPadding,
-        child: qrCard,
+    final qrCard = Card(
+      child: Column(
+        children: [
+          ListTile(
+            title: const Text('QR Address'),
+          ),
+          QrImage(
+            data: strAddress,
+            version: QrVersions.auto,
+          ),
+        ],
       ),
-      Padding(padding: stdPadding, child: manualCard)
-    ]);
+      elevation: stdElevation,
+    );
+
+    return ListView(
+      children: [
+        Padding(
+          padding: stdPadding,
+          child: qrCard,
+        ),
+        Padding(
+          padding: stdPadding,
+          child: manualCard,
+        ),
+      ],
+    );
   }
 }
