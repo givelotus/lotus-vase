@@ -5,6 +5,7 @@ import 'package:cashew/wallet/vault.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:convert/convert.dart';
 
+import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 
@@ -28,13 +29,12 @@ class Wallet {
 
   Vault _vault = Vault([]);
 
-  final BigInt _feePerByte = BigInt.one;
   int _balance = 0;
 
   /// Gets the fees per byte.
-  Future<BigInt> feePerByte() async {
+  Future<BigInt> fetchFeePerByte() async {
     // TODO: Refresh from electrum.
-    return _feePerByte;
+    return BigInt.from(defaultFeePerByte);
   }
 
   /// Fetch UTXOs from electrum then update vault.
@@ -159,9 +159,10 @@ class Wallet {
     return _balance;
   }
 
-  Transaction _constructTransaction(Address recipientAddress, BigInt amount) {
-    final feePerInput = BigInt.from(130);
-    final baseFee = BigInt.one;
+  Transaction _constructTransaction(
+      Address recipientAddress, BigInt amount, BigInt feePerByte) {
+    final baseFee = BigInt.from((10 + outputSize)) * feePerByte;
+    final feePerInput = BigInt.from(outputSize) * feePerByte;
 
     // Collect UTXOs required for transaction
     final utxos = _vault.collectUtxos(amount, baseFee, feePerInput);
@@ -181,17 +182,22 @@ class Wallet {
       privateKeys.add(privateKey);
 
       // Create input
+      final unlockBuilder = P2PKHUnlockBuilder(privateKey.publicKey);
       final address = privateKey.toAddress(networkType: network);
-      tx = tx.spendFromMap({
-        'satoshis': utxo.outpoint.amount,
-        'txId': utxo.outpoint.transactionId,
-        'outputIndex': utxo.outpoint.vout,
-        'scriptPubKey': P2PKHLockBuilder(address).getScriptPubkey().toHex()
-      });
+      var output = TransactionOutput(scriptBuilder: P2PKHLockBuilder(null));
+      output.satoshis = utxo.outpoint.amount;
+      output.transactionId = utxo.outpoint.transactionId;
+      output.outputIndex = utxo.outpoint.vout;
+      output.script = P2PKHLockBuilder(address).getScriptPubkey();
+      tx = tx.spendFromOutput(output, Transaction.NLOCKTIME_MAX_VALUE,
+          scriptBuilder: unlockBuilder);
     }
+
     final changeAddress = keys.getChangeAddress(0);
-    tx = tx.spendTo(recipientAddress, amount);
-    tx = tx.sendChangeTo(changeAddress);
+    tx = tx
+        .spendTo(recipientAddress, amount)
+        .sendChangeTo(changeAddress)
+        .withFeePerKb(1024 * feePerByte.toInt());
 
     // Sign transaction
     privateKeys.asMap().forEach((index, privateKey) {
@@ -204,7 +210,9 @@ class Wallet {
   Future<Transaction> sendTransaction(
       Address recipientAddress, BigInt amount) async {
     final clientFuture = electrumFactory.build();
-    final transaction = _constructTransaction(recipientAddress, amount);
+    final feePerByte = await fetchFeePerByte();
+    final transaction =
+        _constructTransaction(recipientAddress, amount, feePerByte);
 
     final transactionHex = transaction.serialize();
     final client = await clientFuture;
