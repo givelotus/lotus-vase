@@ -7,3 +7,8 @@ const electrumUrl = 'ws://51.79.81.158:50003';
 const inputSize = 148;
 const outputSize = 34;
 const defaultFeePerByte = 1.5;
+
+const copiedAd = SnackBar(
+  content: Text('Copied address to Clipboard'),
+  duration: Duration(seconds: 1),
+);

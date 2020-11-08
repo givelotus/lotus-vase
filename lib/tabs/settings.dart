@@ -1,6 +1,7 @@
 import 'package:cashew/constants.dart';
 import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SettingsTab extends StatelessWidget {
   SettingsTab({Key key, this.wallet}) : super(key: key);
@@ -33,23 +34,47 @@ class SettingsTab extends StatelessWidget {
 
     void showSeedDialog() {
       showDialog(
-          context: context,
-          builder: (context) {
-            return SimpleDialog(
-              title: const Text('Seed Phrase'),
-              children: <Widget>[
-                Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      maxLines: null,
-                      minLines: 2,
-                      controller: _controller,
-                      readOnly: true,
-                      decoration: InputDecoration(border: OutlineInputBorder()),
-                    ))
-              ],
-            );
-          });
+        context: context,
+        builder: (dialogContext) {
+          return SimpleDialog(
+            title: const Text('Seed Phrase'),
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  maxLines: null,
+                  minLines: 2,
+                  controller: _controller,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                ),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Clipboard.setData(
+                      ClipboardData(
+                        text: _controller.text,
+                      ),
+                    );
+                    Navigator.pop(dialogContext);
+                    Scaffold.of(context).showSnackBar(
+                      copiedAd,
+                    );
+                  },
+                  child: Text('Copy'),
+                ),
+              ),
+            ],
+          );
+        },
+      );
     }
 
     final historyCard = Card(
@@ -65,18 +90,29 @@ class SettingsTab extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(child: balanceCard, padding: stdPadding),
-        Expanded(child: Padding(child: historyCard, padding: stdPadding)),
+        Padding(
+          child: balanceCard,
+          padding: stdPadding,
+        ),
+        Expanded(
+          child: Padding(
+            child: historyCard,
+            padding: stdPadding,
+          ),
+        ),
         Row(
           children: [
             Expanded(
-                child: Padding(
-                    padding: stdPadding,
-                    child: RaisedButton(
-                        color: Colors.blue,
-                        elevation: stdElevation,
-                        onPressed: () => showSeedDialog(),
-                        child: Text('Show Seed'))))
+              child: Padding(
+                padding: stdPadding,
+                child: RaisedButton(
+                  color: Colors.blue,
+                  elevation: stdElevation,
+                  onPressed: () => showSeedDialog(),
+                  child: Text('Show Seed'),
+                ),
+              ),
+            )
           ],
         )
       ],
