@@ -226,7 +226,7 @@ class Wallet {
           scriptBuilder: unlockBuilder);
     }
 
-    final changeAddress = keys.getChangeAddress(0);
+    final changeAddress = keys.changeAddresses[0];
     tx = tx
         .spendTo(recipientAddress, amount)
         .sendChangeTo(changeAddress)

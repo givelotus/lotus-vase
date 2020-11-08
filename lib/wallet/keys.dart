@@ -31,23 +31,48 @@ void _constructKeys(KeyIsolateInput input) {
 
   // TODO: Do this with child numbers
   final parentKey = rootKey.deriveChildKey("m/44'/145'");
+
+  // Generate external keys, addresses and script hashes
   final parentExternalKey = parentKey.deriveChildNumber(0);
+  final externalKeys = List<BCHPrivateKey>.generate(input.externalKeyCount,
+      (index) => parentExternalKey.deriveChildNumber(index).privateKey);
+  final externalAddresses = externalKeys
+      .map((key) => key.toAddress(networkType: input.network))
+      .toList();
+  final externalScriptHashes =
+      externalAddresses.map((address) => calculateScriptHash(address)).toList();
+
+  // Generate change keys, addresses and script hashes
   final parentChangeKey = parentKey.deriveChildNumber(1);
   final changeKeys = List<BCHPrivateKey>.generate(input.changeKeyCount,
       (index) => parentChangeKey.deriveChildNumber(index).privateKey);
-  final externalKeys = List<BCHPrivateKey>.generate(input.externalKeyCount,
-      (index) => parentExternalKey.deriveChildNumber(index).privateKey);
-  final keys = Keys(externalKeys, changeKeys);
+  final changeAddresses = externalKeys
+      .map((key) => key.toAddress(networkType: input.network))
+      .toList();
+  final changeScriptHashes =
+      changeAddresses.map((address) => calculateScriptHash(address)).toList();
+
+  final keys = Keys(externalKeys, changeKeys, externalAddresses,
+      changeAddresses, externalScriptHashes, changeScriptHashes);
 
   input.sendPort.send(keys);
 }
 
 class Keys {
-  Keys(this.externalKeys, this.changeKeys, {this.network = NetworkType.TEST});
-  List<BCHPrivateKey> externalKeys;
-  List<BCHPrivateKey> changeKeys;
+  Keys(this.externalKeys, this.changeKeys, this.externalAddresses,
+      this.changeAddresses, this.externalScriptHashes, this.changeScriptHashes,
+      {this.network = NetworkType.TEST});
   NetworkType network;
-  // TODO: Cache addresses too?
+
+  List<BCHPrivateKey> externalKeys;
+  List<Address> externalAddresses;
+  List<Uint8List> externalScriptHashes;
+
+  List<BCHPrivateKey> changeKeys;
+  List<Address> changeAddresses;
+  List<Uint8List> changeScriptHashes;
+
+  // TODO: Cache addresses
 
   static Future<Keys> construct(String seedHex) async {
     final receivePort = ReceivePort();
@@ -65,34 +90,5 @@ class Keys {
         _constructKeys, KeyIsolateInput(seedHex, receivePort.sendPort));
 
     return await completer.future;
-  }
-
-  Address getExternalAddress(int index) {
-    return externalKeys[index].toAddress(networkType: network);
-  }
-
-  Iterable<Uint8List> get externalScriptHashesPairs {
-    return externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-  }
-
-  Iterable<Uint8List> get externalScriptHashes {
-    return externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-  }
-
-  Iterable<Uint8List> get changeScriptHashes {
-    return externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-  }
-
-  Address getChangeAddress(int index) {
-    return changeKeys[index].toAddress(networkType: network);
   }
 }

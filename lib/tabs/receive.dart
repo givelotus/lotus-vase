@@ -15,7 +15,7 @@ class ReceiveTab extends StatelessWidget {
       return Container();
     }
 
-    final address = wallet.keys.getExternalAddress(0);
+    final address = wallet.keys.externalAddresses[0];
     final strAddress = address.toCashAddress();
     final _controller = TextEditingController(text: strAddress);
 
