@@ -19,7 +19,9 @@ Future showReceipt(BuildContext context, Transaction transaction) {
 }
 
 class SendInfo extends StatelessWidget {
-  SendInfo();
+  final ValueNotifier<bool> visible;
+
+  SendInfo({this.visible});
 
   void sendButtonClicked(
       BuildContext context, Wallet wallet, String address, int amount) {
@@ -63,6 +65,17 @@ class SendInfo extends StatelessWidget {
             children: [
               Expanded(
                   child: TextField(
+                autocorrect: false,
+                enableInteractiveSelection: true,
+                autofocus: true,
+                toolbarOptions: ToolbarOptions(
+                  paste: true,
+                  cut: true,
+                  copy: true,
+                  selectAll: true,
+                ),
+                readOnly: false,
+                focusNode: FocusNode(),
                 controller: addressController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
@@ -77,6 +90,16 @@ class SendInfo extends StatelessWidget {
                 padding: stdPadding,
                 child: TextField(
                   autocorrect: false,
+                  enableInteractiveSelection: true,
+                  autofocus: false,
+                  toolbarOptions: ToolbarOptions(
+                    paste: true,
+                    cut: true,
+                    copy: true,
+                    selectAll: true,
+                  ),
+                  readOnly: false,
+                  focusNode: FocusNode(),
                   controller: amountController,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
@@ -95,7 +118,7 @@ class SendInfo extends StatelessWidget {
                       // specifically for this component
                       // Rather than wiring directly to the global viewmodel
                       onPressed: () {
-                        viewModel.showSendInfoScreen = false;
+                        visible.value = false;
                         viewModel.sendAmount = null;
                       },
                       child: Text('Cancel'),
@@ -110,7 +133,7 @@ class SendInfo extends StatelessWidget {
                       onPressed: () {
                         sendButtonClicked(context, viewModel.activeWallet,
                             viewModel.sendToAddress, viewModel.sendAmount);
-                        viewModel.showSendInfoScreen = false;
+                        visible.value = false;
                         viewModel.sendAmount = null;
                       },
                       child: Text('Send'),
