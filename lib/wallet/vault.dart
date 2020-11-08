@@ -23,7 +23,7 @@ class Utxo {
 /// information required to spend them.
 class Vault {
   Vault(Iterable<Utxo> utxos) {
-    Map zipped = Map();
+    var zipped = {};
     for (final utxo in utxos) {
       zipped.update(
         utxo.outpoint.amount,
@@ -90,6 +90,10 @@ class Vault {
     }
   }
 
+  BigInt calculateBalance() {
+    return _pool.keys.fold(BigInt.zero, (p, c) => p + c);
+  }
+
   /// Collect enough utxos to cover the [amount] and any additional fees.
   ///
   /// The [baseFee] is the fee for the desired transaction ignoring inputs.
@@ -98,7 +102,7 @@ class Vault {
     // Create an intermediate pool which is commit on success
     var tempVault = this;
 
-    var retUtxos = [];
+    var retUtxos = <Utxo>[];
     var remainingAmount = amount + baseFee;
 
     while (true) {

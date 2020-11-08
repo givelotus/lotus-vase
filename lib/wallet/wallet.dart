@@ -5,6 +5,7 @@ import 'package:cashew/wallet/vault.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:convert/convert.dart';
 
+import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 
@@ -12,7 +13,7 @@ Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
   final rawScriptPubkey = scriptPubkey.buffer;
   final digest = SHA256Digest().process(rawScriptPubkey);
-  final reversedDigest = digest.reversed.toList() as Uint8List;
+  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
   return reversedDigest;
 }
 
@@ -28,13 +29,12 @@ class Wallet {
 
   Vault _vault = Vault([]);
 
-  final BigInt _feePerByte = BigInt.one;
   int _balance = 0;
 
   /// Gets the fees per byte.
-  Future<BigInt> feePerByte() async {
+  Future<BigInt> fetchFeePerByte() async {
     // TODO: Refresh from electrum.
-    return _feePerByte;
+    return BigInt.from(defaultFeePerByte);
   }
 
   /// Fetch UTXOs from electrum then update vault.
@@ -90,14 +90,34 @@ class Wallet {
     }
   }
 
-  Future<void> refreshBalance() async {
-    final client = await electrumFactory.build();
-    const exampleScriptHash =
-        '8b01df4e368ea28f8dc0423bcf7a4923e3a12d307c875e47a0cfbf90b5c39161';
-    final response =
-        await client.blockchainScripthashGetBalance(exampleScriptHash);
+  /// Use locally stored UTXOs to refresh balance.
+  void refreshBalanceLocal() {
+    _balance = _vault.calculateBalance().toInt();
+  }
 
-    final totalBalance = response.confirmed + response.unconfirmed;
+  /// Use electrum to refresh balance.
+  Future<void> refreshBalanceRemote() async {
+    final clientFuture = electrumFactory.build();
+
+    final externalScriptHashes = keys.externalKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+    final changeScriptHashes = keys.changeKeys.map((privateKey) {
+      final address = privateKey.toAddress(networkType: network);
+      return calculateScriptHash(address);
+    });
+    final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
+
+    final client = await clientFuture;
+    final responses = await Future.wait(scriptHashes.map((scriptHash) {
+      final scriptHashHex = hex.encode(scriptHash);
+      return client.blockchainScripthashGetBalance(scriptHashHex);
+    }));
+
+    final totalBalance = responses
+        .map((response) => response.confirmed + response.unconfirmed)
+        .fold(0, (p, c) => p + c);
     _balance = totalBalance;
   }
 
@@ -115,7 +135,7 @@ class Wallet {
   String newSeed() {
     // TODO: Randomize and can we move to bytes
     // rather than string (crypto API awkard)?
-    return 'witch collapse practice feed shame open despair creek road again ice least';
+    return 'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal';
   }
 
   /// Generate new wallet from scratch.
@@ -139,7 +159,66 @@ class Wallet {
     return _balance;
   }
 
-  Future<Transaction> send(Address address, int satoshis) async {
-    // TODO
+  Transaction _constructTransaction(
+      Address recipientAddress, BigInt amount, BigInt feePerByte) {
+    final baseFee = BigInt.from((10 + outputSize)) * feePerByte;
+    final feePerInput = BigInt.from(outputSize) * feePerByte;
+
+    // Collect UTXOs required for transaction
+    final utxos = _vault.collectUtxos(amount, baseFee, feePerInput);
+
+    var tx = Transaction();
+    var privateKeys = [];
+
+    // Add inputs
+    for (final utxo in utxos) {
+      // Get private key from store
+      BCHPrivateKey privateKey;
+      if (utxo.externalOutput) {
+        privateKey = keys.externalKeys[utxo.keyIndex];
+      } else {
+        privateKey = keys.changeKeys[utxo.keyIndex];
+      }
+      privateKeys.add(privateKey);
+
+      // Create input
+      final unlockBuilder = P2PKHUnlockBuilder(privateKey.publicKey);
+      final address = privateKey.toAddress(networkType: network);
+      var output = TransactionOutput(scriptBuilder: P2PKHLockBuilder(null));
+      output.satoshis = utxo.outpoint.amount;
+      output.transactionId = utxo.outpoint.transactionId;
+      output.outputIndex = utxo.outpoint.vout;
+      output.script = P2PKHLockBuilder(address).getScriptPubkey();
+      tx = tx.spendFromOutput(output, Transaction.NLOCKTIME_MAX_VALUE,
+          scriptBuilder: unlockBuilder);
+    }
+
+    final changeAddress = keys.getChangeAddress(0);
+    tx = tx
+        .spendTo(recipientAddress, amount)
+        .sendChangeTo(changeAddress)
+        .withFeePerKb(1024 * feePerByte.toInt());
+
+    // Sign transaction
+    privateKeys.asMap().forEach((index, privateKey) {
+      tx.signInput(index, privateKey,
+          sighashType: SighashType.SIGHASH_ALL | SighashType.SIGHASH_FORKID);
+    });
+
+    return tx;
+  }
+
+  Future<Transaction> sendTransaction(
+      Address recipientAddress, BigInt amount) async {
+    final clientFuture = electrumFactory.build();
+    final feePerByte = await fetchFeePerByte();
+    final transaction =
+        _constructTransaction(recipientAddress, amount, feePerByte);
+
+    final transactionHex = transaction.serialize();
+    final client = await clientFuture;
+
+    await client.blockchainTransactionBroadcast(transactionHex);
+    return transaction;
   }
 }

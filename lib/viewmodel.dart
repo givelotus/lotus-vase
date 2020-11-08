@@ -13,7 +13,12 @@ class CashewModel with ChangeNotifier {
     this.sendToAddress = _sendToAddress;
     this.activeWallet = activeWallet;
     _sendAmount = null;
-    this.activeWallet.initialize().then((value) => initialized = true);
+    this
+        .activeWallet
+        .initialize()
+        .then((value) => initialized = true)
+        .then((value) => this.activeWallet.updateUtxos())
+        .then((value) => this.activeWallet.refreshBalanceLocal());
   }
 
   set initialized(bool newValue) {
