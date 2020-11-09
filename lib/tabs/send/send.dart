@@ -67,6 +67,37 @@ class _SendTabState extends State<SendTab> {
             children: shouldShowSendInfoScreen
                 ? [SendInfo(visible: showSendInfoScreen)]
                 : [
+                    Card(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ListTile(
+                              title: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: 'Balance',
+                                      style: DefaultTextStyle.of(context).style,
+                                    ),
+                                    TextSpan(
+                                      text: ' in satoshis',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              '${viewModel.activeWallet.balanceSatoshis()}',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Expanded(child: qrWidget),
                     Row(children: [
                       Expanded(

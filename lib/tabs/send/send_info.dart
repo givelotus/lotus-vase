@@ -58,7 +58,23 @@ class SendInfo extends StatelessWidget {
       viewModel.sendAmount = int.tryParse(amountController.text);
     });
 
-    return Column(children: [
+    return Column(
+      children: [
+        Card(
+          child: Row(
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: const Text('Balance'),
+                  subtitle: const Text('in satoshis'),
+                ),
+              ),
+              Expanded(
+                child: Text('${viewModel.activeWallet.balanceSatoshis()}'),
+              ),
+            ],
+          ),
+        ),
       Padding(
           padding: stdPadding,
           child: Row(
