@@ -43,12 +43,17 @@ class ReceiveTab extends StatelessWidget {
       elevation: stdElevation,
     );
 
-    return Column(children: [
+    return ListView(
+      children: [
       Padding(
         padding: stdPadding,
         child: qrCard,
       ),
-      Padding(padding: stdPadding, child: manualCard)
-    ]);
+        Padding(
+          padding: stdPadding,
+          child: manualCard,
+        ),
+      ],
+    );
   }
 }
