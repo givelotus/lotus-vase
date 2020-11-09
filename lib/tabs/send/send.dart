@@ -90,10 +90,22 @@ class _SendTabState extends State<SendTab> {
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: Text(
-                              '${viewModel.activeWallet.balanceSatoshis()}',
-                            ),
+                          Consumer<CashewModel>(
+                            builder: (context, model, child) {
+                              Widget result;
+                              if (model.initialized) {
+                                result = Expanded(
+                                  child: Text(
+                                    '${model.activeWallet.balanceSatoshis()}',
+                                  ),
+                                );
+                              } else {
+                                result = Flexible(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              return result;
+                            },
                           ),
                         ],
                       ),
