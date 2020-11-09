@@ -34,21 +34,21 @@ class SettingsTab extends StatelessWidget {
 
     void showSeedDialog() {
       showDialog(
-          context: context,
+        context: context,
         builder: (dialogContext) {
-            return SimpleDialog(
-              title: const Text('Seed Phrase'),
-              children: <Widget>[
+          return SimpleDialog(
+            title: const Text('Seed Phrase'),
+            children: <Widget>[
               Row(
                 children: [
                   Expanded(
                     child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      maxLines: null,
-                      minLines: 2,
-                      controller: _controller,
-                      readOnly: true,
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        maxLines: null,
+                        minLines: 2,
+                        controller: _controller,
+                        readOnly: true,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(),
                         ),
@@ -77,8 +77,8 @@ class SettingsTab extends StatelessWidget {
                   ),
                 ],
               ),
-              ],
-            );
+            ],
+          );
         },
       );
     }
@@ -96,18 +96,29 @@ class SettingsTab extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(child: balanceCard, padding: stdPadding),
-        Expanded(child: Padding(child: historyCard, padding: stdPadding)),
+        Padding(
+          child: balanceCard,
+          padding: stdPadding,
+        ),
+        Expanded(
+          child: Padding(
+            child: historyCard,
+            padding: stdPadding,
+          ),
+        ),
         Row(
           children: [
             Expanded(
-                child: Padding(
-                    padding: stdPadding,
-                    child: RaisedButton(
-                        color: Colors.blue,
-                        elevation: stdElevation,
-                        onPressed: () => showSeedDialog(),
-                        child: Text('Show Seed'))))
+              child: Padding(
+                padding: stdPadding,
+                child: RaisedButton(
+                  color: Colors.blue,
+                  elevation: stdElevation,
+                  onPressed: () => showSeedDialog(),
+                  child: Text('Show Seed'),
+                ),
+              ),
+            )
           ],
         )
       ],

@@ -32,9 +32,12 @@ class DisconnectedBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: Colors.redAccent,
-        height: 25,
-        child: Center(child: Text('Connecting to network...')));
+      color: Colors.redAccent,
+      height: 25,
+      child: Center(
+        child: Text('Connecting to network...'),
+      ),
+    );
   }
 }
 
@@ -55,43 +58,59 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create: (BuildContext context) {
-      return CashewModel(
-          '', Wallet('todo path', ElectrumFactory(Uri.parse(electrumUrl))));
-    }, builder: (context, child) {
-      final wallet =
-          Provider.of<CashewModel>(context, listen: false).activeWallet;
-      return DefaultTabController(
-        length: 3,
-        initialIndex: 1,
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          // Show loading bottom bar while electrum hasn't
-          bottomNavigationBar:
-              Consumer<CashewModel>(builder: (context, model, child) {
-            if (!model.initialized) {
-              return DisconnectedBottomSheet();
-            }
-            return Container(height: 0);
-          }),
-          appBar: AppBar(
-            title: TabBar(
-              tabs: [
-                Tab(icon: Text('Settings')),
-                Tab(icon: Text('Send')),
-                Tab(icon: Text('Receive')),
+    return ChangeNotifierProvider(
+      create: (BuildContext context) {
+        return CashewModel(
+          '',
+          Wallet(
+            'todo path',
+            ElectrumFactory(Uri.parse(electrumUrl)),
+          ),
+        );
+      },
+      builder: (context, child) {
+        final wallet = Provider.of<CashewModel>(
+          context,
+          listen: false,
+        ).activeWallet;
+
+        return DefaultTabController(
+          length: 3,
+          initialIndex: 1,
+          child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            // Show loading bottom bar while electrum hasn't
+            bottomNavigationBar: Consumer<CashewModel>(
+              builder: (
+                context,
+                model,
+                child,
+              ) {
+                if (!model.initialized) {
+                  return DisconnectedBottomSheet();
+                }
+                return Container(height: 0);
+              },
+            ),
+            appBar: AppBar(
+              title: TabBar(
+                tabs: [
+                  Tab(icon: Text('Settings')),
+                  Tab(icon: Text('Send')),
+                  Tab(icon: Text('Receive')),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              children: [
+                SettingsTab(wallet: wallet),
+                SendTab(),
+                ReceiveTab(wallet: wallet),
               ],
             ),
           ),
-          body: TabBarView(
-            children: [
-              SettingsTab(wallet: wallet),
-              SendTab(),
-              ReceiveTab(wallet: wallet),
-            ],
-          ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }
