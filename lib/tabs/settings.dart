@@ -1,6 +1,7 @@
 import 'package:cashew/constants.dart';
 import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class SettingsTab extends StatelessWidget {
   SettingsTab({Key key, this.wallet}) : super(key: key);
@@ -34,22 +35,55 @@ class SettingsTab extends StatelessWidget {
     void showSeedDialog() {
       showDialog(
           context: context,
-          builder: (context) {
+        builder: (dialogContext) {
             return SimpleDialog(
               title: const Text('Seed Phrase'),
               children: <Widget>[
-                Padding(
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
                       maxLines: null,
                       minLines: 2,
                       controller: _controller,
                       readOnly: true,
-                      decoration: InputDecoration(border: OutlineInputBorder()),
-                    ))
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 60.0,
+                    padding: const EdgeInsets.only(
+                      right: 16.0,
+                    ),
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(
+                            text: _controller.text,
+                          ),
+                        );
+                        Navigator.pop(dialogContext);
+                        Scaffold.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Copied address to Clipboard'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      child: Icon(Icons.copy),
+                    ),
+                  ),
+                ],
+              ),
               ],
             );
-          });
+        },
+      );
     }
 
     final historyCard = Card(
