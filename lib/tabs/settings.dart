@@ -69,10 +69,7 @@ class SettingsTab extends StatelessWidget {
                         );
                         Navigator.pop(dialogContext);
                         Scaffold.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Copied address to Clipboard'),
-                            duration: Duration(seconds: 1),
-                          ),
+                          copiedAd,
                         );
                       },
                       child: Icon(Icons.copy),
