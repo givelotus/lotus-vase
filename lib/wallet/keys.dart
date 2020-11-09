@@ -25,6 +25,21 @@ class KeyIsolateInput {
   int externalKeyCount;
 }
 
+class KeyInfo {
+  BCHPrivateKey key;
+  Address address;
+  Uint8List scriptHash;
+  bool isChange;
+
+  KeyInfo(
+      {this.key,
+      this.isChange = false,
+      NetworkType network = NetworkType.TEST}) {
+    address = key.toAddress(networkType: network);
+    scriptHash = calculateScriptHash(address);
+  }
+}
+
 void _constructKeys(KeyIsolateInput input) {
   final seedHex = Mnemonic().toSeedHex(input.seed);
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
@@ -34,51 +49,37 @@ void _constructKeys(KeyIsolateInput input) {
 
   // Generate external keys, addresses and script hashes
   final parentExternalKey = parentKey.deriveChildNumber(0);
-  final externalKeys = List<BCHPrivateKey>.generate(input.externalKeyCount,
-      (index) => parentExternalKey.deriveChildNumber(index).privateKey);
-  final externalAddresses = externalKeys
-      .map((key) => key.toAddress(networkType: input.network))
-      .toList();
-  final externalScriptHashes =
-      externalAddresses.map((address) => calculateScriptHash(address)).toList();
 
-  // Generate change keys, addresses and script hashes
+  final externalKeys = List<KeyInfo>.generate(
+      input.externalKeyCount,
+      (index) => KeyInfo(
+          key: parentExternalKey.deriveChildNumber(index).privateKey,
+          network: input.network));
+
   final parentChangeKey = parentKey.deriveChildNumber(1);
-  final changeKeys = List<BCHPrivateKey>.generate(input.changeKeyCount,
-      (index) => parentChangeKey.deriveChildNumber(index).privateKey);
-  final changeAddresses = changeKeys
-      .map((key) => key.toAddress(networkType: input.network))
-      .toList();
-  final changeScriptHashes =
-      changeAddresses.map((address) => calculateScriptHash(address)).toList();
+  final changeKeys = List<KeyInfo>.generate(
+      input.externalKeyCount,
+      (index) => KeyInfo(
+            key: parentChangeKey.deriveChildNumber(index).privateKey,
+            isChange: true,
+            network: input.network,
+          ));
 
-  final keys = Keys(externalKeys, changeKeys, externalAddresses,
-      changeAddresses, externalScriptHashes, changeScriptHashes);
-
-  input.sendPort.send(keys);
+  input.sendPort.send(Keys(externalKeys.followedBy(changeKeys).toList(),
+      network: input.network));
 }
 
 class Keys {
-  Keys(this.externalKeys, this.changeKeys, this.externalAddresses,
-      this.changeAddresses, this.externalScriptHashes, this.changeScriptHashes,
-      {this.network = NetworkType.TEST});
+  Keys(this.keys, {this.network = NetworkType.TEST});
   NetworkType network;
 
-  List<BCHPrivateKey> externalKeys;
-  List<Address> externalAddresses;
-  List<Uint8List> externalScriptHashes;
-
-  List<BCHPrivateKey> changeKeys;
-  List<Address> changeAddresses;
-  List<Uint8List> changeScriptHashes;
+  List<KeyInfo> keys;
 
   /// Find the index of a script hash.
-  int findIndexByScriptHash(Uint8List scriptHash, bool isExternal) {
-    if (isExternal) {
-      return externalScriptHashes.indexOf(scriptHash);
-    } else {
-      return changeScriptHashes.indexOf(scriptHash);
-    }
+  KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
+    final keyInfo =
+        keys.firstWhere((keyInfo) => scriptHash == keyInfo.scriptHash);
+    return keyInfo;
   }
 
   static Future<Keys> construct(String seedHex) async {
