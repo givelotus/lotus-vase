@@ -50,7 +50,10 @@ class ReceiveTab extends StatelessWidget {
                       );
 
                       Scaffold.of(context).showSnackBar(
-                        copiedAd,
+                        SnackBar(
+                          content: Text('Copied address to Clipboard'),
+                          duration: Duration(seconds: 1),
+                        ),
                       );
                     },
                     child: Icon(Icons.copy),
