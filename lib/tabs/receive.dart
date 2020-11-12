@@ -75,17 +75,21 @@ class ReceiveTab extends StatelessWidget {
       elevation: stdElevation,
     );
 
-    return ListView(
-      children: [
-      Padding(
-        padding: stdPadding,
-        child: qrCard,
-      ),
-        Padding(
-          padding: stdPadding,
-          child: manualCard,
+    return Scaffold(
+      body: SafeArea(
+        child: ListView(
+          children: [
+            Padding(
+              padding: stdPadding,
+              child: qrCard,
+            ),
+            Padding(
+              padding: stdPadding,
+              child: manualCard,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

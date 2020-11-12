@@ -58,123 +58,127 @@ class SendInfo extends StatelessWidget {
       viewModel.sendAmount = int.tryParse(amountController.text);
     });
 
-    return Column(
-      children: [
-        Card(
-          child: Row(
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: const Text('Balance'),
-                  subtitle: const Text('in satoshis'),
-                ),
-              ),
-              Expanded(
-                child: Text('${viewModel.activeWallet.balanceSatoshis()}'),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: stdPadding,
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  autocorrect: false,
-                  enableInteractiveSelection: true,
-                  autofocus: true,
-                  toolbarOptions: ToolbarOptions(
-                    paste: true,
-                    cut: true,
-                    copy: true,
-                    selectAll: true,
-                  ),
-                  readOnly: false,
-                  focusNode: FocusNode(),
-                  controller: addressController,
-                  keyboardType: TextInputType.text,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter recipient address',
-                  ),
-                ),
-              )
-            ],
-          ),
-        ),
-        Row(children: [
-          Expanded(
-            child: Padding(
-              padding: stdPadding,
-              child: TextField(
-                autocorrect: false,
-                enableInteractiveSelection: true,
-                autofocus: false,
-                toolbarOptions: ToolbarOptions(
-                  paste: true,
-                  cut: true,
-                  copy: true,
-                  selectAll: true,
-                ),
-                readOnly: false,
-                focusNode: FocusNode(),
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  suffixText: 'sats',
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter amount',
-                ),
-              ),
-            ),
-          ),
-          // TODO: This needs to actually do something
-          FlatButton(
-            onPressed: () {},
-            child: Text('Max'),
-          )
-        ]),
-        Row(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
           children: [
-            Expanded(
-              child: Consumer<CashewModel>(
-                builder: (context, viewModel, child) => ElevatedButton(
-                  // TODO: we should probably have ValueNotifiable props
-                  // specifically for this component
-                  // Rather than wiring directly to the global viewmodel
-                  onPressed: () {
-                    visible.value = false;
-                    viewModel.sendAmount = null;
-                  },
-                  child: Text('Cancel'),
-                ),
+            Card(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      title: const Text('Balance'),
+                      subtitle: const Text('in satoshis'),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text('${viewModel.activeWallet.balanceSatoshis()}'),
+                  ),
+                ],
               ),
             ),
-            Expanded(
-              child: Consumer<CashewModel>(
-                builder: (context, viewModel, child) => ElevatedButton(
-                  autofocus: true,
-                  // TODO: we should probably have ValueNotifiable props
-                  // specifically for this component
-                  // Rather than wiring directly to the global viewmodel
-                  onPressed: () {
-                    sendButtonClicked(
-                      context,
-                      viewModel.activeWallet,
-                      viewModel.sendToAddress,
-                      viewModel.sendAmount,
-                    );
-                    visible.value = false;
-                    viewModel.sendAmount = null;
-                  },
-                  child: Text('Send'),
+            Padding(
+              padding: stdPadding,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      autocorrect: false,
+                      enableInteractiveSelection: true,
+                      autofocus: true,
+                      toolbarOptions: ToolbarOptions(
+                        paste: true,
+                        cut: true,
+                        copy: true,
+                        selectAll: true,
+                      ),
+                      readOnly: false,
+                      focusNode: FocusNode(),
+                      controller: addressController,
+                      keyboardType: TextInputType.text,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter recipient address',
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Row(children: [
+              Expanded(
+                child: Padding(
+                  padding: stdPadding,
+                  child: TextField(
+                    autocorrect: false,
+                    enableInteractiveSelection: true,
+                    autofocus: false,
+                    toolbarOptions: ToolbarOptions(
+                      paste: true,
+                      cut: true,
+                      copy: true,
+                      selectAll: true,
+                    ),
+                    readOnly: false,
+                    focusNode: FocusNode(),
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      suffixText: 'sats',
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter amount',
+                    ),
+                  ),
                 ),
               ),
+              // TODO: This needs to actually do something
+              FlatButton(
+                onPressed: () {},
+                child: Text('Max'),
+              )
+            ]),
+            Row(
+              children: [
+                Expanded(
+                  child: Consumer<CashewModel>(
+                    builder: (context, viewModel, child) => ElevatedButton(
+                      // TODO: we should probably have ValueNotifiable props
+                      // specifically for this component
+                      // Rather than wiring directly to the global viewmodel
+                      onPressed: () {
+                        visible.value = false;
+                        viewModel.sendAmount = null;
+                      },
+                      child: Text('Cancel'),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Consumer<CashewModel>(
+                    builder: (context, viewModel, child) => ElevatedButton(
+                      autofocus: true,
+                      // TODO: we should probably have ValueNotifiable props
+                      // specifically for this component
+                      // Rather than wiring directly to the global viewmodel
+                      onPressed: () {
+                        sendButtonClicked(
+                          context,
+                          viewModel.activeWallet,
+                          viewModel.sendToAddress,
+                          viewModel.sendAmount,
+                        );
+                        visible.value = false;
+                        viewModel.sendAmount = null;
+                      },
+                      child: Text('Send'),
+                    ),
+                  ),
+                )
+              ],
             )
           ],
-        )
-      ],
+        ),
+      ),
     );
   }
 }
