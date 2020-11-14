@@ -1,21 +1,10 @@
-import 'dart:typed_data';
-
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:cashew/wallet/vault.dart';
-import 'package:pointycastle/digests/sha256.dart';
 import 'package:convert/convert.dart';
 
 import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
-
-Uint8List calculateScriptHash(Address address) {
-  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
-  final rawScriptPubkey = scriptPubkey.buffer;
-  final digest = SHA256Digest().process(rawScriptPubkey);
-  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
-  return reversedDigest;
-}
 
 class Wallet {
   Wallet(this.walletPath, this.electrumFactory, {this.network});
@@ -27,7 +16,7 @@ class Wallet {
   Keys keys;
   String bip39Seed;
 
-  Vault _vault = Vault([]);
+  final Vault _vault = Vault([]);
 
   int _balance = 0;
 
@@ -37,56 +26,71 @@ class Wallet {
     return BigInt.from(defaultFeePerByte);
   }
 
+  void addressUpdated(result) async {
+    // Extract script hash from result (of form [scripthash, status])
+    final scriptHash = result[0];
+    final clientFuture = electrumFactory.build();
+    final client = await clientFuture;
+
+    // Lookup script hash
+    var isExternal = true;
+    var keyIndex;
+    keyIndex = keys.findKeyByScriptHash(scriptHash);
+
+    if (keyIndex == null) {
+      throw Exception('Script hash not found'); // TODO: Handle this gracefully
+    }
+
+    // Remove all UTXOs at that index
+    _vault.removeByKeyIndex(keyIndex, isExternal);
+
+    // Refresh UTXOs
+    final unspentList =
+        await client.blockchainScripthashListunspent(scriptHash);
+    for (final unspent in unspentList) {
+      final outpoint = Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+
+      final spendable = Utxo(outpoint, isExternal, keyIndex);
+
+      _vault.add(spendable);
+    }
+  }
+
+  /// Start UTXO listeners.
+  Future<void> startUtxoListeners() async {
+    final clientFuture = electrumFactory.build();
+    final client = await clientFuture;
+
+    for (final keyInfo in keys.keys) {
+      final hexScriptHash = hex.encode(keyInfo.scriptHash);
+
+      await client.blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
+    }
+  }
+
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos() async {
     final clientFuture = electrumFactory.build();
-    final externalScriptHashes = keys.externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-    final changeScriptHashes = keys.changeKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
 
     final client = await clientFuture;
-    final externalFuts = externalScriptHashes.map((scriptHash) {
-      final hexScriptHash = hex.encode(scriptHash);
-      return client.blockchainScripthashListunspent(hexScriptHash);
-    });
-    final changeFuts = changeScriptHashes.map((scriptHash) {
-      final hexScriptHash = hex.encode(scriptHash);
-      return client.blockchainScripthashListunspent(hexScriptHash);
-    });
-    final externalUnspent = await Future.wait(externalFuts);
-    final changeUnspent = await Future.wait(changeFuts);
 
-    // Collect external unspent
-    var keyIndex = 0;
-    for (final unspentList in externalUnspent) {
-      for (final unspent in unspentList) {
+    for (final keyInfo in keys.keys) {
+      final hexScriptHash = hex.encode(keyInfo.scriptHash);
+
+      final unspentUtxos =
+          await client.blockchainScripthashListunspent(hexScriptHash);
+
+// TODO: Remove keyIndex concept. It is not particularly necessary;
+      var keyIndex = 0;
+      for (final unspent in unspentUtxos) {
         final outpoint =
             Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
 
-        final spendable = Utxo(outpoint, true, keyIndex);
+        final spendable = Utxo(outpoint, !keyInfo.isChange, keyIndex);
 
         _vault.add(spendable);
+        keyIndex += 1;
       }
-      keyIndex += 1;
-    }
-
-    // Collect change unspent
-    keyIndex = 0;
-    for (final unspentList in changeUnspent) {
-      for (final unspent in unspentList) {
-        final outpoint =
-            Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
-
-        final spendable = Utxo(outpoint, false, keyIndex);
-
-        _vault.add(spendable);
-      }
-      keyIndex += 1;
     }
   }
 
@@ -99,19 +103,9 @@ class Wallet {
   Future<void> refreshBalanceRemote() async {
     final clientFuture = electrumFactory.build();
 
-    final externalScriptHashes = keys.externalKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-    final changeScriptHashes = keys.changeKeys.map((privateKey) {
-      final address = privateKey.toAddress(networkType: network);
-      return calculateScriptHash(address);
-    });
-    final scriptHashes = externalScriptHashes.followedBy(changeScriptHashes);
-
     final client = await clientFuture;
-    final responses = await Future.wait(scriptHashes.map((scriptHash) {
-      final scriptHashHex = hex.encode(scriptHash);
+    final responses = await Future.wait(keys.keys.map((keyInfo) {
+      final scriptHashHex = hex.encode(keyInfo.scriptHash);
       return client.blockchainScripthashGetBalance(scriptHashHex);
     }));
 
@@ -173,12 +167,8 @@ class Wallet {
     // Add inputs
     for (final utxo in utxos) {
       // Get private key from store
-      BCHPrivateKey privateKey;
-      if (utxo.externalOutput) {
-        privateKey = keys.externalKeys[utxo.keyIndex];
-      } else {
-        privateKey = keys.changeKeys[utxo.keyIndex];
-      }
+      final keyInfo = keys.keys[utxo.keyIndex];
+      final privateKey = keyInfo.key;
       privateKeys.add(privateKey);
 
       // Create input
@@ -193,10 +183,15 @@ class Wallet {
           scriptBuilder: unlockBuilder);
     }
 
-    final changeAddress = keys.getChangeAddress(0);
+// TODO: Just generate a change address here...
+    final shuffledKeys = keys.keys.sublist(0);
+    shuffledKeys.shuffle();
+    final changeKeyInfo =
+        shuffledKeys.firstWhere((keyInfo) => keyInfo.isChange == true);
+
     tx = tx
         .spendTo(recipientAddress, amount)
-        .sendChangeTo(changeAddress)
+        .sendChangeTo(changeKeyInfo.address)
         .withFeePerKb(1024 * feePerByte.toInt());
 
     // Sign transaction

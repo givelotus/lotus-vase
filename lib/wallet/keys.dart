@@ -1,7 +1,17 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:pointycastle/digests/sha256.dart';
+
+Uint8List calculateScriptHash(Address address) {
+  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
+  final rawScriptPubkey = scriptPubkey.buffer;
+  final digest = SHA256Digest().process(rawScriptPubkey);
+  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
+  return reversedDigest;
+}
 
 class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.sendPort,
@@ -15,29 +25,62 @@ class KeyIsolateInput {
   int externalKeyCount;
 }
 
+class KeyInfo {
+  BCHPrivateKey key;
+  Address address;
+  Uint8List scriptHash;
+  bool isChange;
+
+  KeyInfo(
+      {this.key,
+      this.isChange = false,
+      NetworkType network = NetworkType.TEST}) {
+    address = key.toAddress(networkType: network);
+    scriptHash = calculateScriptHash(address);
+  }
+}
+
 void _constructKeys(KeyIsolateInput input) {
   final seedHex = Mnemonic().toSeedHex(input.seed);
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
   // TODO: Do this with child numbers
   final parentKey = rootKey.deriveChildKey("m/44'/145'");
-  final parentExternalKey = parentKey.deriveChildNumber(0);
-  final parentChangeKey = parentKey.deriveChildNumber(1);
-  final changeKeys = List<BCHPrivateKey>.generate(input.changeKeyCount,
-      (index) => parentChangeKey.deriveChildNumber(index).privateKey);
-  final externalKeys = List<BCHPrivateKey>.generate(input.externalKeyCount,
-      (index) => parentExternalKey.deriveChildNumber(index).privateKey);
-  final keys = Keys(externalKeys, changeKeys);
 
-  input.sendPort.send(keys);
+  // Generate external keys, addresses and script hashes
+  final parentExternalKey = parentKey.deriveChildNumber(0);
+
+  final externalKeys = List<KeyInfo>.generate(
+      input.externalKeyCount,
+      (index) => KeyInfo(
+          key: parentExternalKey.deriveChildNumber(index).privateKey,
+          network: input.network));
+
+  final parentChangeKey = parentKey.deriveChildNumber(1);
+  final changeKeys = List<KeyInfo>.generate(
+      input.externalKeyCount,
+      (index) => KeyInfo(
+            key: parentChangeKey.deriveChildNumber(index).privateKey,
+            isChange: true,
+            network: input.network,
+          ));
+
+  input.sendPort.send(Keys(externalKeys.followedBy(changeKeys).toList(),
+      network: input.network));
 }
 
 class Keys {
-  Keys(this.externalKeys, this.changeKeys, {this.network = NetworkType.TEST});
-  List<BCHPrivateKey> externalKeys;
-  List<BCHPrivateKey> changeKeys;
+  Keys(this.keys, {this.network = NetworkType.TEST});
   NetworkType network;
-  // TODO: Cache addresses too?
+
+  List<KeyInfo> keys;
+
+  /// Find the index of a script hash.
+  KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
+    final keyInfo =
+        keys.firstWhere((keyInfo) => scriptHash == keyInfo.scriptHash);
+    return keyInfo;
+  }
 
   static Future<Keys> construct(String seedHex) async {
     final receivePort = ReceivePort();
@@ -55,13 +98,5 @@ class Keys {
         _constructKeys, KeyIsolateInput(seedHex, receivePort.sendPort));
 
     return await completer.future;
-  }
-
-  Address getExternalAddress(int index) {
-    return externalKeys[index].toAddress(networkType: network);
-  }
-
-  Address getChangeAddress(int index) {
-    return changeKeys[index].toAddress(networkType: network);
   }
 }
