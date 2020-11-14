@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:pointycastle/digests/sha256.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
@@ -69,11 +70,33 @@ void _constructKeys(KeyIsolateInput input) {
       network: input.network));
 }
 
+const KEY_COUNT = 'key_count';
+const KEY_PREFIX = 'key';
+const CHANGE_PREFIX = 'change';
+const EXTERNAL_PREFIX = 'external';
+
+const CHANGE_FLAG = 'c';
+
 class Keys {
   Keys(this.keys, {this.network = NetworkType.TEST});
   NetworkType network;
 
   List<KeyInfo> keys;
+
+  static Future<Keys> readFromDisk(NetworkType network) async {
+    final storage = FlutterSecureStorage();
+    final keyCount = int.parse(await storage.read(key: KEY_COUNT));
+    final readFutures = List<Future<String>>.generate(keyCount,
+        (index) => storage.read(key: KEY_PREFIX + '_' + index.toString()));
+    final keyInfo = (await Future.wait(readFutures)).map((data) {
+      final isChange = data[0] == CHANGE_FLAG;
+      final keyString = data.substring(1);
+      final key = BCHPrivateKey.fromHex(keyString, network);
+      return KeyInfo(key: key, isChange: isChange, network: network);
+    }).toList();
+
+    return Keys(keyInfo, network: network);
+  }
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
