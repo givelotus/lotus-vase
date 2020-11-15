@@ -74,14 +74,14 @@ class Wallet {
 
     final client = await clientFuture;
 
+    var keyIndex = 0;
     for (final keyInfo in keys.keys) {
       final hexScriptHash = hex.encode(keyInfo.scriptHash);
 
       final unspentUtxos =
           await client.blockchainScripthashListunspent(hexScriptHash);
 
-// TODO: Remove keyIndex concept. It is not particularly necessary;
-      var keyIndex = 0;
+      // TODO: Remove keyIndex concept. It is not particularly necessary;
       for (final unspent in unspentUtxos) {
         final outpoint =
             Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
@@ -89,8 +89,8 @@ class Wallet {
         final spendable = Utxo(outpoint, !keyInfo.isChange, keyIndex);
 
         _vault.add(spendable);
-        keyIndex += 1;
       }
+      keyIndex += 1;
     }
   }
 
