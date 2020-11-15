@@ -98,6 +98,12 @@ class KeyStorageMetadata {
     return KeyStorageMetadata.fromJson(storageMetadataJson);
   }
 
+  Future<void> writeToDisk() async {
+    final storage = FlutterSecureStorage();
+    final serialized = jsonEncode(toJson());
+    await storage.write(key: KEY_PREFIX + METADATA, value: serialized);
+  }
+
   factory KeyStorageMetadata.fromJson(Map<String, dynamic> json) =>
       _$KeyStorageMetadataFromJson(json);
   Map<String, dynamic> toJson() => _$KeyStorageMetadataToJson(this);
@@ -110,12 +116,22 @@ class StoredKey {
   String privateKey;
   bool isChange;
 
+  factory StoredKey.fromKeyInfo(KeyInfo keyInfo) {
+    return StoredKey(keyInfo.key.toWIF(), keyInfo.isChange);
+  }
+
   static Future<StoredKey> readFromDisk(int number) async {
     final storage = FlutterSecureStorage();
     final storageMetadataString =
         await storage.read(key: KEY_PREFIX + number.toString());
     final storageMetadataJson = jsonDecode(storageMetadataString);
     return StoredKey.fromJson(storageMetadataJson);
+  }
+
+  Future<void> writeToDisk(int number) async {
+    final storage = FlutterSecureStorage();
+    final serialized = jsonEncode(toJson());
+    await storage.write(key: KEY_PREFIX + number.toString(), value: serialized);
   }
 
   KeyInfo toKeyInfo(NetworkType network) {
@@ -133,6 +149,21 @@ class Keys {
   NetworkType network;
 
   List<KeyInfo> keys;
+
+  Future<void> writeToDisk() async {
+    // Write private keys
+    final keyWrites = keys.asMap().entries.map((entry) {
+      final index = entry.key;
+      final keyInfo = entry.value;
+      final storedKey = StoredKey.fromKeyInfo(keyInfo);
+      storedKey.writeToDisk(index);
+    });
+    await Future.wait(keyWrites);
+
+    // Write metadata
+    final metadata = KeyStorageMetadata(keys.length);
+    await metadata.writeToDisk();
+  }
 
   static Future<Keys> readFromDisk(NetworkType network) async {
     // Check schema version
