@@ -1,4 +1,5 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:cashew/wallet/storage/schema.dart';
 import 'package:cashew/wallet/vault.dart';
 import 'package:convert/convert.dart';
 
@@ -116,13 +117,17 @@ class Wallet {
   }
 
   /// Read wallet file from disk. Returns true if successful.
-  Future<bool> loadFromDisk() async {
-    // TODO
-    return false;
-  }
+  Future<void> loadFromDisk() async {
+    // Check schema version
+    final schemaVersion = await readSchemaVersion();
+    if (schemaVersion != CURRENT_SCHEMA_VERSION) {
+      throw Exception('Unsupported version');
+    }
 
-  Future<void> writeToDisk() async {
-    // TODO
+    // Read keys
+    keys = await Keys.readFromDisk(network);
+
+    // TODO: Load UTXOs
   }
 
   /// Generate new random seed.
@@ -140,9 +145,20 @@ class Wallet {
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
   Future<void> initialize() async {
-    final loaded = await loadFromDisk();
-    if (!loaded) {
+    try {
+      await loadFromDisk();
+    } catch (err) {
+      // TODO: Match on error - was failure due to first load (missing data)
+      // or an error?
+
+      // Generate wallet from scratch
       await generateWallet();
+
+      // Persist schema version
+      await writeSchemaVersion();
+
+      // Persist keys
+      await keys.writeToDisk();
     }
   }
 

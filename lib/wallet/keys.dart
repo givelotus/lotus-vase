@@ -84,7 +84,7 @@ class Keys {
       final index = entry.key;
       final keyInfo = entry.value;
       final storedKey = StoredKey.fromKeyInfo(keyInfo);
-      storedKey.writeToDisk(index);
+      return storedKey.writeToDisk(index);
     });
     await Future.wait(keyWrites);
 
@@ -94,12 +94,6 @@ class Keys {
   }
 
   static Future<Keys> readFromDisk(NetworkType network) async {
-    // Check schema version
-    final schemaVersion = await readSchemaVersion();
-    if (schemaVersion != '0.1.0') {
-      throw Exception('Unsupported version');
-    }
-
     // Read metadata
     final metadata = await KeyStorageMetadata.readFromDisk();
     final keyCount = metadata.keyCount;
