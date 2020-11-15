@@ -5,6 +5,9 @@ import 'dart:typed_data';
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:pointycastle/digests/sha256.dart';
 
+import 'storage/keys.dart';
+import 'storage/schema.dart';
+
 Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
   final rawScriptPubkey = scriptPubkey.buffer;
@@ -74,6 +77,38 @@ class Keys {
   NetworkType network;
 
   List<KeyInfo> keys;
+
+  Future<void> writeToDisk() async {
+    // Write private keys
+    final keyWrites = keys.asMap().entries.map((entry) {
+      final index = entry.key;
+      final keyInfo = entry.value;
+      final storedKey = StoredKey.fromKeyInfo(keyInfo);
+      return storedKey.writeToDisk(index);
+    });
+    await Future.wait(keyWrites);
+
+    // Write metadata
+    final metadata = KeyStorageMetadata(keys.length);
+    await metadata.writeToDisk();
+  }
+
+  static Future<Keys> readFromDisk(NetworkType network) async {
+    // Read metadata
+    final metadata = await KeyStorageMetadata.readFromDisk();
+    final keyCount = metadata.keyCount;
+
+    // Read private keys
+    final storedKeyFutures = List<Future<StoredKey>>.generate(
+        keyCount, (index) => StoredKey.readFromDisk(index));
+    final storedKeys = await Future.wait(storedKeyFutures);
+
+    // Convert to key info
+    final keyInfo =
+        storedKeys.map((storedKey) => storedKey.toKeyInfo(network)).toList();
+
+    return Keys(keyInfo, network: network);
+  }
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
