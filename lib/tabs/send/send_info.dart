@@ -75,39 +75,15 @@ class SendInfo extends StatelessWidget {
             ],
           ),
         ),
-      Padding(
+        Padding(
           padding: stdPadding,
           child: Row(
             children: [
               Expanded(
-                  child: TextField(
-                autocorrect: false,
-                enableInteractiveSelection: true,
-                autofocus: true,
-                toolbarOptions: ToolbarOptions(
-                  paste: true,
-                  cut: true,
-                  copy: true,
-                  selectAll: true,
-                ),
-                readOnly: false,
-                focusNode: FocusNode(),
-                controller: addressController,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter recipient address'),
-              ))
-            ],
-          )),
-      Row(children: [
-        Expanded(
-            child: Padding(
-                padding: stdPadding,
                 child: TextField(
                   autocorrect: false,
                   enableInteractiveSelection: true,
-                  autofocus: false,
+                  autofocus: true,
                   toolbarOptions: ToolbarOptions(
                     paste: true,
                     cut: true,
@@ -116,45 +92,89 @@ class SendInfo extends StatelessWidget {
                   ),
                   readOnly: false,
                   focusNode: FocusNode(),
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
+                  controller: addressController,
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
-                      suffixText: 'sats',
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter amount'),
-                ))),
-        // TODO: This needs to actually do something
-        FlatButton(onPressed: () {}, child: Text('Max'))
-      ]),
-      Row(children: [
-        Expanded(
-            child: Consumer<CashewModel>(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter recipient address',
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+        Row(children: [
+          Expanded(
+            child: Padding(
+              padding: stdPadding,
+              child: TextField(
+                autocorrect: false,
+                enableInteractiveSelection: true,
+                autofocus: false,
+                toolbarOptions: ToolbarOptions(
+                  paste: true,
+                  cut: true,
+                  copy: true,
+                  selectAll: true,
+                ),
+                readOnly: false,
+                focusNode: FocusNode(),
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  suffixText: 'sats',
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter amount',
+                ),
+              ),
+            ),
+          ),
+          // TODO: This needs to actually do something
+          FlatButton(
+            onPressed: () {},
+            child: Text('Max'),
+          )
+        ]),
+        Row(
+          children: [
+            Expanded(
+              child: Consumer<CashewModel>(
                 builder: (context, viewModel, child) => ElevatedButton(
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        visible.value = false;
-                        viewModel.sendAmount = null;
-                      },
-                      child: Text('Cancel'),
-                    ))),
-        Expanded(
-            child: Consumer<CashewModel>(
+                  // TODO: we should probably have ValueNotifiable props
+                  // specifically for this component
+                  // Rather than wiring directly to the global viewmodel
+                  onPressed: () {
+                    visible.value = false;
+                    viewModel.sendAmount = null;
+                  },
+                  child: Text('Cancel'),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Consumer<CashewModel>(
                 builder: (context, viewModel, child) => ElevatedButton(
-                      autofocus: true,
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        sendButtonClicked(context, viewModel.activeWallet,
-                            viewModel.sendToAddress, viewModel.sendAmount);
-                        visible.value = false;
-                        viewModel.sendAmount = null;
-                      },
-                      child: Text('Send'),
-                    )))
-      ])
-    ]);
+                  autofocus: true,
+                  // TODO: we should probably have ValueNotifiable props
+                  // specifically for this component
+                  // Rather than wiring directly to the global viewmodel
+                  onPressed: () {
+                    sendButtonClicked(
+                      context,
+                      viewModel.activeWallet,
+                      viewModel.sendToAddress,
+                      viewModel.sendAmount,
+                    );
+                    visible.value = false;
+                    viewModel.sendAmount = null;
+                  },
+                  child: Text('Send'),
+                ),
+              ),
+            )
+          ],
+        )
+      ],
+    );
   }
 }

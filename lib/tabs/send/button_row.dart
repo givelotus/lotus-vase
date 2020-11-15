@@ -53,14 +53,22 @@ class ButtonRow extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.95,
       label: Text('Slide to send!'),
       icon: Center(
-          child: Icon(
-        Icons.send,
-        color: Colors.white,
-      )),
+        child: Icon(
+          Icons.send,
+          color: Colors.white,
+        ),
+      ),
       action: action,
     );
-    return Row(children: [
-      Expanded(child: Padding(padding: stdPadding, child: sliderButton))
-    ]);
+    return Row(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: stdPadding,
+            child: sliderButton,
+          ),
+        ),
+      ],
+    );
   }
 }
