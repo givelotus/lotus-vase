@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
-import 'dart:convert';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:pointycastle/digests/sha256.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:json_annotation/json_annotation.dart';
 
-part 'keys.g.dart';
+import 'storage/keys.dart';
+import 'storage/schema.dart';
 
 Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
@@ -72,76 +70,6 @@ void _constructKeys(KeyIsolateInput input) {
 
   input.sendPort.send(Keys(externalKeys.followedBy(changeKeys).toList(),
       network: input.network));
-}
-
-const SCHEMA_VERSION = 'schema_version';
-const KEY_PREFIX = 'keys_';
-const METADATA = 'metadata';
-const KEY_COUNT = 'key_count';
-
-Future<String> readSchemaVersion() {
-  final storage = FlutterSecureStorage();
-  return storage.read(key: SCHEMA_VERSION);
-}
-
-@JsonSerializable(nullable: false)
-class KeyStorageMetadata {
-  KeyStorageMetadata(this.keyCount);
-
-  int keyCount;
-
-  static Future<KeyStorageMetadata> readFromDisk() async {
-    final storage = FlutterSecureStorage();
-    final storageMetadataString =
-        await storage.read(key: KEY_PREFIX + METADATA);
-    final storageMetadataJson = jsonDecode(storageMetadataString);
-    return KeyStorageMetadata.fromJson(storageMetadataJson);
-  }
-
-  Future<void> writeToDisk() async {
-    final storage = FlutterSecureStorage();
-    final serialized = jsonEncode(toJson());
-    await storage.write(key: KEY_PREFIX + METADATA, value: serialized);
-  }
-
-  factory KeyStorageMetadata.fromJson(Map<String, dynamic> json) =>
-      _$KeyStorageMetadataFromJson(json);
-  Map<String, dynamic> toJson() => _$KeyStorageMetadataToJson(this);
-}
-
-@JsonSerializable(nullable: false)
-class StoredKey {
-  StoredKey(this.privateKey, this.isChange);
-
-  String privateKey;
-  bool isChange;
-
-  factory StoredKey.fromKeyInfo(KeyInfo keyInfo) {
-    return StoredKey(keyInfo.key.toWIF(), keyInfo.isChange);
-  }
-
-  static Future<StoredKey> readFromDisk(int number) async {
-    final storage = FlutterSecureStorage();
-    final storageMetadataString =
-        await storage.read(key: KEY_PREFIX + number.toString());
-    final storageMetadataJson = jsonDecode(storageMetadataString);
-    return StoredKey.fromJson(storageMetadataJson);
-  }
-
-  Future<void> writeToDisk(int number) async {
-    final storage = FlutterSecureStorage();
-    final serialized = jsonEncode(toJson());
-    await storage.write(key: KEY_PREFIX + number.toString(), value: serialized);
-  }
-
-  KeyInfo toKeyInfo(NetworkType network) {
-    final key = BCHPrivateKey.fromWIF(privateKey);
-    return KeyInfo(key: key, isChange: isChange, network: network);
-  }
-
-  factory StoredKey.fromJson(Map<String, dynamic> json) =>
-      _$StoredKeyFromJson(json);
-  Map<String, dynamic> toJson() => _$StoredKeyToJson(this);
 }
 
 class Keys {
