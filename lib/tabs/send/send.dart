@@ -67,58 +67,58 @@ class _SendTabState extends State<SendTab> {
             children: shouldShowSendInfoScreen
                 ? [SendInfo(visible: showSendInfoScreen)]
                 : [
+                    
+                    Expanded(child: qrWidget),
+                    Row(children: [
+                      Expanded(
+                          child: ElevatedButton(
+                        autofocus: true,
+                        onPressed: () => showSendInfoScreen.value = true,
+                        child: Text('Enter Address'),
+                      ))
+                    ]),
+
                     Card(
                       child: Row(
-                        // children: [
-                          // Expanded(
-                          //   child: ListTile(
-                          //     title: RichText(
-                          //       text: TextSpan(
-                          //         children: [
-                          //           TextSpan(
-                          //             text: 'Balance',
-                          //             style: DefaultTextStyle.of(context).style,
-                          //           ),
-                          //           TextSpan(
-                          //             text: ' in satoshis',
-                          //             style: TextStyle(
-                          //               color: Colors.grey,
-                          //             ),
-                          //           ),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
-                        //   Consumer<CashewModel>(
-                        //     builder: (context, model, child) {
-                        //       Widget result;
-                        //       if (model.initialized) {
-                        //         result = Expanded(
-                        //           child: Text(
-                        //             '${model.activeWallet.balanceSatoshis()}',
-                        //           ),
-                        //         );
-                        //       } else {
-                        //         result = Flexible(
-                        //           child: CircularProgressIndicator(),
-                        //         );
-                        //       }
-                        //       return result;
-                        //     },
-                        //   ),
-                        // ],
+                        children: [
+                          Expanded(
+                            child: ListTile(
+                              title: RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: ' in satoshis',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Consumer<CashewModel>(
+                            builder: (context, model, child) {
+                              Widget result;
+                              if (model.initialized) {
+                                result = Expanded(
+                                  child: Text(
+                                    '${model.activeWallet.balanceSatoshis()}',
+                                  ),
+                                );
+                              } else {
+                                result = Flexible(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              return result;
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    Expanded(child: qrWidget),
-                    // Row(children: [
-                    //   Expanded(
-                    //       child: ElevatedButton(
-                    //     autofocus: true,
-                    //     onPressed: () => showSendInfoScreen.value = true,
-                    //     child: Text('Enter Address'),
-                    //   ))
-                    // ]),
+
+                    
                   ]));
   }
 }

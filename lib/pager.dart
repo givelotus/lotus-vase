@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+
+
 class Pager extends StatelessWidget {
   final PageController controller;
   final Widget leftWidget;

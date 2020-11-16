@@ -8,12 +8,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-import 'constants.dart';
 import 'pager.dart';
+// import 'controls.dart';
+
+import 'constants.dart';
 
 
 void main() {
+  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+    // .then((_) {
   runApp(CashewApp());
+      // });
 }
 
 class CashewApp extends StatelessWidget {
@@ -84,11 +89,8 @@ class _MainPageState extends State<MainPage> {
           Provider.of<CashewModel>(context, listen: false).activeWallet;
       return Stack(
             children: <Widget>[
-
               new SendTab(),   
-      
-
-               new NotificationListener<ScrollNotification>(
+              new NotificationListener<ScrollNotification>(
                 onNotification: onPageView,
                 child: new Pager(
                   controller: pagerController,
@@ -96,7 +98,17 @@ class _MainPageState extends State<MainPage> {
                   rightWidget: ReceiveTab(wallet: wallet),
                 )
               ),
-
+              //    new ControlsLayer(
+              //   offset: offsetRatio,
+              //   onTap: () {
+              //     playPause();
+              //   },
+              //   cameraIcon: new CameraIcon(),
+              //   onCameraTap: () async {
+              //     await flipCamera();
+              //     setState(() {});
+              //   },
+              // )
 
 
 ]);
