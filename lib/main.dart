@@ -64,7 +64,7 @@ class _MainPageState extends State<MainPage> {
           '',
           Wallet(
             'todo path',
-            ElectrumFactory(Uri.parse(electrumUrl)),
+            ElectrumFactory(electrumUrls),
           ),
         );
       },
