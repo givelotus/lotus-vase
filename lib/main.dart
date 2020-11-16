@@ -9,6 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import 'constants.dart';
+import 'pager.dart';
+
 
 void main() {
   runApp(CashewApp());
@@ -38,6 +40,8 @@ class DisconnectedBottomSheet extends StatelessWidget {
   }
 }
 
+
+
 class MainPage extends StatefulWidget {
   MainPage({Key key, this.title}) : super(key: key);
 
@@ -53,6 +57,23 @@ class _MainPageState extends State<MainPage> {
     super.initState();
   }
 
+  double offsetRatio = 0.0;
+  double offsetFromOne = 0.0;
+
+  final PageController pagerController =
+      new PageController(keepPage: true, initialPage: 1);
+
+    bool onPageView(ScrollNotification notification) {
+    if (notification.depth == 0 && notification is ScrollUpdateNotification) {
+      setState(() {
+        offsetFromOne = 1.0 - pagerController.page;
+        offsetRatio = offsetFromOne.abs();
+      });
+    }
+    return false;
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(create: (BuildContext context) {
@@ -61,39 +82,65 @@ class _MainPageState extends State<MainPage> {
     }, builder: (context, child) {
       final wallet =
           Provider.of<CashewModel>(context, listen: false).activeWallet;
-      return DefaultTabController(
-        length: 3,
-        initialIndex: 1,
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          // Show loading bottom bar while electrum hasn't
-          bottomNavigationBar:
-              Consumer<CashewModel>(builder: (context, model, child) {
-            if (!model.initialized) {
-              return DisconnectedBottomSheet();
-            }
-            return Container(height: 0);
-          }),
-          // appBar: AppBar(
-          //   title: TabBar(
-          //     tabs: [
-          //       Tab(icon: Text('Settings')),
-          //       Tab(icon: Text('Send')),
-          //       Tab(icon: Text('Receive')),
-          //     ],
-          //   ),
-          //     backgroundColor: Colors.transparent, //No more green
-          //   elevation: 0.0, 
-          // ),
-          body: TabBarView(
-            children: [
-              SettingsTab(wallet: wallet),
-              SendTab(),
-              ReceiveTab(wallet: wallet),
-            ],
-          ),
-        ),
-      );
+      return Stack(
+            children: <Widget>[
+
+              new SendTab(),   
+      
+
+               new NotificationListener<ScrollNotification>(
+                onNotification: onPageView,
+                child: new Pager(
+                  controller: pagerController,
+                  leftWidget: SettingsTab(wallet: wallet),
+                  rightWidget: ReceiveTab(wallet: wallet),
+                )
+              ),
+
+
+
+]);
     });
   }
 }
+
+
+
+
+
+//       DefaultTabController(
+//         length: 3,
+//         initialIndex: 1,
+//         child: Scaffold(
+//           resizeToAvoidBottomInset: false,
+//           // Show loading bottom bar while electrum hasn't
+//           bottomNavigationBar:
+//               Consumer<CashewModel>(builder: (context, model, child) {
+//             if (!model.initialized) {
+//               return DisconnectedBottomSheet();
+//             }
+//             return Container(height: 0);
+//           }),
+//           // appBar: AppBar(
+//           //   title: TabBar(
+//           //     tabs: [
+//           //       Tab(icon: Text('Settings')),
+//           //       Tab(icon: Text('Send')),
+//           //       Tab(icon: Text('Receive')),
+//           //     ],
+//           //   ),
+//           //     backgroundColor: Colors.transparent, //No more green
+//           //   elevation: 0.0, 
+//           // ),
+//           body: TabBarView(
+//             children: [
+//               SettingsTab(wallet: wallet),
+//               SendTab(),
+//               ReceiveTab(wallet: wallet),
+//             ],
+//           ),
+//         ),
+//       );
+//     });
+//   }
+// }
