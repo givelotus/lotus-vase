@@ -49,16 +49,18 @@ class ElectrumClient extends JSONRPCWebsocket {
 }
 
 class ElectrumFactory {
-  ElectrumFactory(this.url);
+  ElectrumFactory(this.urls);
 
   Future<ElectrumClient> _client;
-  Uri url;
+  List<String> urls;
 
   /// Builds client if non-existent and attempts to connect before resolving.
   Future<ElectrumClient> build() {
     if (_client == null) {
       final newClient = ElectrumClient();
-      _client = newClient.connect(url).then((_) => newClient);
+      final urls = this.urls.sublist(0);
+      urls.shuffle();
+      _client = newClient.connect(Uri.parse(urls[0])).then((_) => newClient);
     }
     return _client;
   }
