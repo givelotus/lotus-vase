@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pager.dart';
 
+// TODO: make widget stateful later if/when we create a notifier for new incoming tx 
 class ControlsLayer extends StatelessWidget {
   final double offset;
   final Function onTap;

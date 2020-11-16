@@ -18,12 +18,14 @@ class SendTab extends StatefulWidget {
 class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  ValueNotifier<bool> showSendInfoScreen;
+  ValueNotifier<bool> showSendInfoScreen = ValueNotifier(false);
+
+
 
   @override
   void initState() {
     // TODO: implement initState
-    showSendInfoScreen = ValueNotifier<bool>(false);
+    // showSendInfoScreen = ValueNotifier<bool>(false); 
     super.initState();
   }
 
@@ -61,7 +63,7 @@ class _SendTabState extends State<SendTab> {
       overlay: overlay,
     );
 
-    return Stack(children:<Widget>[
+        return Stack(children:<Widget>[
                     Expanded(child: qrWidget),
 
                     ValueListenableBuilder(
@@ -71,13 +73,38 @@ class _SendTabState extends State<SendTab> {
                 ? [SendInfo(visible: showSendInfoScreen)]
                 : [Spacer(),
                      Row(children: [
-                      Expanded(
-                          child: ElevatedButton(
-                        autofocus: true,
-                        onPressed: () => showSendInfoScreen.value = true,
-                        child: Text('Enter Address'),
-                      ))
-                    ]),
+
+                      Card(
+                      child: Row(
+                        children: [
+                          Center(
+                            child: IconButton(
+                          icon: Icon(Icons.send),
+                          onPressed:  () {
+                            // setState(() {
+                              showSendInfoScreen.value = true;
+                            // });
+                            },
+                            )
+                          )]
+                              ),
+                            ),]
+                          ),
+
+
+                      // Center(
+                          // child:  
+                      //     Icon(Icons.volume_up),
+                      // IconButton(
+                      //     icon: Icon(Icons.volume_up),
+                      //     onPressed: () {
+                      //       setState(() {
+                      //         showSendInfoScreen.value = true;
+                      //       });
+                      //       },
+                      //       )
+                      //     )
+                      //   ]),
 
                     Card(
                       child: Row(
@@ -120,6 +147,8 @@ class _SendTabState extends State<SendTab> {
                     ),
 
                     
-                  ]))]);
+                  ]))
+
+                    ]);
   }
 }
