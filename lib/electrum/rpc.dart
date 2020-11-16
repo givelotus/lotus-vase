@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'dart:math';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -110,7 +111,28 @@ class JSONRPCWebsocket {
   }
 
   Future<void> connect(Uri address) async {
-    rpcSocket = await WebSocket.connect(address.toString());
+    final r = Random();
+    final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
+
+    final client = HttpClient();
+    client.badCertificateCallback =
+        (X509Certificate cert, String host, int port) => true;
+    final request = await client.getUrl(address);
+    request.headers.add('Connection', 'upgrade');
+    request.headers.add('Upgrade', 'websocket');
+    request.headers
+        .add('sec-websocket-version', '13'); // insert the correct version here
+    request.headers.add('sec-websocket-key', key);
+
+    final response = await request.close();
+    // todo check the status code, key etc
+    final socket = await response.detachSocket();
+
+    rpcSocket = WebSocket.fromUpgradedSocket(
+      socket,
+      serverSide: false,
+    );
+
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
       try {
