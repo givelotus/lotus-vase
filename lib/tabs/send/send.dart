@@ -61,15 +61,16 @@ class _SendTabState extends State<SendTab> {
       overlay: overlay,
     );
 
-    return ValueListenableBuilder(
+    return Stack(children:<Widget>[
+                    Expanded(child: qrWidget),
+
+                    ValueListenableBuilder(
         valueListenable: showSendInfoScreen,
         builder: (context, shouldShowSendInfoScreen, child) => Column(
             children: shouldShowSendInfoScreen
                 ? [SendInfo(visible: showSendInfoScreen)]
-                : [
-                    
-                    Expanded(child: qrWidget),
-                    Row(children: [
+                : [Spacer(),
+                     Row(children: [
                       Expanded(
                           child: ElevatedButton(
                         autofocus: true,
@@ -119,6 +120,6 @@ class _SendTabState extends State<SendTab> {
                     ),
 
                     
-                  ]));
+                  ]))]);
   }
 }
