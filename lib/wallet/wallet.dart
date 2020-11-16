@@ -199,7 +199,7 @@ class Wallet {
           scriptBuilder: unlockBuilder);
     }
 
-// TODO: Just generate a change address here...
+    // TODO: Just generate a change address here...
     final shuffledKeys = keys.keys.sublist(0);
     shuffledKeys.shuffle();
     final changeKeyInfo =
