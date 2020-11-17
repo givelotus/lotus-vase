@@ -15,10 +15,7 @@ import 'constants.dart';
 
 
 void main() {
-  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
-    // .then((_) {
   runApp(CashewApp());
-      // });
 }
 
 class CashewApp extends StatelessWidget {
@@ -83,7 +80,9 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(create: (BuildContext context) {
       return CashewModel(
-          '', Wallet('todo path', ElectrumFactory(Uri.parse(electrumUrl))));
+          '', Wallet(
+            'todo path', 
+            ElectrumFactory(electrumUrls)));
     }, builder: (context, child) {
       final wallet =
           Provider.of<CashewModel>(context, listen: false).activeWallet;

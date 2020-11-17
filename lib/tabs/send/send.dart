@@ -18,14 +18,12 @@ class SendTab extends StatefulWidget {
 class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  ValueNotifier<bool> showSendInfoScreen = ValueNotifier(false);
-
-
+  ValueNotifier<bool> showSendInfoScreen;
 
   @override
   void initState() {
     // TODO: implement initState
-    // showSendInfoScreen = ValueNotifier<bool>(false); 
+    showSendInfoScreen = ValueNotifier<bool>(false);
     super.initState();
   }
 
@@ -39,7 +37,7 @@ class _SendTabState extends State<SendTab> {
       borderRadius: 10,
       borderLength: 30,
       borderWidth: 10,
-      cutOutSize: 350,
+      cutOutSize: 300,
     );
 
     final qrWidget = QRView(
@@ -63,92 +61,79 @@ class _SendTabState extends State<SendTab> {
       overlay: overlay,
     );
 
-        return Stack(children:<Widget>[
-                    Expanded(child: qrWidget),
+    return ValueListenableBuilder(
+      valueListenable: showSendInfoScreen,
+      builder: (context, shouldShowSendInfoScreen, child) => Column(
+        children: shouldShowSendInfoScreen
+            ? [SendInfo(visible: showSendInfoScreen)]
+            : [
 
-                    ValueListenableBuilder(
-        valueListenable: showSendInfoScreen,
-        builder: (context, shouldShowSendInfoScreen, child) => Column(
-            children: shouldShowSendInfoScreen
-                ? [SendInfo(visible: showSendInfoScreen)]
-                : [Spacer(),
-                     Row(children: [
+                Expanded(child: qrWidget),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        autofocus: true,
+                        onPressed: () => showSendInfoScreen.value = true,
+                        child: Text('Enter Address'),
+                      ),
+                    )
+                  ],
+                ),
 
-                      Card(
-                      child: Row(
-                        children: [
-                          Center(
-                            child: IconButton(
-                          icon: Icon(Icons.send),
-                          onPressed:  () {
-                            // setState(() {
-                              showSendInfoScreen.value = true;
-                            // });
-                            },
-                            )
-                          )]
-                              ),
-                            ),]
-                          ),
+                                Card(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ListTile(
+                          title: RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'Balance',
+                                                                    style: TextStyle(
+                                    color: Colors.grey,
+                                  ),
 
-
-                      // Center(
-                          // child:  
-                      //     Icon(Icons.volume_up),
-                      // IconButton(
-                      //     icon: Icon(Icons.volume_up),
-                      //     onPressed: () {
-                      //       setState(() {
-                      //         showSendInfoScreen.value = true;
-                      //       });
-                      //       },
-                      //       )
-                      //     )
-                      //   ]),
-
-                    Card(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ListTile(
-                              title: RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: ' in satoshis',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
+                                  // style: DefaultTextStyle.of(context).style,
                                 ),
-                              ),
+                                TextSpan(
+                                  text: ' in satoshis',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Consumer<CashewModel>(
-                            builder: (context, model, child) {
-                              Widget result;
-                              if (model.initialized) {
-                                result = Expanded(
-                                  child: Text(
-                                    '${model.activeWallet.balanceSatoshis()}',
-                                  ),
-                                );
-                              } else {
-                                result = Flexible(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              return result;
-                            },
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      Consumer<CashewModel>(
+                        builder: (context, model, child) {
+                          Widget result;
+                          if (model.initialized) {
+                            result = Expanded(
+                              child: Text(
+                                '${model.activeWallet.balanceSatoshis()}',
+                              ),
+                            );
+                          } else {
+                            result = Flexible(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return result;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
 
-                    
-                  ]))
 
-                    ]);
+
+                                
+              ],
+      ),
+    );
   }
 }
