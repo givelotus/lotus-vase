@@ -29,6 +29,8 @@ class _SendTabState extends State<SendTab> {
 
   @override
   Widget build(BuildContext context) {
+    var screenDimension = MediaQuery.of(context).size;
+
     // WE don't want to be redrawing
     final viewModel = Provider.of<CashewModel>(context, listen: false);
 
@@ -37,7 +39,7 @@ class _SendTabState extends State<SendTab> {
       borderRadius: 10,
       borderLength: 30,
       borderWidth: 10,
-      cutOutSize: 300,
+      cutOutSize: screenDimension.width*0.8,
     );
 
     final qrWidget = QRView(
@@ -67,110 +69,84 @@ class _SendTabState extends State<SendTab> {
         children: shouldShowSendInfoScreen
             ? [SendInfo(visible: showSendInfoScreen)]
             : [
-
                 Stack(children: <Widget>[
-
-                    Container(
-         width:  MediaQuery.of(context).size.width,
-            height:  MediaQuery.of(context).size.height, 
-child: qrWidget      ),
-
-
-                Container(
-        child: Ink(
-          decoration: const ShapeDecoration(
-            color: Colors.grey,
-            shape: CircleBorder(),
-          ),
-          child: IconButton(
-                          icon: Icon(Icons.send),
-                          iconSize: 100.00,
-                          onPressed: () => showSendInfoScreen.value = true,
-                            )
-                          ,
-        ),
-                                  alignment: Alignment(0.5, 1.0),
+                  Container(
+                      width: screenDimension.width,
+                      height: screenDimension.height,
+                      child: qrWidget),
 
 
-      ),
-
-
-                      
-
-
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        autofocus: true,
-                        onPressed: () => showSendInfoScreen.value = true,
-                        child: Text('Enter Address'),
+                  Container(
+                      width: screenDimension.width,
+                      height: screenDimension.height*0.9,
+                    child: Ink(
+                      decoration: const ShapeDecoration(
+                        color: Colors.grey,
+                        shape: CircleBorder(),
                       ),
-                    )
-                  ],
-                ),
+                      child: IconButton(
+                        icon: Icon(Icons.send),
+                        iconSize: 100.00,
+                        onPressed: () => showSendInfoScreen.value = true,
+                      ),
+                    ),
+                alignment: Alignment.bottomCenter,
 
-                                Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ListTile(
-                          title: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: 'Balance',
-                                                                    style: TextStyle(
-                                    color: Colors.grey,
-                                  ),
+                  ),
+                 
 
-                                  // style: DefaultTextStyle.of(context).style,
-                                ),
-                                TextSpan(
-                                  text: ' in satoshis',
-                                  style: TextStyle(
-                                    color: Colors.grey,
+                  Card(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ListTile(
+                            title: RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Balance',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                    ),
+
+                                    // style: DefaultTextStyle.of(context).style,
                                   ),
-                                ),
-                              ],
+                                  TextSpan(
+                                    text: ' in satoshis',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Consumer<CashewModel>(
-                        builder: (context, model, child) {
-                          Widget result;
-                          if (model.initialized) {
-                            result = Expanded(
-                              child: Text(
-                                '${model.activeWallet.balanceSatoshis()}',
-                              ),
-                            );
-                          } else {
-                            result = Flexible(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          return result;
-                        },
-                      ),
-                    ],
+                        Consumer<CashewModel>(
+                          builder: (context, model, child) {
+                            Widget result;
+                            if (model.initialized) {
+                              result = Expanded(
+                                child: Text(
+                                  '${model.activeWallet.balanceSatoshis()}',
+                                ),
+                              );
+                            } else {
+                              result = Flexible(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            return result;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
 
-
-
-
-
-                  ])
+                ])
 
                 // Expanded(child: qrWidget),
-
-
-
-                                
               ],
       ),
     );
