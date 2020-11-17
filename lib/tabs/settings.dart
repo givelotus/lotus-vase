@@ -10,7 +10,10 @@ class SettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _controller = TextEditingController(text: wallet.bip39Seed);
+    final _controller = TextEditingController(
+      text: wallet.seed.value,
+    );
+
     final balance = wallet.balanceSatoshis();
     final balanceCard = Card(
       child: Column(
@@ -128,8 +131,10 @@ class SettingsTab extends StatelessWidget {
                   color: Colors.blue,
                   elevation: stdElevation,
                   onPressed: () => showSeedDialog(),
-                  child:
-                      Text('Show Seed', style: TextStyle(color: Colors.white)),
+                  child: Text(
+                    'Show Seed',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             )

@@ -1,5 +1,6 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:cashew/wallet/storage/schema.dart';
+import 'package:cashew/wallet/storage/seed.dart';
 import 'package:cashew/wallet/vault.dart';
 import 'package:convert/convert.dart';
 
@@ -15,7 +16,7 @@ class Wallet {
   ElectrumFactory electrumFactory;
 
   Keys keys;
-  String bip39Seed;
+  Bip39Seed seed;
 
   final Vault _vault = Vault([]);
 
@@ -127,6 +128,9 @@ class Wallet {
     // Read keys
     keys = await Keys.readFromDisk(network);
 
+    // Read seed
+    seed = await Bip39Seed.readFromDisk();
+
     // TODO: Load UTXOs
   }
 
@@ -139,8 +143,9 @@ class Wallet {
 
   /// Generate new wallet from scratch.
   Future<void> generateWallet() async {
-    bip39Seed = newSeed();
-    keys = await Keys.construct(bip39Seed);
+    seed = Bip39Seed(value: newSeed());
+
+    keys = await Keys.construct(seed);
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
@@ -159,6 +164,9 @@ class Wallet {
 
       // Persist keys
       await keys.writeToDisk();
+
+      // Persist seed
+      await seed.writeToDisk();
     }
   }
 
