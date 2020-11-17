@@ -68,7 +68,37 @@ class _SendTabState extends State<SendTab> {
             ? [SendInfo(visible: showSendInfoScreen)]
             : [
 
-                Expanded(child: qrWidget),
+                Stack(children: <Widget>[
+
+                    Container(
+         width:  MediaQuery.of(context).size.width,
+            height:  MediaQuery.of(context).size.height, 
+child: qrWidget      ),
+
+
+                Container(
+        child: Ink(
+          decoration: const ShapeDecoration(
+            color: Colors.grey,
+            shape: CircleBorder(),
+          ),
+          child: IconButton(
+                          icon: Icon(Icons.send),
+                          iconSize: 100.00,
+                          onPressed: () => showSendInfoScreen.value = true,
+                            )
+                          ,
+        ),
+                                  alignment: Alignment(0.5, 1.0),
+
+
+      ),
+
+
+                      
+
+
+
                 Row(
                   children: [
                     Expanded(
@@ -128,6 +158,15 @@ class _SendTabState extends State<SendTab> {
                     ],
                   ),
                 ),
+
+
+
+
+
+
+                  ])
+
+                // Expanded(child: qrWidget),
 
 
 

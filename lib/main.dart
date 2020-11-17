@@ -86,17 +86,69 @@ class _MainPageState extends State<MainPage> {
     }, builder: (context, child) {
       final wallet =
           Provider.of<CashewModel>(context, listen: false).activeWallet;
-      return Stack(
-            children: <Widget>[
-              new SendTab(),   
-              new NotificationListener<ScrollNotification>(
-                onNotification: onPageView,
-                child: new Pager(
-                  controller: pagerController,
-                  leftWidget: SettingsTab(wallet: wallet),
-                  rightWidget: ReceiveTab(wallet: wallet),
-                )
-              ),
+      return DefaultTabController(
+        length: 3,
+        initialIndex: 1,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          // Show loading bottom bar while electrum hasn't
+          bottomNavigationBar:
+              Consumer<CashewModel>(builder: (context, model, child) {
+            if (!model.initialized) {
+              return DisconnectedBottomSheet();
+            }
+            return Container(height: 0);
+          }),
+          // appBar: AppBar(
+          //   title: TabBar(
+          //     tabs: [
+          //       Tab(icon: Text('Settings')),
+          //       Tab(icon: Text('Send')),
+          //       Tab(icon: Text('Receive')),
+          //     ],
+          //   ),
+          //     backgroundColor: Colors.transparent, //No more green
+          //   elevation: 0.0, 
+          // ),
+
+          // TODO: Fix error that occurs when trying to swipe left or right and wallet has not 
+          // been initialized, or otherwise design UX around this. 
+
+          body: TabBarView(
+            children: [
+              SettingsTab(wallet: wallet),
+              SendTab(),
+              ReceiveTab(wallet: wallet),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+
+
+
+
+
+
+
+
+      // Stack(
+      //       children: <Widget>[
+      //         new SendTab(),   
+      //         new NotificationListener<ScrollNotification>(
+      //           onNotification: onPageView,
+      //           child: new Pager(
+      //             controller: pagerController,
+      //             leftWidget: SettingsTab(wallet: wallet),
+      //             rightWidget: ReceiveTab(wallet: wallet),
+      //           )
+      //         ),
+      
+
+
               //    new ControlsLayer(
               //   offset: offsetRatio,
               //   onTap: () {
@@ -110,48 +162,13 @@ class _MainPageState extends State<MainPage> {
               // )
 
 
-]);
-    });
-  }
-}
-
-
-
-
-
-//       DefaultTabController(
-//         length: 3,
-//         initialIndex: 1,
-//         child: Scaffold(
-//           resizeToAvoidBottomInset: false,
-//           // Show loading bottom bar while electrum hasn't
-//           bottomNavigationBar:
-//               Consumer<CashewModel>(builder: (context, model, child) {
-//             if (!model.initialized) {
-//               return DisconnectedBottomSheet();
-//             }
-//             return Container(height: 0);
-//           }),
-//           // appBar: AppBar(
-//           //   title: TabBar(
-//           //     tabs: [
-//           //       Tab(icon: Text('Settings')),
-//           //       Tab(icon: Text('Send')),
-//           //       Tab(icon: Text('Receive')),
-//           //     ],
-//           //   ),
-//           //     backgroundColor: Colors.transparent, //No more green
-//           //   elevation: 0.0, 
-//           // ),
-//           body: TabBarView(
-//             children: [
-//               SettingsTab(wallet: wallet),
-//               SendTab(),
-//               ReceiveTab(wallet: wallet),
-//             ],
-//           ),
-//         ),
-//       );
+// ]);
 //     });
 //   }
 // }
+
+
+
+
+
+//       
