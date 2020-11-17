@@ -39,7 +39,7 @@ class _SendTabState extends State<SendTab> {
       borderRadius: 10,
       borderLength: 30,
       borderWidth: 10,
-      cutOutSize: screenDimension.width*0.8,
+      cutOutSize: screenDimension.width-50,
     );
 
     final qrWidget = QRView(
@@ -65,18 +65,16 @@ class _SendTabState extends State<SendTab> {
 
     return ValueListenableBuilder(
       valueListenable: showSendInfoScreen,
-      builder: (context, shouldShowSendInfoScreen, child) => Column(
+      builder: (context, shouldShowSendInfoScreen, child) => Stack(
         children: shouldShowSendInfoScreen
-            ? [SendInfo(visible: showSendInfoScreen)]
-            : [Stack(
-              children: [
-                  Positioned.fill(
+            ? SendInfo(visible: showSendInfoScreen) :
+            [Positioned.fill(
                       child: qrWidget),
 
 
                   Positioned(
                     bottom: 50,
-                    left: (screenDimension.width - 100.00) / 2 
+                    left: (screenDimension.width - 100.00) / 2, 
                     child: Ink(
                       decoration: const ShapeDecoration(
                         color: Colors.grey,
@@ -92,7 +90,7 @@ class _SendTabState extends State<SendTab> {
                  
 
                   Positioned(
-                                    bottom: 0,
+                    bottom: 0,
                     left: 0,
                     child: 
                     Card(
@@ -147,8 +145,8 @@ class _SendTabState extends State<SendTab> {
                 ])
 
                 // Expanded(child: qrWidget),
-              ],
-      ),
-    );
+              ,
+      )
+    ;
   }
 }
