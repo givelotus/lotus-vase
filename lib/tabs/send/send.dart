@@ -68,17 +68,15 @@ class _SendTabState extends State<SendTab> {
       builder: (context, shouldShowSendInfoScreen, child) => Column(
         children: shouldShowSendInfoScreen
             ? [SendInfo(visible: showSendInfoScreen)]
-            : [
-                Stack(children: <Widget>[
-                  Container(
-                      width: screenDimension.width,
-                      height: screenDimension.height,
+            : [Stack(
+              children: [
+                  Positioned.fill(
                       child: qrWidget),
 
 
-                  Container(
-                      width: screenDimension.width,
-                      height: screenDimension.height*0.9,
+                  Positioned(
+                    bottom: 50,
+                    left: (screenDimension.width - 100.00) / 2 
                     child: Ink(
                       decoration: const ShapeDecoration(
                         color: Colors.grey,
@@ -90,12 +88,14 @@ class _SendTabState extends State<SendTab> {
                         onPressed: () => showSendInfoScreen.value = true,
                       ),
                     ),
-                alignment: Alignment.bottomCenter,
-
                   ),
                  
 
-                  Card(
+                  Positioned(
+                                    bottom: 0,
+                    left: 0,
+                    child: 
+                    Card(
                     child: Row(
                       children: [
                         Expanded(
@@ -141,7 +141,7 @@ class _SendTabState extends State<SendTab> {
                         ),
                       ],
                     ),
-                  ),
+                  ),),
 
 
                 ])
