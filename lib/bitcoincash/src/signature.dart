@@ -12,6 +12,7 @@ import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:pointycastle/pointycastle.dart';
 // import 'package:asn1lib/asn1lib.dart';
 import 'package:hex/hex.dart';
+import './encoding/asn1.dart' as asn1;
 
 import 'exceptions.dart';
 
@@ -224,9 +225,9 @@ class BCHSignature {
 
   /// Renders the signature as a DER-encoded byte buffer
   List<int> toDER() {
-    var seq = ASN1Sequence();
-    seq.add(ASN1Integer(_r));
-    seq.add(ASN1Integer(_s));
+    var seq = asn1.ASN1Sequence();
+    seq.add(asn1.ASN1Integer(_r));
+    seq.add(asn1.ASN1Integer(_s));
 
     return seq.encode();
   }
@@ -437,10 +438,10 @@ class BCHSignature {
     try {
       var parser = ASN1Parser(HEX.decode(derBuffer));
 
-      var seq = parser.nextObject() as ASN1Sequence;
+      var seq = parser.nextObject() as asn1.ASN1Sequence;
 
-      var rVal = seq.elements[0] as ASN1Integer;
-      var sVal = seq.elements[1] as ASN1Integer;
+      var rVal = seq.elements[0] as asn1.ASN1Integer;
+      var sVal = seq.elements[1] as asn1.ASN1Integer;
 
       _rHex = HEX.encode(rVal.valueBytes);
       _sHex = HEX.encode(sVal.valueBytes);
