@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:cashew/wallet/storage/seed.dart';
 import 'package:pointycastle/digests/sha256.dart';
 
 import 'storage/keys.dart';
@@ -117,7 +118,7 @@ class Keys {
     return keyInfo;
   }
 
-  static Future<Keys> construct(String seedHex) async {
+  static Future<Keys> construct(Bip39Seed seed) async {
     final receivePort = ReceivePort();
 
     // Construct key completer
@@ -130,7 +131,12 @@ class Keys {
 
     // Start isolate
     await Isolate.spawn(
-        _constructKeys, KeyIsolateInput(seedHex, receivePort.sendPort));
+      _constructKeys,
+      KeyIsolateInput(
+        seed.value,
+        receivePort.sendPort,
+      ),
+    );
 
     return await completer.future;
   }
