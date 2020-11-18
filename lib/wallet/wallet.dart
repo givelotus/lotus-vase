@@ -229,7 +229,12 @@ class Wallet {
     final transactionHex = transaction.serialize();
     final client = await clientFuture;
 
-    await client.blockchainTransactionBroadcast(transactionHex);
+    try {
+      await client.blockchainTransactionBroadcast(transactionHex);
+    } catch (err) {
+      print(err.message);
+      throw err;
+    }
     return transaction;
   }
 }
