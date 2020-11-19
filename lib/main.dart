@@ -8,11 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-import 'pager.dart';
-// import 'controls.dart';
-
 import 'constants.dart';
-
 
 void main() {
   runApp(CashewApp());
@@ -42,8 +38,6 @@ class DisconnectedBottomSheet extends StatelessWidget {
   }
 }
 
-
-
 class MainPage extends StatefulWidget {
   MainPage({Key key, this.title}) : super(key: key);
 
@@ -65,7 +59,7 @@ class _MainPageState extends State<MainPage> {
   final PageController pagerController =
       new PageController(keepPage: true, initialPage: 1);
 
-    bool onPageView(ScrollNotification notification) {
+  bool onPageView(ScrollNotification notification) {
     if (notification.depth == 0 && notification is ScrollUpdateNotification) {
       setState(() {
         offsetFromOne = 1.0 - pagerController.page;
@@ -75,14 +69,11 @@ class _MainPageState extends State<MainPage> {
     return false;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(create: (BuildContext context) {
       return CashewModel(
-          '', Wallet(
-            'todo path', 
-            ElectrumFactory(electrumUrls)));
+          '', Wallet('todo path', ElectrumFactory(electrumUrls)));
     }, builder: (context, child) {
       final wallet =
           Provider.of<CashewModel>(context, listen: false).activeWallet;
@@ -92,27 +83,16 @@ class _MainPageState extends State<MainPage> {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           // Show loading bottom bar while electrum hasn't
-          bottomNavigationBar:
-              Consumer<CashewModel>(builder: (context, model, child) {
-            if (!model.initialized) {
-              return DisconnectedBottomSheet();
-            }
-            return Container(height: 0);
-          }),
-          // appBar: AppBar(
-          //   title: TabBar(
-          //     tabs: [
-          //       Tab(icon: Text('Settings')),
-          //       Tab(icon: Text('Send')),
-          //       Tab(icon: Text('Receive')),
-          //     ],
-          //   ),
-          //     backgroundColor: Colors.transparent, //No more green
-          //   elevation: 0.0, 
-          // ),
+          // bottomNavigationBar:
+          //     Consumer<CashewModel>(builder: (context, model, child) {
+          //   if (!model.initialized) {
+          //     return DisconnectedBottomSheet();
+          //   }
+          //   return Container(height: 0);
+          // }),
 
-          // TODO: Fix error that occurs when trying to swipe left or right and wallet has not 
-          // been initialized, or otherwise design UX around this. 
+          // TODO: Fix error that occurs when trying to swipe left or right and wallet has not
+          // been initialized, or otherwise design UX around this.
 
           body: TabBarView(
             children: [
@@ -127,48 +107,33 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
+// Stack(
+//       children: <Widget>[
+//         new SendTab(),
+//         new NotificationListener<ScrollNotification>(
+//           onNotification: onPageView,
+//           child: new Pager(
+//             controller: pagerController,
+//             leftWidget: SettingsTab(wallet: wallet),
+//             rightWidget: ReceiveTab(wallet: wallet),
+//           )
+//         ),
 
-
-
-
-
-
-
-
-      // Stack(
-      //       children: <Widget>[
-      //         new SendTab(),   
-      //         new NotificationListener<ScrollNotification>(
-      //           onNotification: onPageView,
-      //           child: new Pager(
-      //             controller: pagerController,
-      //             leftWidget: SettingsTab(wallet: wallet),
-      //             rightWidget: ReceiveTab(wallet: wallet),
-      //           )
-      //         ),
-      
-
-
-              //    new ControlsLayer(
-              //   offset: offsetRatio,
-              //   onTap: () {
-              //     playPause();
-              //   },
-              //   cameraIcon: new CameraIcon(),
-              //   onCameraTap: () async {
-              //     await flipCamera();
-              //     setState(() {});
-              //   },
-              // )
-
+//    new ControlsLayer(
+//   offset: offsetRatio,
+//   onTap: () {
+//     playPause();
+//   },
+//   cameraIcon: new CameraIcon(),
+//   onCameraTap: () async {
+//     await flipCamera();
+//     setState(() {});
+//   },
+// )
 
 // ]);
 //     });
 //   }
 // }
 
-
-
-
-
-//       
+//

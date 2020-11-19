@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
-import 'pager.dart';
 
-// TODO: make widget stateful later if/when we create a notifier for new incoming tx 
+// TODO: make widget stateful later if/when we create a notifier for new incoming tx
 class ControlsLayer extends StatelessWidget {
   final double offset;
   final Function onTap;
   final IconData sendIcon;
   final Function onCameraTap;
 
-  ControlsLayer({this.offset, this.onTap, this.cameraIcon, this.onCameraTap}); 
+  ControlsLayer({this.offset, this.onTap, this.cameraIcon, this.onCameraTap});
 
   @override
   Widget build(BuildContext context) {
     return new Stack(
-      children: <Widget>[
-        new _Controls(sendIcon, onCameraTap)
-      ],
+      children: <Widget>[new _Controls(sendIcon, onCameraTap)],
     );
   }
 }
