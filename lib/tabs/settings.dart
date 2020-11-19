@@ -3,10 +3,28 @@ import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class SettingsTab extends StatelessWidget {
+class SettingsTab extends StatefulWidget {
+  final Wallet wallet;
+
   SettingsTab({Key key, this.wallet}) : super(key: key);
 
-  final Wallet wallet;
+  _SettingsTabState createState() => _SettingsTabState();
+}
+
+class _SettingsTabState extends State<SettingsTab> {
+  PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,37 +128,39 @@ class SettingsTab extends StatelessWidget {
       elevation: stdElevation,
     );
 
-    return Column(
-      children: [
-        Padding(
-          child: balanceCard,
-          padding: stdPadding,
-        ),
-        Expanded(
-          child: Padding(
-            child: historyCard,
+    return Scaffold(
+      body: Column(
+        children: [
+          Padding(
+            child: balanceCard,
             padding: stdPadding,
           ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: stdPadding,
-                child: RaisedButton(
-                  color: Colors.blue,
-                  elevation: stdElevation,
-                  onPressed: () => showSeedDialog(),
-                  child: Text(
-                    'Show Seed',
-                    style: TextStyle(color: Colors.white),
+          Expanded(
+            child: Padding(
+              child: historyCard,
+              padding: stdPadding,
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: stdPadding,
+                  child: RaisedButton(
+                    color: Colors.blue,
+                    elevation: stdElevation,
+                    onPressed: () => showSeedDialog(),
+                    child: Text(
+                      'Show Seed',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-            )
-          ],
-        )
-      ],
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }

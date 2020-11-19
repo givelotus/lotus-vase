@@ -1,4 +1,6 @@
 import 'package:cashew/viewmodel.dart';
+import 'package:cashew/tabs/settings.dart';
+import 'package:cashew/tabs/receive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +35,10 @@ class _SendTabState extends State<SendTab> {
 
     // WE don't want to be redrawing
     final viewModel = Provider.of<CashewModel>(context, listen: false);
+
+    // Quick fix (copied from main.dart), but I don't think I should be doing this. -aj
+    final wallet =
+        Provider.of<CashewModel>(context, listen: false).activeWallet;
 
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.red,
@@ -93,7 +99,12 @@ class _SendTabState extends State<SendTab> {
                                 Consumer<CashewModel>(
                                   builder: (context, model, child) {
                                     if (!model.initialized) {
-                                      return Text('Loading...');
+                                      return Text(
+                                        'Loading',
+                                        style: TextStyle(
+                                            color: Colors.red.withOpacity(.8),
+                                            fontSize: 15),
+                                      );
                                     }
                                     return Text.rich(TextSpan(
                                       text:
@@ -127,7 +138,11 @@ class _SendTabState extends State<SendTab> {
                           icon: Icon(Icons.settings),
                           color: Colors.white,
                           iconSize: 50.00,
-                          // onPressed: () => showSendInfoScreen.value = true,
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => (SettingsTab(wallet: wallet)),
+                            ));
+                          },
                         ),
                       ),
                       Positioned(
@@ -137,7 +152,11 @@ class _SendTabState extends State<SendTab> {
                           icon: Icon(Icons.save_alt),
                           color: Colors.white,
                           iconSize: 50.00,
-                          // onPressed: () => showSendInfoScreen.value = true,
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => (ReceiveTab(wallet: wallet)),
+                            ));
+                          },
                         ),
                       ),
                     ]),
