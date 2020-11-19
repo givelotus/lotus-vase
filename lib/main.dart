@@ -82,14 +82,6 @@ class _MainPageState extends State<MainPage> {
         initialIndex: 1,
         child: Scaffold(
           resizeToAvoidBottomInset: false,
-          // Show loading bottom bar while electrum hasn't
-          // bottomNavigationBar:
-          //     Consumer<CashewModel>(builder: (context, model, child) {
-          //   if (!model.initialized) {
-          //     return DisconnectedBottomSheet();
-          //   }
-          //   return Container(height: 0);
-          // }),
 
           // TODO: Fix error that occurs when trying to swipe left or right and wallet has not
           // been initialized, or otherwise design UX around this.
