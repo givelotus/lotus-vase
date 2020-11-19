@@ -3,28 +3,10 @@ import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class SettingsTab extends StatefulWidget {
-  final Wallet wallet;
-
+class SettingsTab extends StatelessWidget {
   SettingsTab({Key key, this.wallet}) : super(key: key);
 
-  _SettingsTabState createState() => _SettingsTabState();
-}
-
-class _SettingsTabState extends State<SettingsTab> {
-  PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  final Wallet wallet;
 
   @override
   Widget build(BuildContext context) {
