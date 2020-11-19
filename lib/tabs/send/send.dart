@@ -76,7 +76,7 @@ class _SendTabState extends State<SendTab> {
                 ? SendInfo(visible: showSendInfoScreen)
                 : Scaffold(
                     body: Stack(alignment: Alignment.center, children: [
-                      // Positioned.fill(child: qrWidget),
+                      Expanded(child: qrWidget),
                       Positioned(
                         bottom: 50,
                         child: IconButton(
@@ -100,10 +100,11 @@ class _SendTabState extends State<SendTab> {
                                   builder: (context, model, child) {
                                     if (!model.initialized) {
                                       return Text(
-                                        'Loading',
+                                        'Loading...',
                                         style: TextStyle(
                                             color: Colors.red.withOpacity(.8),
-                                            fontSize: 15),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13),
                                       );
                                     }
                                     return Text.rich(TextSpan(
