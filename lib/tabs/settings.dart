@@ -110,37 +110,39 @@ class SettingsTab extends StatelessWidget {
       elevation: stdElevation,
     );
 
-    return Column(
-      children: [
-        Padding(
-          child: balanceCard,
-          padding: stdPadding,
-        ),
-        Expanded(
-          child: Padding(
-            child: historyCard,
+    return Scaffold(
+      body: Column(
+        children: [
+          Padding(
+            child: balanceCard,
             padding: stdPadding,
           ),
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: stdPadding,
-                child: RaisedButton(
-                  color: Colors.blue,
-                  elevation: stdElevation,
-                  onPressed: () => showSeedDialog(),
-                  child: Text(
-                    'Show Seed',
-                    style: TextStyle(color: Colors.white),
+          Expanded(
+            child: Padding(
+              child: historyCard,
+              padding: stdPadding,
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: stdPadding,
+                  child: RaisedButton(
+                    color: Colors.blue,
+                    elevation: stdElevation,
+                    onPressed: () => showSeedDialog(),
+                    child: Text(
+                      'Show Seed',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
-              ),
-            )
-          ],
-        )
-      ],
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }
