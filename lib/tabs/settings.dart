@@ -1,7 +1,9 @@
 import 'package:cashew/constants.dart';
+import 'package:cashew/viewmodel.dart';
 import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 class SettingsTab extends StatelessWidget {
   SettingsTab({Key key, this.wallet}) : super(key: key);
@@ -14,7 +16,6 @@ class SettingsTab extends StatelessWidget {
       text: wallet.seed.value,
     );
 
-    final balance = wallet.balanceSatoshis();
     final balanceCard = Card(
       child: Column(
         children: [
@@ -24,10 +25,16 @@ class SettingsTab extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text(
-              balance.toString(),
-              style:
-                  TextStyle(fontSize: 24, color: Colors.black.withOpacity(0.6)),
+            child: Consumer<CashewModel>(
+              builder: (context, model, child) {
+                Widget result;
+                if (model.initialized) {
+                  return Text(
+                    '${model.activeWallet.balanceSatoshis()}',
+                  );
+                }
+                return CircularProgressIndicator();
+              },
             ),
           )
         ],
