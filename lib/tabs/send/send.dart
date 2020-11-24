@@ -9,7 +9,9 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import './send_info.dart';
 
 class SendTab extends StatefulWidget {
-  SendTab({Key key}) : super(key: key);
+  final PageController controller;
+
+  SendTab({Key key, @required this.controller}) : super(key: key);
 
   @override
   _SendTabState createState() => _SendTabState();
@@ -19,7 +21,6 @@ class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   ValueNotifier<bool> showSendInfoScreen;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -29,15 +30,17 @@ class _SendTabState extends State<SendTab> {
 
   @override
   Widget build(BuildContext context) {
+    var screenDimension = MediaQuery.of(context).size;
+
     // WE don't want to be redrawing
     final viewModel = Provider.of<CashewModel>(context, listen: false);
 
     final overlay = QrScannerOverlayShape(
-      borderColor: Colors.red,
+      borderColor: Colors.green,
       borderRadius: 10,
       borderLength: 30,
       borderWidth: 10,
-      cutOutSize: 300,
+      cutOutSize: screenDimension.width - 50,
     );
 
     final qrWidget = QRView(
@@ -62,68 +65,104 @@ class _SendTabState extends State<SendTab> {
     );
 
     return ValueListenableBuilder(
-      valueListenable: showSendInfoScreen,
-      builder: (context, shouldShowSendInfoScreen, child) => Column(
-        children: shouldShowSendInfoScreen
-            ? [SendInfo(visible: showSendInfoScreen)]
-            : [
-                Card(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ListTile(
-                          title: RichText(
-                            text: TextSpan(
+        valueListenable: showSendInfoScreen,
+        builder: (context, shouldShowSendInfoScreen, child) => Scaffold(
+            body: shouldShowSendInfoScreen
+                ? SendInfo(visible: showSendInfoScreen)
+                : Scaffold(
+                    body: Stack(alignment: Alignment.center, children: [
+                      Container(
+                          child: qrWidget,
+                          width: screenDimension.width,
+                          height: screenDimension.height),
+                      Positioned(
+                        bottom: 5,
+                        child: IconButton(
+                          icon: Icon(Icons.send),
+                          iconSize: 95.00,
+                          color: Colors.white,
+                          onPressed: () => showSendInfoScreen.value = true,
+                        ),
+                      ),
+                      Positioned(
+                        top: screenDimension.height * .1,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 15.0, vertical: 5.0),
+                            color: Colors.grey[400].withOpacity(0.6),
+                            child: Row(
                               children: [
-                                TextSpan(
-                                  text: 'Balance',
-                                  style: DefaultTextStyle.of(context).style,
-                                ),
-                                TextSpan(
-                                  text: ' in satoshis',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                  ),
+                                Consumer<CashewModel>(
+                                  builder: (context, model, child) {
+                                    if (!model.initialized) {
+                                      return Text(
+                                        'Loading...',
+                                        style: TextStyle(
+                                            color: Colors.red.withOpacity(.8),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13),
+                                      );
+                                    }
+                                    return Text.rich(TextSpan(
+                                      text:
+                                          '${model.activeWallet.balanceSatoshis()}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: ' sats',
+                                          style: TextStyle(
+                                              color:
+                                                  Colors.white.withOpacity(.8),
+                                              fontSize: 15),
+                                        ),
+                                      ],
+                                    ));
+                                  },
                                 ),
                               ],
                             ),
                           ),
                         ),
                       ),
-                      Consumer<CashewModel>(
-                        builder: (context, model, child) {
-                          Widget result;
-                          if (model.initialized) {
-                            result = Expanded(
-                              child: Text(
-                                '${model.activeWallet.balanceSatoshis()}',
-                              ),
+                      Positioned(
+                        bottom: 35.0,
+                        left: 20.0,
+                        child: IconButton(
+                          icon: Icon(Icons.settings),
+                          color: Colors.white,
+                          iconSize: 50.00,
+                          onPressed: () {
+                            widget.controller.animateToPage(
+                              0,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
                             );
-                          } else {
-                            result = Flexible(
-                              child: CircularProgressIndicator(),
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 35.0,
+                        right: 20.0,
+                        child: IconButton(
+                          icon: Icon(Icons.save_alt),
+                          color: Colors.white,
+                          iconSize: 50.00,
+                          onPressed: () {
+                            widget.controller.animateToPage(
+                              2,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
                             );
-                          }
-                          return result;
-                        },
+                          },
+                        ),
                       ),
-                    ],
-                  ),
-                ),
-                Expanded(child: qrWidget),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        autofocus: true,
-                        onPressed: () => showSendInfoScreen.value = true,
-                        child: Text('Enter Address'),
-                      ),
-                    )
-                  ],
-                ),
-              ],
-      ),
-    );
+                    ]),
+                  )));
   }
 }
