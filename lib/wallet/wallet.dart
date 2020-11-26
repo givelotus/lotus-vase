@@ -155,8 +155,9 @@ class Wallet {
     } catch (err) {
       // TODO: Match on error - was failure due to first load (missing data)
       // or an error?
+    }
 
-      // Generate wallet from scratch
+    if (seed.value == null) {
       await generateWallet();
 
       // Persist schema version
