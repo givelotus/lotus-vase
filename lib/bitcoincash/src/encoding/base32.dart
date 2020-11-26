@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:collection';
 
 import '../exceptions.dart';
 

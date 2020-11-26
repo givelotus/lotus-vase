@@ -10,7 +10,6 @@ import 'package:pointycastle/src/utils.dart' as utils;
 import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:pointycastle/pointycastle.dart';
-// import 'package:asn1lib/asn1lib.dart';
 import 'package:hex/hex.dart';
 import './encoding/asn1.dart' as asn1;
 
