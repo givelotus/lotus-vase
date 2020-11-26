@@ -45,6 +45,7 @@ class KeyInfo {
 
 void _constructKeys(KeyIsolateInput input) {
   final seedHex = Mnemonic().toSeedHex(input.seed);
+  //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
   // TODO: Do this with child numbers
