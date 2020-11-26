@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:cashew/wallet/wallet.dart';
-import 'package:cashew/bitcoincash/src/address.dart';
 
 class CashewModel with ChangeNotifier {
   String _sendToAddress;

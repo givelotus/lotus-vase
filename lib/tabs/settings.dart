@@ -27,7 +27,6 @@ class SettingsTab extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Consumer<CashewModel>(
               builder: (context, model, child) {
-                Widget result;
                 if (model.initialized) {
                   return Text(
                     '${model.activeWallet.balanceSatoshis()}',

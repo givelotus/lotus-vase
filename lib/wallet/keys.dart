@@ -7,7 +7,6 @@ import 'package:cashew/wallet/storage/seed.dart';
 import 'package:pointycastle/digests/sha256.dart';
 
 import 'storage/keys.dart';
-import 'storage/schema.dart';
 
 Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
