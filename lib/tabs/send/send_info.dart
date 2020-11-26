@@ -29,13 +29,11 @@ class SendInfo extends StatelessWidget {
     if (!primaryValidation) {
       return;
     }
-    try {
-      // TODO: Need address validation here. Should attach to entry field
-      // somehow to indicate the address is bad.
-      wallet
-          .sendTransaction(Address(address), BigInt.from(amount))
-          .then((transaction) => showReceipt(context, transaction));
-    } catch (e) {}
+    // TODO: Need address validation here. Should attach to entry field
+    // somehow to indicate the address is bad.
+    wallet
+        .sendTransaction(Address(address), BigInt.from(amount))
+        .then((transaction) => showReceipt(context, transaction));
   }
 
   @override

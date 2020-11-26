@@ -241,7 +241,7 @@ class Wallet {
       await client.blockchainTransactionBroadcast(transactionHex);
     } catch (err) {
       print(err.message);
-      throw err;
+      rethrow;
     }
     return transaction;
   }

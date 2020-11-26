@@ -1,5 +1,4 @@
 import 'package:cashew/electrum/client.dart';
-import 'package:cashew/electrum/rpc.dart';
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/digests/sha256.dart';
