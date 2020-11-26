@@ -4,11 +4,18 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:pointycastle/key_derivators/api.dart';
-// ignore: deprecated_member_use
-import 'package:resource/resource.dart';
-import '../encoding/utils.dart';
 import 'package:unorm_dart/unorm_dart.dart';
 import 'package:pointycastle/api.dart';
+
+import '../encoding/utils.dart';
+import './wordlists/chinese_simplified.dart';
+import './wordlists/chinese_traditional.dart';
+import './wordlists/english.dart';
+import './wordlists/french.dart';
+import './wordlists/italian.dart';
+import './wordlists/japanese.dart';
+import './wordlists/korean.dart';
+import './wordlists/spanish.dart';
 
 // thanks to https:// github.com/yshrsmz/bip39-dart
 // the source code come from here
@@ -30,22 +37,18 @@ typedef RandomBytes = Uint8List Function(int size);
 
 /// This class implements the Bip39 spec.
 ///
-/// *See:* [The Bip39 Spec](https:// github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
+/// *See:* <The Bi>39 Spec](https:// github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)
 ///
 /// Mnemonic seeds provide a means to derive a private key from a standard, indexed dictionary
 /// of words. This is a popular means for wallets to provide backup and recovery functionality
 /// to users.
 class Mnemonic {
-  final _wordlistCache = <Wordlist, List<dynamic>>{};
-
   Wordlist DEFAULT_WORDLIST;
 
   static const int _SIZE_8BITS = 255;
   static const String _INVALID_ENTROPY = 'Invalid entroy';
   static const String _INVALID_MNEMONIC = 'Invalid mnemonic';
   static const String _INVALID_CHECKSUM = 'Invalid checksum';
-
-  List<String> _wordRes;
 
   /// Construct a new Mnemonic instance
   ///
@@ -63,13 +66,13 @@ class Mnemonic {
   /// [strength] - Optional number of entropy bits
   ///
   /// [randomBytes] - A seed buffer of random data to provide entropy
-  Future<String> generateMnemonic(
-      {int strength = 128, RandomBytes randomBytes = _nextBytes}) async {
+  String generateMnemonic(
+      {int strength = 128, RandomBytes randomBytes = _nextBytes}) {
     assert(strength % 32 == 0);
 
     final entropy = randomBytes(strength ~/ 8);
 
-    return await _entropyToMnemonic(entropy);
+    return _entropyToMnemonic(entropy);
   }
 
   /// Converts [mnemonic] code to seed.
@@ -111,15 +114,8 @@ class Mnemonic {
     return true;
   }
 
-  /// Returns the full list of words for the named word list
-  ///
-  /// [wordList] - The word list to return words for
-  Future<List<String>> getWordList(Wordlist wordList) async {
-    return _loadWordlist(wordList);
-  }
-
   /// Converts [entropy] to mnemonic code.
-  Future<String> _entropyToMnemonic(Uint8List entropy) async {
+  String _entropyToMnemonic(Uint8List entropy) {
     if (entropy.length < 16) {
       throw ArgumentError(_INVALID_ENTROPY);
     }
@@ -141,7 +137,7 @@ class Mnemonic {
         .map((match) => match.group(0))
         .toList(growable: false);
 
-    _wordRes = await _loadWordlist(DEFAULT_WORDLIST);
+    final _wordRes = getWordlist(DEFAULT_WORDLIST);
 
     return chunks
         .map((binary) => _wordRes[_binaryToByte(binary)])
@@ -152,7 +148,7 @@ class Mnemonic {
   ///
   /// [mnemonic] - An existing mnemonic string that will be deterministically converted into a seed.
   Future<Uint8List> _mnemonicToEntropy(String mnemonic) async {
-    _wordRes = await _loadWordlist(DEFAULT_WORDLIST);
+    final _wordRes = getWordlist(DEFAULT_WORDLIST);
     final words = nfkd(mnemonic).split(' ');
 
     if (words.length % 3 != 0) {
@@ -224,42 +220,26 @@ class Mnemonic {
     return int.parse(binary, radix: 2);
   }
 
-  Future<List<String>> _loadWordlist(Wordlist wordlist) async {
-    if (_wordlistCache.containsKey(wordlist)) {
-      return _wordlistCache[wordlist];
-    } else {
-      final res = Resource('bip39/wordlists/${_getWordlistName(wordlist)}.txt');
-      final rawWords = await res.readAsString(encoding: utf8);
-      final result = rawWords
-          .split('\n')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList(growable: false);
-      _wordlistCache[wordlist] = result;
-      return result;
-    }
-  }
-
-  String _getWordlistName(Wordlist wordlist) {
+  List<String> getWordlist(Wordlist wordlist) {
     switch (wordlist) {
       case Wordlist.CHINESE_SIMPLIFIED:
-        return 'chinese_simplified';
+        return chineseSimplified;
       case Wordlist.CHINESE_TRADITIONAL:
-        return 'chinese_traditional';
+        return chineseTraditional;
       case Wordlist.ENGLISH:
-        return 'english';
+        return english;
       case Wordlist.FRENCH:
-        return 'french';
+        return french;
       case Wordlist.ITALIAN:
-        return 'italian';
+        return italian;
       case Wordlist.JAPANESE:
-        return 'japanese';
+        return japanese;
       case Wordlist.KOREAN:
-        return 'korean';
+        return korean;
       case Wordlist.SPANISH:
-        return 'spanish';
+        return spanish;
       default:
-        return 'english';
+        return english;
     }
   }
 
