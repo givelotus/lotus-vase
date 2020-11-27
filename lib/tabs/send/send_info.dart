@@ -37,17 +37,48 @@ class SendInfo extends StatelessWidget {
 
   SendInfo({this.visible, @required this.wallet});
 
-  void sendButtonClicked(BuildContext context, String address, int amount) {
+  Future<void> sendButtonClicked(
+      BuildContext context, String address, int amount) async {
     final primaryValidation = (amount != null && amount > 0);
+    // TODO: Need additional validation checks -- not spending money
+    // you don't have
     if (!primaryValidation) {
-      return;
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Get your facts right!'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Or I\'ll bankrupt you.'),
+                  Text('Consider yourself warned...!'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('um.. OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+      ;
     }
     // TODO: Need address validation here. Should attach to entry field
     // somehow to indicate the address is bad.
-    wallet
+    await wallet
         .sendTransaction(Address(address), BigInt.from(amount))
         .then((transaction) => showReceipt(context, transaction))
         .catchError((error) => showError(context, error.toString()));
+
+    // only close SendInfo screen in case transaction is successful
+    visible.value = false;
   }
 
   @override
@@ -190,6 +221,7 @@ class SendInfo extends StatelessWidget {
                       onPressed: () {
                         visible.value = false;
                         viewModel.sendAmount = null;
+                        viewModel.sendToAddress = null;
                       },
                       child: Text('Cancel'),
                     ),
@@ -208,8 +240,8 @@ class SendInfo extends StatelessWidget {
                           viewModel.sendToAddress,
                           viewModel.sendAmount,
                         );
-                        visible.value = false;
                         viewModel.sendAmount = null;
+                        viewModel.sendToAddress = null;
                       },
                       child: Text('Send'),
                     ),
