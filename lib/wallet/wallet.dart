@@ -142,34 +142,36 @@ class Wallet {
     return mnemonicGenerator.generateMnemonic();
   }
 
-  /// Generate new wallet from scratch.
-  Future<void> generateWallet() async {
-    seed = Bip39Seed(value: newSeed());
+  set seedPhrase(String newSeed) {
+    seed = Bip39Seed(value: newSeed);
 
-    keys = await Keys.construct(seed);
+    initialize().then((value) => saveWallet());
   }
 
   /// Attempts to load wallet from disk, else constructs a new wallet.
   Future<void> initialize() async {
-    try {
-      await loadFromDisk();
-    } catch (err) {
-      // TODO: Match on error - was failure due to first load (missing data)
-      // or an error?
-    }
-
     if (seed.value == null) {
-      await generateWallet();
+      keys = await Keys.construct(Bip39Seed(value: newSeed()));
 
-      // Persist schema version
-      await writeSchemaVersion();
-
-      // Persist keys
-      await keys.writeToDisk();
-
-      // Persist seed
-      await seed.writeToDisk();
+      await saveWallet();
+    } else {
+      keys = await Keys.construct(seed);
     }
+
+    await updateUtxos();
+    await refreshBalanceLocal();
+    await startUtxoListeners();
+  }
+
+  Future<void> saveWallet() async {
+    // Persist schema version
+    await writeSchemaVersion();
+
+    // Persist keys
+    await keys.writeToDisk();
+
+    // Persist seed
+    await seed.writeToDisk();
   }
 
   /// Use electrum to update wallet.

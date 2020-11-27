@@ -14,10 +14,8 @@ class CashewModel with ChangeNotifier {
     _sendAmount = null;
     this
         .activeWallet
-        .initialize()
-        .then((value) => this.activeWallet.updateUtxos())
-        .then((value) => this.activeWallet.refreshBalanceLocal())
-        .then((value) => this.activeWallet.startUtxoListeners())
+        .loadFromDisk()
+        .then((value) => this.activeWallet.initialize())
         .then((value) => initialized = true);
   }
 

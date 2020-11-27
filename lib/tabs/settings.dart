@@ -1,6 +1,7 @@
 import 'package:cashew/constants.dart';
 import 'package:cashew/viewmodel.dart';
 import 'package:cashew/wallet/wallet.dart';
+import 'package:cashew/bitcoincash/src/bip39/bip39.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,9 +13,11 @@ class SettingsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _controller = TextEditingController(
+    final showSeedTextController = TextEditingController(
       text: wallet.seed.value,
     );
+
+    final newSeedController = TextEditingController();
 
     final balanceCard = Card(
       child: Column(
@@ -64,7 +67,7 @@ class SettingsTab extends StatelessWidget {
                             child: TextField(
                               maxLines: null,
                               minLines: 2,
-                              controller: _controller,
+                              controller: showSeedTextController,
                               readOnly: true,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
@@ -81,7 +84,7 @@ class SettingsTab extends StatelessWidget {
                             onPressed: () {
                               Clipboard.setData(
                                 ClipboardData(
-                                  text: _controller.text,
+                                  text: showSeedTextController.text,
                                 ),
                               );
                               Scaffold.of(context).showSnackBar(
@@ -98,6 +101,78 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    void showEnterSeedDialog() {
+      showDialog(
+        context: context,
+        builder: (context) => GestureDetector(
+          // leave the dialogContext open when it has been copied,
+          // only close it when the user decides to close it
+          onTap: () => Navigator.of(context).pop(),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Builder(
+              builder: (context) => SimpleDialog(
+                title: const Text('Enter Seed Phrase'),
+                children: <Widget>[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: TextField(
+                            maxLines: null,
+                            minLines: 2,
+                            controller: newSeedController,
+                            readOnly: false,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        height: 60.0,
+                        padding: const EdgeInsets.only(
+                          right: 16.0,
+                        ),
+                        child: OutlinedButton(
+                          onPressed: () {
+                            final mnemonicGenerator = Mnemonic();
+                            if (!mnemonicGenerator
+                                .validateMnemonic(newSeedController.text)) {
+                              Scaffold.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Invalid Seed Phrase'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                              return;
+                            }
+                            Navigator.of(context).pop();
+                            wallet.seedPhrase = newSeedController.text;
+                            showSeedTextController.text =
+                                newSeedController.text;
+                            // TODO: This is not behaving itself
+                            Scaffold.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Saved!'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          child: Text('Save'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -144,7 +219,25 @@ class SettingsTab extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(6, 6, 6, 24),
+                  child: RaisedButton(
+                    color: Colors.blue,
+                    elevation: stdElevation,
+                    onPressed: () => showEnterSeedDialog(),
+                    child: Text(
+                      'Import Seed',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
             ],
           )
         ],
