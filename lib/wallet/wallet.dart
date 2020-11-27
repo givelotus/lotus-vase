@@ -3,6 +3,7 @@ import 'package:cashew/wallet/storage/schema.dart';
 import 'package:cashew/wallet/storage/seed.dart';
 import 'package:cashew/wallet/vault.dart';
 import 'package:convert/convert.dart';
+import 'package:cashew/bitcoincash/src/bip39/bip39.dart';
 
 import '../constants.dart';
 import 'keys.dart';
@@ -136,9 +137,9 @@ class Wallet {
 
   /// Generate new random seed.
   String newSeed() {
-    // TODO: Randomize and can we move to bytes
-    // rather than string (crypto API awkard)?
-    return 'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal';
+    final mnemonicGenerator = Mnemonic();
+    //'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal'
+    return mnemonicGenerator.generateMnemonic();
   }
 
   /// Generate new wallet from scratch.
