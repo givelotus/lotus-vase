@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:cashew/bitcoincash/address.dart';
+import 'dart:math';
+import 'dart:core';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -53,17 +55,22 @@ class _SendTabState extends State<SendTab> {
       onQRViewCreated: (QRViewController controller) {
         controller.scannedDataStream.listen((scanData) {
           try {
-            // Try parsing
-            // TODO: We need a tryParse function. Exceptions for validity check is
-            // not desirable.
-            Address(scanData);
-            if (scanData != viewModel.sendToAddress) {
-              showSendInfoScreen.value = true;
-            }
-          } catch (e) {
-            print('error parsing address');
+            final parseObject = Uri.parse(scanData);
+            final unparsedAmount = parseObject.queryParameters['amount'];
+            final amount = unparsedAmount == null
+                ? double.nan
+                : double.parse(unparsedAmount, (value) => double.nan);
+
+            Address(parseObject.path);
+            // Use the unparsed version, so that it appears as it was originally copied
+            viewModel.sendToAddress = parseObject.path ?? '';
+            viewModel.sendAmount = amount.isNaN
+                ? viewModel.sendAmount
+                : (amount * 100000000).truncate();
+          } catch (err) {
+            showError(context, 'Unable to parse QR code');
+            // Invalid address
           }
-          viewModel.sendToAddress = scanData;
         });
       },
       overlay: overlay,

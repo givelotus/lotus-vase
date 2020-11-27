@@ -1,14 +1,38 @@
+import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:cashew/components/calculator_keyboard/keyboard.dart';
+import 'package:cashew/constants.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'sendModel.dart';
 import '../../wallet/wallet.dart';
 import '../../viewmodel.dart';
 import '../../bitcoincash/address.dart';
 import '../../bitcoincash/transaction/transaction.dart';
-import '../../constants.dart';
+
+List<String> canSend(int amount, String address, int balance) {
+  final errors = <String>[];
+
+  if (amount < 1024) {
+    errors.add('Amount too low');
+  }
+
+  if (amount > balance) {
+    errors.add('Insufficient funds');
+  }
+
+  try {
+    Address(address);
+  } catch (err) {
+    errors.add('Invalid address');
+  }
+
+  return errors;
+}
 
 Future showReceipt(BuildContext context, Transaction transaction) {
-  // TODO: Create nice looking receipt dialog.
   return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -20,12 +44,10 @@ Future showReceipt(BuildContext context, Transaction transaction) {
 }
 
 Future showError(BuildContext context, String errMessage) {
-  // TODO: Create nice looking receipt dialog.
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error sending...'),
           content: Text(errMessage),
         );
       });
@@ -34,190 +56,273 @@ Future showError(BuildContext context, String errMessage) {
 class SendInfo extends StatelessWidget {
   final ValueNotifier<bool> visible;
   final Wallet wallet;
+  final ValueNotifier<CalculatorData> keyboardNotifier;
 
-  SendInfo({this.visible, @required this.wallet});
+  SendInfo({this.visible, @required this.wallet})
+      : keyboardNotifier = ValueNotifier<CalculatorData>(
+            CalculatorData(amount: 0, function: ''));
 
-  void sendButtonClicked(BuildContext context, String address, int amount) {
-    final primaryValidation = (amount != null && amount > 0);
-    if (!primaryValidation) {
-      return;
-    }
-    // TODO: Need address validation here. Should attach to entry field
-    // somehow to indicate the address is bad.
+  void sendTransaction(BuildContext context, String address, int amount) {
     wallet
         .sendTransaction(Address(address), BigInt.from(amount))
         .then((transaction) => showReceipt(context, transaction))
         .catchError((error) => showError(context, error.toString()));
+
+    visible.value = false;
   }
 
   @override
   Widget build(context) {
-    final balanceNotifier =
-        Provider.of<WalletModel>(context, listen: false).balance;
-    final viewModel = Provider.of<SendModel>(context, listen: false);
+    final walletModel = Provider.of<WalletModel>(context, listen: false);
+    final balanceNotifier = walletModel.balance;
+    final sendModel = Provider.of<SendModel>(context, listen: false);
 
-    final addressController =
-        TextEditingController(text: viewModel.sendToAddress);
-
-    addressController.addListener(() {
-      viewModel.sendToAddress = addressController.text;
+    keyboardNotifier.addListener(() {
+      sendModel.sendAmount = keyboardNotifier.value.amount;
     });
 
-    final amountController = TextEditingController(
-        text: viewModel.sendAmount == null
-            ? ''
-            : viewModel.sendAmount.toString());
+    final pasteAddress = () async {
+      // TODO: Dedupe this with QR Scanning.
+      try {
+        final data = await Clipboard.getData('text/plain');
+        final parseObject = Uri.parse(data.text.toString());
+        final unparsedAmount = parseObject.queryParameters['amount'];
+        final amount = unparsedAmount == null
+            ? double.nan
+            : double.parse(unparsedAmount, (value) => double.nan);
 
-    amountController.addListener(() {
-      viewModel.sendAmount = int.tryParse(amountController.text);
-    });
+        Address(parseObject.path);
+        // Use the unparsed version, so that it appears as it was originally copied
+        sendModel.sendToAddress = parseObject.path ?? '';
+        if (amount.isNaN) {
+          return;
+        }
+
+        sendModel.sendAmount = (amount * 100000000).truncate();
+        keyboardNotifier.value = CalculatorData(
+            amount: sendModel.sendAmount,
+            function: sendModel.sendAmount == 0
+                ? ''
+                : sendModel.sendAmount.toString());
+      } catch (err) {
+        await showError(context, 'Invalid clipboard data');
+        // Invalid address
+      }
+    };
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Card(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      title: const Text('Balance'),
-                      subtitle: const Text('in satoshis'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder(
-                        valueListenable: balanceNotifier,
-                        builder: (context, balance, child) {
-                          if (balance == null) {
-                            return Text(
-                              'Loading...',
-                              style: TextStyle(
-                                  color: Colors.red.withOpacity(.8),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13),
-                            );
-                          }
-                          return Text.rich(TextSpan(
-                            text: '${balance}',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: ' sats',
-                                style: TextStyle(
-                                    color: Colors.black.withOpacity(.8),
-                                    fontSize: 15),
-                              ),
+      appBar: CupertinoNavigationBar(
+        middle: Text('Send', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: Consumer<SendModel>(
+          builder: (context, viewModel, child) => TextButton(
+            onPressed: () {
+              visible.value = false;
+              viewModel.sendAmount = null;
+              viewModel.sendToAddress = null;
+            },
+            child: Text('Cancel'),
+          ),
+        ),
+      ),
+      body: Padding(
+          padding: stdPadding,
+          child: SafeArea(
+              child: Column(
+            children: [
+              Expanded(child:
+                  Consumer<SendModel>(builder: (context, viewModel, child) {
+                final errors = canSend(viewModel.sendAmount ?? 0,
+                    viewModel.sendToAddress, walletModel.balance.value ?? 0);
+                return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      errors.isEmpty
+                          ? <Widget>[]
+                          : [
+                              Row(children: [
+                                Expanded(
+                                    child: Text('Not able to send:',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red,
+                                            fontSize: 15)))
+                              ])
                             ],
-                          ));
-                        }),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: stdPadding,
-              child: Row(
-                children: [
+                      errors
+                          .map((errorText) => Row(children: [
+                                Expanded(
+                                    child: RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    text: errorText,
+                                    style: TextStyle(
+                                        color: Colors.red, fontSize: 15),
+                                  ),
+                                ))
+                              ]))
+                          .toList()
+                    ].expand((row) => row).toList());
+              })),
+              BalanceDisplay(balanceNotifier: balanceNotifier),
+              AddressDisplay(onTap: pasteAddress),
+              Row(children: [
+                Expanded(
+                    child: Consumer<SendModel>(
+                        builder: (context, viewModel, child) =>
+                            PaymentAmountDisplay(
+                                amount: (viewModel.sendAmount ?? 0).toString(),
+                                function:
+                                    keyboardNotifier.value.function ?? '')))
+              ]),
+              Consumer<SendModel>(builder: (context, viewModel, child) {
+                final errors = canSend(viewModel.sendAmount ?? 0,
+                    viewModel.sendToAddress, walletModel.balance.value ?? 0);
+                return Row(children: [
                   Expanded(
-                    child: TextField(
-                      autocorrect: false,
-                      enableInteractiveSelection: true,
-                      autofocus: true,
-                      toolbarOptions: ToolbarOptions(
-                        paste: true,
-                        cut: true,
-                        copy: true,
-                        selectAll: true,
-                      ),
-                      readOnly: false,
-                      focusNode: FocusNode(),
-                      controller: addressController,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter recipient address',
-                      ),
-                    ),
-                  )
+                      child: ElevatedButton(
+                    autofocus: true,
+                    onPressed: errors.isEmpty
+                        ? () {
+                            sendTransaction(context, viewModel.sendToAddress,
+                                viewModel.sendAmount);
+                          }
+                        : null,
+                    child: Text('Send'),
+                  ))
+                ]);
+              }),
+              CalculatorKeyboard(
+                  dataNotifier: keyboardNotifier,
+                  initialValue: (sendModel.sendAmount ?? '').toString()),
+              // Confirm Amount button widget writes to global SendModel
+              // and then switches to Slide to send button:
+            ],
+          ))),
+    );
+  }
+}
+
+String clipString(String data) {
+  return '${data.substring(0, 6)}...${data.substring(data.length - 6, data.length)}';
+}
+
+class AddressDisplay extends StatelessWidget {
+  final void Function() onTap;
+
+  AddressDisplay({this.onTap}) : super();
+
+  @override
+  Widget build(context) {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Consumer<SendModel>(
+          builder: (context, viewModel, child) => GestureDetector(
+              onTap: onTap,
+              child: Column(
+                children: [
+                  Row(children: [
+                    Text('Send To Address:',
+                        style: Theme.of(context).textTheme.caption),
+                    Icon(
+                      Icons.paste,
+                    )
+                  ]),
+                  RichText(
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        text: viewModel.sendToAddress != null &&
+                                viewModel.sendToAddress.isNotEmpty
+                            ? clipString(viewModel.sendToAddress)
+                            : 'Tap to Paste Address',
+                        // TODO: This is waaay too small. We need to split the
+                        // address up over multiple lines.
+                        style: Theme.of(context).textTheme.headline5,
+                      )),
                 ],
-              ),
-            ),
-            Row(children: [
-              Expanded(
-                child: Padding(
-                  padding: stdPadding,
-                  child: TextField(
-                    autocorrect: false,
-                    enableInteractiveSelection: true,
-                    autofocus: false,
-                    toolbarOptions: ToolbarOptions(
-                      paste: true,
-                      cut: true,
-                      copy: true,
-                      selectAll: true,
-                    ),
-                    readOnly: false,
-                    focusNode: FocusNode(),
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      suffixText: 'sats',
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter amount',
-                    ),
-                  ),
-                ),
-              ),
-              // TODO: This needs to actually do something
-              FlatButton(
-                onPressed: () {},
-                child: Text('Max'),
-              )
-            ]),
-            Row(
-              children: [
-                Expanded(
-                  child: Consumer<SendModel>(
-                    builder: (context, viewModel, child) => ElevatedButton(
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        visible.value = false;
-                        viewModel.sendAmount = null;
-                      },
-                      child: Text('Cancel'),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Consumer<SendModel>(
-                    builder: (context, viewModel, child) => ElevatedButton(
-                      autofocus: true,
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        sendButtonClicked(
-                          context,
-                          viewModel.sendToAddress,
-                          viewModel.sendAmount,
-                        );
-                        visible.value = false;
-                        viewModel.sendAmount = null;
-                      },
-                      child: Text('Send'),
-                    ),
-                  ),
-                )
-              ],
-            )
-          ],
+              )))
+    ]);
+  }
+}
+
+class PaymentAmountDisplay extends StatelessWidget {
+  final String amount;
+  final String function;
+  PaymentAmountDisplay({Key key, this.amount, this.function})
+      : super(
+          key: key,
+        );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Row(children: [
+        Expanded(
+            child: Text(
+          '${function}',
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ))
+      ]),
+      Row(children: [
+        Expanded(
+            child: Text(
+          '= ${amount} sats',
+          textAlign: TextAlign.right,
+          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+        ))
+      ]),
+    ]);
+  }
+}
+
+class BalanceDisplay extends StatelessWidget {
+  final ValueNotifier<int> balanceNotifier;
+  BalanceDisplay({@required this.balanceNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    // Balance Display widget
+    return Padding(
+      padding: stdPadding,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+          color: Colors.grey[400].withOpacity(0.6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ValueListenableBuilder(
+                  valueListenable: balanceNotifier,
+                  builder: (context, balance, child) {
+                    if (balance == null) {
+                      return Text(
+                        'Loading...',
+                        style: TextStyle(
+                            color: Colors.red.withOpacity(.8),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13),
+                      );
+                    }
+                    return Text.rich(TextSpan(
+                      text: 'Balance: ${balance}',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: ' sats',
+                          style: TextStyle(
+                              color: Colors.black.withOpacity(.8),
+                              fontSize: 15),
+                        ),
+                      ],
+                    ));
+                  }),
+            ],
+          ),
         ),
       ),
     );
