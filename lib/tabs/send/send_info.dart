@@ -1,4 +1,6 @@
+import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'sendModel.dart';
 import '../../wallet/wallet.dart';
@@ -9,6 +11,8 @@ import '../../constants.dart';
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
+  print(transaction);
+
   return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -39,10 +43,11 @@ class SendInfo extends StatelessWidget {
 
   Future<void> sendButtonClicked(
       BuildContext context, String address, int amount) async {
+    final addressNotBlank = (address != null);
     final primaryValidation = (amount != null && amount > 0);
-    // TODO: Need additional validation checks -- not spending money
+    // TODO: Need additional validation checks -- not spending sats
     // you don't have
-    if (!primaryValidation) {
+    if (!primaryValidation || !addressNotBlank) {
       return showDialog<void>(
         context: context,
         barrierDismissible: false, // user must tap button!
@@ -70,13 +75,54 @@ class SendInfo extends StatelessWidget {
       );
       ;
     }
+
+    print(address);
+
+    print(amount);
+
     // TODO: Need address validation here. Should attach to entry field
     // somehow to indicate the address is bad.
+<<<<<<< HEAD
     await wallet
         .sendTransaction(Address(address), BigInt.from(amount))
         .then((transaction) => showReceipt(context, transaction))
         .catchError((error) => showError(context, error.toString()));
+=======
+>>>>>>> Fix (temporary) for address format validation
 
+//  Instance of 'AddressFormatException'
+
+    try {
+      wallet
+          .sendTransaction(Address(address), BigInt.from(amount))
+          .then((transaction) => showReceipt(context, transaction));
+    } on AddressFormatException {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Fix address please!'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Or I\'ll bankrupt you.'),
+                  Text('Consider yourself warned...!'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('um.. OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
     // only close SendInfo screen in case transaction is successful
     visible.value = false;
   }
@@ -171,7 +217,7 @@ class SendInfo extends StatelessWidget {
                       keyboardType: TextInputType.text,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Enter recipient address',
+                        hintText: 'Tap to paste address',
                       ),
                     ),
                   )
