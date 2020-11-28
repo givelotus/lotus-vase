@@ -77,14 +77,20 @@ class _MainPageState extends State<MainPage> {
             // Succesfully loaded wallet
             return buildFromWallet(snapshot.data, context);
           } else if (snapshot.hasError) {
-            // Load from disk failed - generate then save seed.
-            // TODO: Classify error:
+            // Load from disk failed
+            // Generate then save wallet
+
+            // TODO: Better classification of errors:
             //    - If it's missing we need to generate
             //    - If it's corrupted we need to warn
+            //    - Different scehma version?
+
             return FutureBuilder(
                 future: Wallet.generateNew(network: NetworkType.MAIN),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
+                    final wallet = snapshot.data;
+                    wallet.saveWallet(); // We don't need to block here
                     return buildFromWallet(snapshot.data, context);
                   } else {
                     return LoadingPage(text: 'Generating new wallet...');
