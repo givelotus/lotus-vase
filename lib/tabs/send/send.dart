@@ -106,8 +106,7 @@ class _SendTabState extends State<SendTab> {
                                       );
                                     }
                                     return Text.rich(TextSpan(
-                                      text:
-                                          '${model.activeWallet.balanceSatoshis()}',
+                                      text: '${model.wallet.balanceSatoshis()}',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,

@@ -70,7 +70,7 @@ class SendInfo extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: Text('${viewModel.activeWallet.balanceSatoshis()}'),
+                    child: Text('${viewModel.wallet.balanceSatoshis()}'),
                   ),
                 ],
               ),
@@ -161,7 +161,7 @@ class SendInfo extends StatelessWidget {
                       onPressed: () {
                         sendButtonClicked(
                           context,
-                          viewModel.activeWallet,
+                          viewModel.wallet,
                           viewModel.sendToAddress,
                           viewModel.sendAmount,
                         );

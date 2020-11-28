@@ -10,10 +10,9 @@ import 'keys.dart';
 import '../electrum/client.dart';
 
 class Wallet {
-  Wallet(this.walletPath, this.electrumFactory, {this.network});
+  Wallet(this.seed, this.keys, this.electrumFactory, {this.network});
 
   NetworkType network;
-  String walletPath;
   ElectrumFactory electrumFactory;
 
   Keys keys;
@@ -22,6 +21,34 @@ class Wallet {
   final Vault _vault = Vault([]);
 
   int _balance = 0;
+
+  /// Generate a fresh wallet.
+  static Future<Wallet> generateNew({network = NetworkType.TEST}) async {
+    final seed = Bip39Seed.random();
+    final keys = await Keys.construct(seed);
+    final electrumFactory = ElectrumFactory(electrumUrls);
+
+    return Wallet(seed, keys, electrumFactory, network: network);
+  }
+
+  /// Read wallet file from disk. Returns true if successful.
+  static Future<Wallet> loadFromDisk({network = NetworkType.TEST}) async {
+    // Check schema version
+    final schemaVersion = await readSchemaVersion();
+    if (schemaVersion != CURRENT_SCHEMA_VERSION) {
+      throw Exception('Unsupported version');
+    }
+
+    // Read keys
+    final keys = await Keys.readFromDisk(network);
+
+    // Read seed
+    final seed = await Bip39Seed.readFromDisk();
+
+    final electrumFactory = ElectrumFactory(electrumUrls);
+
+    return Wallet(seed, keys, electrumFactory, network: network);
+  }
 
   /// Gets the fees per byte.
   Future<BigInt> fetchFeePerByte() async {
@@ -118,48 +145,9 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  /// Read wallet file from disk. Returns true if successful.
-  Future<void> loadFromDisk() async {
-    // Check schema version
-    final schemaVersion = await readSchemaVersion();
-    if (schemaVersion != CURRENT_SCHEMA_VERSION) {
-      throw Exception('Unsupported version');
-    }
-
-    // Read keys
-    keys = await Keys.readFromDisk(network);
-
-    // Read seed
-    seed = await Bip39Seed.readFromDisk();
-
-    // TODO: Load UTXOs
-  }
-
-  /// Generate new random seed.
-  String newSeed() {
-    final mnemonicGenerator = Mnemonic();
-    //'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal'
-    return mnemonicGenerator.generateMnemonic();
-  }
-
-  set seedPhrase(String newSeed) {
-    seed = Bip39Seed(value: newSeed);
-
-    initialize().then((value) => saveWallet());
-  }
-
-  /// Attempts to load wallet from disk, else constructs a new wallet.
   Future<void> initialize() async {
-    if (seed.value == null) {
-      seed = Bip39Seed(value: newSeed());
-      keys = await Keys.construct(seed);
-      await saveWallet();
-    } else {
-      keys = await Keys.construct(seed);
-    }
-
     await updateUtxos();
-    await refreshBalanceLocal();
+    refreshBalanceLocal();
     await startUtxoListeners();
   }
 

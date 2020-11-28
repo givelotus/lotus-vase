@@ -14,7 +14,7 @@ class SettingsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showSeedTextController = TextEditingController(
-      text: wallet.seed.value,
+      text: wallet.seed.toString(),
     );
 
     final newSeedController = TextEditingController();
@@ -32,7 +32,7 @@ class SettingsTab extends StatelessWidget {
               builder: (context, model, child) {
                 if (model.initialized) {
                   return Text(
-                    '${model.activeWallet.balanceSatoshis()}',
+                    '${model.wallet.balanceSatoshis()}',
                   );
                 }
                 return CircularProgressIndicator();
@@ -156,9 +156,9 @@ class SettingsTab extends StatelessWidget {
                               return;
                             }
                             Navigator.of(context).pop();
-                            wallet.seedPhrase = newSeedController.text;
-                            showSeedTextController.text =
-                                newSeedController.text;
+                            // wallet.seedPhrase = newSeedController.text;
+                            // showSeedTextController.text =
+                            //     newSeedController.text;
                             // TODO: This is not behaving itself
                             Scaffold.of(context).showSnackBar(
                               SnackBar(

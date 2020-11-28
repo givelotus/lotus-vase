@@ -133,7 +133,7 @@ class Keys {
     await Isolate.spawn(
       _constructKeys,
       KeyIsolateInput(
-        seed.value,
+        seed.seed,
         receivePort.sendPort,
       ),
     );

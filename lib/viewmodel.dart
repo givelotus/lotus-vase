@@ -5,18 +5,15 @@ class CashewModel with ChangeNotifier {
   String _sendToAddress;
   int _sendAmount;
 
-  Wallet _activeWallet;
+  Wallet wallet;
   bool _initialized = false;
 
-  CashewModel(sendToAddress, activeWallet) {
+  CashewModel(sendToAddress, wallet) {
     this.sendToAddress = _sendToAddress;
-    this.activeWallet = activeWallet;
+    this.wallet = wallet;
+
+    this.wallet.initialize().then((value) => initialized = true);
     _sendAmount = null;
-    this
-        .activeWallet
-        .loadFromDisk()
-        .then((value) => this.activeWallet.initialize())
-        .then((value) => initialized = true);
   }
 
   set initialized(bool newValue) {
@@ -32,13 +29,6 @@ class CashewModel with ChangeNotifier {
   }
 
   int get sendAmount => _sendAmount;
-
-  Wallet get activeWallet => _activeWallet;
-
-  set activeWallet(Wallet newValue) {
-    _activeWallet = newValue;
-    notifyListeners();
-  }
 
   String get sendToAddress => _sendToAddress;
 
