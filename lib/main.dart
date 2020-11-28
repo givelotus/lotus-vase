@@ -1,14 +1,12 @@
-import 'package:cashew/electrum/client.dart';
 import 'package:cashew/tabs/settings.dart';
 import 'package:cashew/tabs/receive.dart';
 import 'package:cashew/tabs/send/send.dart';
-import 'package:cashew/wallet/wallet.dart';
 import 'package:cashew/viewmodel.dart';
+import 'package:cashew/tabs/send/sendModel.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-
-import 'constants.dart';
 
 void main() {
   runApp(CashewApp());
@@ -49,18 +47,22 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(create: (BuildContext context) {
-      return CashewModel('',
-          Wallet('todo path', ElectrumFactory(electrumUrls), network: network));
+      return WalletModel();
     }, builder: (context, child) {
-      final wallet =
-          Provider.of<CashewModel>(context, listen: false).activeWallet;
-
+      final viewModel = Provider.of<WalletModel>(context);
+      if (viewModel.initialized) {
+        viewModel.writeToDisk();
+      }
       final pageView = PageView(
         controller: pagerController,
         children: [
-          SettingsTab(wallet: wallet),
-          SendTab(controller: pagerController),
-          ReceiveTab(wallet: wallet),
+          SettingsTab(),
+          ChangeNotifierProvider(create: (BuildContext context) {
+            return SendModel();
+          }, builder: (context, child) {
+            return SendTab(controller: pagerController);
+          }),
+          ReceiveTab(),
         ],
       );
 

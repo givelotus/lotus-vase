@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../viewmodel.dart';
+import 'sendModel.dart';
 import '../../wallet/wallet.dart';
+import '../../viewmodel.dart';
 import '../../bitcoincash/src/address.dart';
 import '../../bitcoincash/src/transaction/transaction.dart';
 import '../../constants.dart';
@@ -20,11 +21,11 @@ Future showReceipt(BuildContext context, Transaction transaction) {
 
 class SendInfo extends StatelessWidget {
   final ValueNotifier<bool> visible;
+  final Wallet wallet;
 
-  SendInfo({this.visible});
+  SendInfo({this.visible, this.wallet});
 
-  void sendButtonClicked(
-      BuildContext context, Wallet wallet, String address, int amount) {
+  void sendButtonClicked(BuildContext context, String address, int amount) {
     final primaryValidation = (amount != null && amount > 0);
     if (!primaryValidation) {
       return;
@@ -38,7 +39,9 @@ class SendInfo extends StatelessWidget {
 
   @override
   Widget build(context) {
-    final viewModel = Provider.of<CashewModel>(context, listen: false);
+    final balanceNotifier =
+        Provider.of<WalletModel>(context, listen: false).balance;
+    final viewModel = Provider.of<SendModel>(context, listen: false);
 
     final addressController =
         TextEditingController(text: viewModel.sendToAddress);
@@ -70,7 +73,35 @@ class SendInfo extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: Text('${viewModel.activeWallet.balanceSatoshis()}'),
+                    child: ValueListenableBuilder(
+                        valueListenable: balanceNotifier,
+                        builder: (context, balance, child) {
+                          if (balance == null) {
+                            return Text(
+                              'Loading...',
+                              style: TextStyle(
+                                  color: Colors.red.withOpacity(.8),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13),
+                            );
+                          }
+                          return Text.rich(TextSpan(
+                            text: '${balance}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: ' sats',
+                                style: TextStyle(
+                                    color: Colors.white.withOpacity(.8),
+                                    fontSize: 15),
+                              ),
+                            ],
+                          ));
+                        }),
                   ),
                 ],
               ),
@@ -138,7 +169,7 @@ class SendInfo extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Consumer<CashewModel>(
+                  child: Consumer<SendModel>(
                     builder: (context, viewModel, child) => ElevatedButton(
                       // TODO: we should probably have ValueNotifiable props
                       // specifically for this component
@@ -152,7 +183,7 @@ class SendInfo extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: Consumer<CashewModel>(
+                  child: Consumer<SendModel>(
                     builder: (context, viewModel, child) => ElevatedButton(
                       autofocus: true,
                       // TODO: we should probably have ValueNotifiable props
@@ -161,7 +192,6 @@ class SendInfo extends StatelessWidget {
                       onPressed: () {
                         sendButtonClicked(
                           context,
-                          viewModel.activeWallet,
                           viewModel.sendToAddress,
                           viewModel.sendAmount,
                         );

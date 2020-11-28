@@ -7,6 +7,7 @@ import 'package:cashew/bitcoincash/src/address.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import './send_info.dart';
+import './sendModel.dart';
 
 class SendTab extends StatefulWidget {
   final PageController controller;
@@ -21,9 +22,11 @@ class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   ValueNotifier<bool> showSendInfoScreen;
+
+  _SendTabState() : super();
+
   @override
   void initState() {
-    // TODO: implement initState
     showSendInfoScreen = ValueNotifier<bool>(false);
     super.initState();
   }
@@ -33,7 +36,9 @@ class _SendTabState extends State<SendTab> {
     var screenDimension = MediaQuery.of(context).size;
 
     // WE don't want to be redrawing
-    final viewModel = Provider.of<CashewModel>(context, listen: false);
+    final viewModel = Provider.of<SendModel>(context, listen: false);
+    final balanceNotifier =
+        Provider.of<WalletModel>(context, listen: false).balance;
 
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.green,
@@ -94,37 +99,36 @@ class _SendTabState extends State<SendTab> {
                             color: Colors.grey[400].withOpacity(0.6),
                             child: Row(
                               children: [
-                                Consumer<CashewModel>(
-                                  builder: (context, model, child) {
-                                    if (!model.initialized) {
-                                      return Text(
-                                        'Loading...',
-                                        style: TextStyle(
-                                            color: Colors.red.withOpacity(.8),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13),
-                                      );
-                                    }
-                                    return Text.rich(TextSpan(
-                                      text:
-                                          '${model.activeWallet.balanceSatoshis()}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 17,
-                                      ),
-                                      children: [
-                                        TextSpan(
-                                          text: ' sats',
+                                ValueListenableBuilder(
+                                    valueListenable: balanceNotifier,
+                                    builder: (context, balance, child) {
+                                      if (balance == null) {
+                                        return Text(
+                                          'Loading...',
                                           style: TextStyle(
-                                              color:
-                                                  Colors.white.withOpacity(.8),
-                                              fontSize: 15),
+                                              color: Colors.red.withOpacity(.8),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13),
+                                        );
+                                      }
+                                      return Text.rich(TextSpan(
+                                        text: '${balance}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 17,
                                         ),
-                                      ],
-                                    ));
-                                  },
-                                ),
+                                        children: [
+                                          TextSpan(
+                                            text: ' sats',
+                                            style: TextStyle(
+                                                color: Colors.white
+                                                    .withOpacity(.8),
+                                                fontSize: 15),
+                                          ),
+                                        ],
+                                      ));
+                                    }),
                               ],
                             ),
                           ),
