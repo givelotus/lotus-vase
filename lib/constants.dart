@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:cashew/bitcoincash/src/networks.dart';
+
 // Wallet constants
 const electrumUrls = [
   'http://bchabc.fmarcosh.xyz:50003',
@@ -19,3 +21,5 @@ const copiedAd = SnackBar(
   content: Text('Copied address to Clipboard'),
   duration: Duration(seconds: 1),
 );
+
+const network = NetworkType.MAIN;

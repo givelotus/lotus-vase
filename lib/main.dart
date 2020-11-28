@@ -49,8 +49,8 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(create: (BuildContext context) {
-      return CashewModel(
-          '', Wallet('todo path', ElectrumFactory(electrumUrls)));
+      return CashewModel('',
+          Wallet('todo path', ElectrumFactory(electrumUrls), network: network));
     }, builder: (context, child) {
       final wallet =
           Provider.of<CashewModel>(context, listen: false).activeWallet;
