@@ -156,6 +156,10 @@ class SettingsTab extends StatelessWidget {
                               return;
                             }
                             Navigator.of(context).pop();
+                            // TODO: Fix this.
+                            //    1) Generate new wallet
+                            //    2) Persist wallet
+                            //    3) Essentially restart app
                             // wallet.seedPhrase = newSeedController.text;
                             // showSeedTextController.text =
                             //     newSeedController.text;
