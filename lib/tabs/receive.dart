@@ -1,21 +1,22 @@
-import 'package:cashew/wallet/wallet.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:cashew/constants.dart';
 
-class ReceiveTab extends StatelessWidget {
-  ReceiveTab({Key key, this.wallet}) : super(key: key);
+import '../viewmodel.dart';
 
-  final Wallet wallet;
+class ReceiveTab extends StatelessWidget {
+  ReceiveTab({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (wallet == null) {
+    final viewModel = Provider.of<WalletModel>(context);
+    if (viewModel.wallet == null) {
       return Container();
     }
 
-    final keys = wallet.keys.keys.sublist(0);
+    final keys = viewModel.wallet.keys.keys.sublist(0);
     keys.shuffle();
 
     final keyInfo = keys.firstWhere((keyInfo) => keyInfo.isChange == false);
