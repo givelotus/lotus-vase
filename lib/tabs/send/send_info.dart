@@ -76,21 +76,14 @@ class SendInfo extends StatelessWidget {
       ;
     }
 
-    print(address);
-
-    print(amount);
-
     // TODO: Need address validation here. Should attach to entry field
     // somehow to indicate the address is bad.
-<<<<<<< HEAD
-    await wallet
+
+ await wallet
         .sendTransaction(Address(address), BigInt.from(amount))
         .then((transaction) => showReceipt(context, transaction))
         .catchError((error) => showError(context, error.toString()));
-=======
->>>>>>> Fix (temporary) for address format validation
 
-//  Instance of 'AddressFormatException'
 
     try {
       wallet
@@ -129,16 +122,16 @@ class SendInfo extends StatelessWidget {
 
   @override
   Widget build(context) {
+    var screenDimension = MediaQuery.of(context).size;
     final balanceNotifier =
         Provider.of<WalletModel>(context, listen: false).balance;
     final viewModel = Provider.of<SendModel>(context, listen: false);
+    // final addressController =
+    //     TextEditingController(text: viewModel.sendToAddress);
 
-    final addressController =
-        TextEditingController(text: viewModel.sendToAddress);
-
-    addressController.addListener(() {
-      viewModel.sendToAddress = addressController.text;
-    });
+    // addressController.addListener(() {
+    //   viewModel.sendToAddress = addressController.text;
+    // });
 
     final amountController = TextEditingController(
         text: viewModel.sendAmount == null
@@ -200,27 +193,43 @@ class SendInfo extends StatelessWidget {
               padding: stdPadding,
               child: Row(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      autocorrect: false,
-                      enableInteractiveSelection: true,
-                      autofocus: true,
-                      toolbarOptions: ToolbarOptions(
-                        paste: true,
-                        cut: true,
-                        copy: true,
-                        selectAll: true,
-                      ),
-                      readOnly: false,
-                      focusNode: FocusNode(),
-                      controller: addressController,
-                      keyboardType: TextInputType.text,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Tap to paste address',
-                      ),
-                    ),
-                  )
+                  Consumer<SendModel>(builder: (context, viewModel, child) {
+                    return GestureDetector(
+                      onTap: () async {
+                        ClipboardData data =
+                            await Clipboard.getData('text/plain');
+                        viewModel.sendToAddress = data.text.toString();
+                      },
+                      child: viewModel.sendToAddress == null
+                          ? Container(
+                              child: Text(
+                                'Tap to Paste Address',
+                                style: TextStyle(
+                                    color: Colors.red.withOpacity(.8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13),
+                              ),
+                            )
+                          : Container(
+                              width: screenDimension.width - 30,
+                              child: RichText(
+                                text: TextSpan(
+                                  text: 'bch:',
+                                  style: TextStyle(
+                                      color: Colors.black.withOpacity(.8),
+                                      fontSize: 15),
+                                  children: <TextSpan>[
+                                    TextSpan(
+                                      text: viewModel.sendToAddress,
+                                      style: TextStyle(
+                                          color: Colors.black.withOpacity(.8),
+                                          fontSize: 15),
+                                    ),
+                                  ],
+                                ),
+                              )),
+                    );
+                  }),
                 ],
               ),
             ),
