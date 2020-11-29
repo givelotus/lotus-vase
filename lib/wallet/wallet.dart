@@ -1,23 +1,22 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
-import 'package:cashew/wallet/storage/schema.dart';
-import 'package:cashew/wallet/storage/seed.dart';
 import 'package:cashew/wallet/vault.dart';
 import 'package:convert/convert.dart';
-import 'package:cashew/bitcoincash/src/bip39/bip39.dart';
 
 import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 
+typedef BalanceUpdateHandler = void Function(int result);
+
 class Wallet {
-  Wallet(this.walletPath, this.electrumFactory, {this.network});
+  BalanceUpdateHandler balanceUpdateHandler;
+  Wallet(this.keys, this.electrumFactory,
+      {this.network, this.balanceUpdateHandler});
 
   NetworkType network;
-  String walletPath;
   ElectrumFactory electrumFactory;
 
   Keys keys;
-  Bip39Seed seed;
 
   final Vault _vault = Vault([]);
 
@@ -57,6 +56,7 @@ class Wallet {
 
       _vault.add(spendable);
     }
+    refreshBalanceLocal();
   }
 
   /// Start UTXO listeners.
@@ -100,6 +100,9 @@ class Wallet {
   /// Use locally stored UTXOs to refresh balance.
   void refreshBalanceLocal() {
     _balance = _vault.calculateBalance().toInt();
+    if (balanceUpdateHandler != null) {
+      balanceUpdateHandler(_balance);
+    }
   }
 
   /// Use electrum to refresh balance.
@@ -118,64 +121,15 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  /// Read wallet file from disk. Returns true if successful.
-  Future<void> loadFromDisk() async {
-    // Check schema version
-    final schemaVersion = await readSchemaVersion();
-    if (schemaVersion != CURRENT_SCHEMA_VERSION) {
-      throw Exception('Unsupported version');
-    }
-
-    // Read keys
-    keys = await Keys.readFromDisk(network);
-
-    // Read seed
-    seed = await Bip39Seed.readFromDisk();
-
-    // TODO: Load UTXOs
-  }
-
-  /// Generate new random seed.
-  String newSeed() {
-    final mnemonicGenerator = Mnemonic();
-    //'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal'
-    return mnemonicGenerator.generateMnemonic();
-  }
-
-  set seedPhrase(String newSeed) {
-    seed = Bip39Seed(value: newSeed);
-
-    initialize().then((value) => saveWallet());
-  }
-
-  /// Attempts to load wallet from disk, else constructs a new wallet.
   Future<void> initialize() async {
-    if (seed.value == null) {
-      seed = Bip39Seed(value: newSeed());
-      keys = await Keys.construct(seed);
-      await saveWallet();
-    } else {
-      keys = await Keys.construct(seed);
-    }
-
+    // Wipe out the vault before refreshing UTXOs
     await updateUtxos();
-    await refreshBalanceLocal();
+    refreshBalanceLocal();
+    // TODO: we need a way to restart these when electrum connection dies
+    // currently, we won't get any updates if we ever have to reconnect
+    // again.
     await startUtxoListeners();
   }
-
-  Future<void> saveWallet() async {
-    // Persist schema version
-    await writeSchemaVersion();
-
-    // Persist keys
-    await keys.writeToDisk();
-
-    // Persist seed
-    await seed.writeToDisk();
-  }
-
-  /// Use electrum to update wallet.
-  Future<void> updateWallet() async {}
 
   int balanceSatoshis() {
     return _balance;
@@ -248,5 +202,10 @@ class Wallet {
       rethrow;
     }
     return transaction;
+  }
+
+  Future<void> updateSeedPhrase(String newSeed) async {
+    keys = await Keys.construct(newSeed);
+    await initialize();
   }
 }

@@ -1,21 +1,20 @@
 import 'package:cashew/constants.dart';
 import 'package:cashew/viewmodel.dart';
-import 'package:cashew/wallet/wallet.dart';
 import 'package:cashew/bitcoincash/src/bip39/bip39.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class SettingsTab extends StatelessWidget {
-  SettingsTab({Key key, this.wallet}) : super(key: key);
-
-  final Wallet wallet;
+  SettingsTab({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final walletModel = Provider.of<WalletModel>(context, listen: false);
     final showSeedTextController = TextEditingController(
-      text: wallet.seed.value,
+      text: walletModel.seed,
     );
+    final balanceNotifier = walletModel.balance;
 
     final newSeedController = TextEditingController();
 
@@ -28,17 +27,35 @@ class SettingsTab extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Consumer<CashewModel>(
-              builder: (context, model, child) {
-                if (model.initialized) {
-                  return Text(
-                    '${model.activeWallet.balanceSatoshis()}',
-                  );
-                }
-                return CircularProgressIndicator();
-              },
-            ),
-          )
+            child: ValueListenableBuilder(
+                valueListenable: balanceNotifier,
+                builder: (context, balance, child) {
+                  if (balance == null) {
+                    return Text(
+                      'Loading...',
+                      style: TextStyle(
+                          color: Colors.red.withOpacity(.8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    );
+                  }
+                  return Text.rich(TextSpan(
+                    text: '${balance} sats',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: ' sats',
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(.8), fontSize: 15),
+                      ),
+                    ],
+                  ));
+                }),
+          ),
         ],
       ),
       elevation: stdElevation,
@@ -155,17 +172,9 @@ class SettingsTab extends StatelessWidget {
                               );
                               return;
                             }
+                            // This will regenerate everything
+                            walletModel.seed = newSeedController.text;
                             Navigator.of(context).pop();
-                            wallet.seedPhrase = newSeedController.text;
-                            showSeedTextController.text =
-                                newSeedController.text;
-                            // TODO: This is not behaving itself
-                            Scaffold.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Saved!'),
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
                           },
                           child: Text('Save'),
                         ),

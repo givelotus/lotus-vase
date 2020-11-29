@@ -3,10 +3,7 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
-import 'package:cashew/wallet/storage/seed.dart';
 import 'package:pointycastle/digests/sha256.dart';
-
-import 'storage/keys.dart';
 
 Uint8List calculateScriptHash(Address address) {
   final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
@@ -69,47 +66,18 @@ void _constructKeys(KeyIsolateInput input) {
             network: input.network,
           ));
 
-  input.sendPort.send(Keys(externalKeys.followedBy(changeKeys).toList(),
+  input.sendPort.send(Keys(
+      input.seed, rootKey, externalKeys.followedBy(changeKeys).toList(),
       network: input.network));
 }
 
 class Keys {
-  Keys(this.keys, {this.network = NetworkType.TEST});
   NetworkType network;
-
+  HDPrivateKey rootKey;
+  String seed;
   List<KeyInfo> keys;
 
-  Future<void> writeToDisk() async {
-    // Write private keys
-    final keyWrites = keys.asMap().entries.map((entry) {
-      final index = entry.key;
-      final keyInfo = entry.value;
-      final storedKey = StoredKey.fromKeyInfo(keyInfo);
-      return storedKey.writeToDisk(index);
-    });
-    await Future.wait(keyWrites);
-
-    // Write metadata
-    final metadata = KeyStorageMetadata(keys.length);
-    await metadata.writeToDisk();
-  }
-
-  static Future<Keys> readFromDisk(NetworkType network) async {
-    // Read metadata
-    final metadata = await KeyStorageMetadata.readFromDisk();
-    final keyCount = metadata.keyCount;
-
-    // Read private keys
-    final storedKeyFutures = List<Future<StoredKey>>.generate(
-        keyCount, (index) => StoredKey.readFromDisk(index));
-    final storedKeys = await Future.wait(storedKeyFutures);
-
-    // Convert to key info
-    final keyInfo =
-        storedKeys.map((storedKey) => storedKey.toKeyInfo(network)).toList();
-
-    return Keys(keyInfo, network: network);
-  }
+  Keys(this.seed, this.rootKey, this.keys, {this.network = NetworkType.TEST});
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
@@ -118,7 +86,7 @@ class Keys {
     return keyInfo;
   }
 
-  static Future<Keys> construct(Bip39Seed seed) async {
+  static Future<Keys> construct(String seed) async {
     final receivePort = ReceivePort();
 
     // Construct key completer
@@ -133,7 +101,7 @@ class Keys {
     await Isolate.spawn(
       _constructKeys,
       KeyIsolateInput(
-        seed.value,
+        seed,
         receivePort.sendPort,
       ),
     );
