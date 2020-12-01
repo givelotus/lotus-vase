@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:cashew/bitcoincash/address.dart';
 import 'dart:math';
+import 'dart:core';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -57,7 +58,18 @@ class _SendTabState extends State<SendTab> {
             // Try parsing
             // TODO: We need a tryParse function. Exceptions for validity check is
             // not desirable.
-            Address(scanData);
+
+            Map tryParse(scanData) {
+              var parseObject = Uri.parse(scanData);
+              var address = parseObject.path;
+              var amount = parseObject.queryParameters['amount'];
+              var map = {'address': address, 'amount': amount};
+
+              print(map);
+              return map;
+            }
+
+            Address(tryParse(scanData)['address']);
             if (scanData != viewModel.sendToAddress) {
               showSendInfoScreen.value = true;
             }

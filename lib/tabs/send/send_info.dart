@@ -198,7 +198,26 @@ class SendInfo extends StatelessWidget {
                       onTap: () async {
                         ClipboardData data =
                             await Clipboard.getData('text/plain');
-                        viewModel.sendToAddress = data.text.toString();
+
+                        // TODO: Need to throw errors here
+                        Map tryParse(data) {
+                          var parseObject = Uri.parse(data);
+                          var address = parseObject.path;
+                          var amount = parseObject.queryParameters['amount'];
+                          var map = {'address': address, 'amount': amount};
+
+                          print(map);
+                          return map;
+                        }
+
+                        Address(tryParse(data.text.toString())['address']);
+
+                        viewModel.sendToAddress =
+                            tryParse(data.text.toString())['address'];
+                        viewModel.sendAmount =
+                            tryParse(data.text.toString())['amount'];
+                        print(viewModel.sendToAddress);
+                        print(viewModel.sendAmount);
                       },
                       child: viewModel.sendToAddress == null
                           ? Container(
