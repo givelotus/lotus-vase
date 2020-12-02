@@ -261,53 +261,53 @@ class SendInfo extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: () {},
-              child: Row(children: [PaymentAmountDisplay(value: '0 sats')]),
-            ),
-            Card(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      title: const Text('Balance'),
-                      subtitle: const Text('in satoshis'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder(
-                        valueListenable: balanceNotifier,
-                        builder: (context, balance, child) {
-                          if (balance == null) {
-                            return Text(
-                              'Loading...',
-                              style: TextStyle(
-                                  color: Colors.red.withOpacity(.8),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13),
-                            );
-                          }
-                          return Text.rich(TextSpan(
-                            text: '${balance}',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: ' sats',
-                                style: TextStyle(
-                                    color: Colors.white.withOpacity(.8),
-                                    fontSize: 15),
-                              ),
-                            ],
-                          ));
-                        }),
-                  ),
-                ],
-              ),
-            ),
+            // GestureDetector(
+            //   onTap: () {},
+            //   child: Row(children: [PaymentAmountDisplay(value: '0 sats')]),
+            // ),
+            // Card(
+            //   child: Row(
+            //     children: [
+            //       Expanded(
+            //         child: ListTile(
+            //           title: const Text('Balance'),
+            //           subtitle: const Text('in satoshis'),
+            //         ),
+            //       ),
+            //       Expanded(
+            //         child: ValueListenableBuilder(
+            //             valueListenable: balanceNotifier,
+            //             builder: (context, balance, child) {
+            //               if (balance == null) {
+            //                 return Text(
+            //                   'Loading...',
+            //                   style: TextStyle(
+            //                       color: Colors.red.withOpacity(.8),
+            //                       fontWeight: FontWeight.bold,
+            //                       fontSize: 13),
+            //                 );
+            //               }
+            //               return Text.rich(TextSpan(
+            //                 text: '${balance}',
+            //                 style: TextStyle(
+            //                   color: Colors.white,
+            //                   fontWeight: FontWeight.bold,
+            //                   fontSize: 17,
+            //                 ),
+            //                 children: [
+            //                   TextSpan(
+            //                     text: ' sats',
+            //                     style: TextStyle(
+            //                         color: Colors.white.withOpacity(.8),
+            //                         fontSize: 15),
+            //                   ),
+            //                 ],
+            //               ));
+            //             }),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             Row(
               children: [
                 Expanded(
@@ -346,7 +346,8 @@ class SendInfo extends StatelessWidget {
                   ),
                 )
               ],
-            )
+            ),
+            CalculatorKeyboard(),
           ],
         ),
       ),
@@ -398,7 +399,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
     }
 
     // On Equals press
-    if (buttonText == Calculations.EQUAL) {
+    void equalsRefresh() {
       String newCalculatorString = Calculator.parseString(calculatorString);
 
       return setState(() {
@@ -413,12 +414,6 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       });
     }
 
-    if (buttonText == Calculations.PERIOD) {
-      return setState(() {
-        calculatorString = Calculator.addPeriod(calculatorString);
-      });
-    }
-
     setState(() {
       if (!isNewEquation &&
           operations.length > 0 &&
@@ -429,5 +424,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         calculatorString += buttonText;
       }
     });
+
+    if (buttonText == Calculations.PERIOD) {
+      return setState(() {
+        calculatorString = Calculator.addPeriod(calculatorString);
+      });
+    } else {
+      equalsRefresh();
+    }
   }
 }
