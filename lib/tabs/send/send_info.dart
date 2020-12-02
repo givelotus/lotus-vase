@@ -2,6 +2,7 @@ import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'sendModel.dart';
 import '../../wallet/wallet.dart';
 import '../../viewmodel.dart';
@@ -142,53 +143,22 @@ class SendInfo extends StatelessWidget {
       viewModel.sendAmount = int.tryParse(amountController.text);
     });
 
+    final qrSendToAddress = ClipOval(
+        child: QrImage(
+      size: 90,
+      data: viewModel.sendToAddress,
+      version: QrVersions.auto,
+    ));
+
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Send'),
+        actions: [],
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            Card(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ListTile(
-                      title: const Text('Balance'),
-                      subtitle: const Text('in satoshis'),
-                    ),
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder(
-                        valueListenable: balanceNotifier,
-                        builder: (context, balance, child) {
-                          if (balance == null) {
-                            return Text(
-                              'Loading...',
-                              style: TextStyle(
-                                  color: Colors.red.withOpacity(.8),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13),
-                            );
-                          }
-                          return Text.rich(TextSpan(
-                            text: '${balance}',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: ' sats',
-                                style: TextStyle(
-                                    color: Colors.black.withOpacity(.8),
-                                    fontSize: 15),
-                              ),
-                            ],
-                          ));
-                        }),
-                  ),
-                ],
-              ),
-            ),
+
             Padding(
               padding: stdPadding,
               child: Row(
@@ -201,52 +171,68 @@ class SendInfo extends StatelessWidget {
 
                         // TODO: Need to throw errors here
                         Map tryParse(data) {
-                          var parseObject = Uri.parse(data);
-                          var address = parseObject.path;
-                          var amount = parseObject.queryParameters['amount'];
-                          var map = {'address': address, 'amount': amount};
+                          var parseObject = Uri.parse(data.text.toString());
+                          var map = {
+                            'address': parseObject.path,
+                            'amount': parseObject.queryParameters['amount'],
+                            'scheme': parseObject.scheme
+                          };
+
+                          //  try checking scheme is 'bitcoincash' or throw error
+                          // check address conforms to Address class or throw error
+                          // check amount function (>0, less than total in wallet)
 
                           print(map);
+
                           return map;
                         }
 
                         Address(tryParse(data.text.toString())['address']);
 
-                        viewModel.sendToAddress =
-                            tryParse(data.text.toString())['address'];
-                        viewModel.sendAmount =
-                            tryParse(data.text.toString())['amount'];
+                        viewModel.sendToAddress = tryParse(data)['address'];
+                        viewModel.sendAmount = tryParse(data)['amount'];
                         print(viewModel.sendToAddress);
                         print(viewModel.sendAmount);
                       },
                       child: viewModel.sendToAddress == null
-                          ? Container(
-                              child: Text(
-                                'Tap to Paste Address',
-                                style: TextStyle(
-                                    color: Colors.red.withOpacity(.8),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13),
-                              ),
-                            )
-                          : Container(
-                              width: screenDimension.width - 30,
-                              child: RichText(
-                                text: TextSpan(
-                                  text: 'bch:',
-                                  style: TextStyle(
-                                      color: Colors.black.withOpacity(.8),
-                                      fontSize: 15),
-                                  children: <TextSpan>[
-                                    TextSpan(
-                                      text: viewModel.sendToAddress,
-                                      style: TextStyle(
-                                          color: Colors.black.withOpacity(.8),
-                                          fontSize: 15),
-                                    ),
-                                  ],
+                          ? Column(
+                              children: [
+                                qrSendToAddress,
+                                Container(
+                                  child: Text(
+                                    'Tap to Paste Address',
+                                    style: TextStyle(
+                                        color: Colors.red.withOpacity(.8),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13),
+                                  ),
                                 ),
-                              )),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                qrSendToAddress,
+                                Container(
+                                    width: screenDimension.width - 30,
+                                    child: RichText(
+                                      text: TextSpan(
+                                        text: 'bch:',
+                                        style: TextStyle(
+                                            color: Colors.black.withOpacity(.8),
+                                            fontSize: 15),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                            text: viewModel.sendToAddress,
+                                            style: TextStyle(
+                                                color: Colors.black
+                                                    .withOpacity(.8),
+                                                fontSize: 15),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                              ],
+                            ),
                     );
                   }),
                 ],
@@ -279,11 +265,54 @@ class SendInfo extends StatelessWidget {
                 ),
               ),
               // TODO: This needs to actually do something
-              FlatButton(
-                onPressed: () {},
-                child: Text('Max'),
-              )
+              // FlatButton(
+              //   onPressed: () {},
+              //   child: Text('Max'),
+              // )
             ]),
+            Card(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      title: const Text('Balance'),
+                      subtitle: const Text('in satoshis'),
+                    ),
+                  ),
+                  Expanded(
+                    child: ValueListenableBuilder(
+                        valueListenable: balanceNotifier,
+                        builder: (context, balance, child) {
+                          if (balance == null) {
+                            return Text(
+                              'Loading...',
+                              style: TextStyle(
+                                  color: Colors.red.withOpacity(.8),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13),
+                            );
+                          }
+                          return Text.rich(TextSpan(
+                            text: '${balance}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: ' sats',
+                                style: TextStyle(
+                                    color: Colors.white.withOpacity(.8),
+                                    fontSize: 15),
+                              ),
+                            ],
+                          ));
+                        }),
+                  ),
+                ],
+              ),
+            ),
             Row(
               children: [
                 Expanded(
