@@ -59,13 +59,21 @@ class _SendTabState extends State<SendTab> {
             // TODO: We need a tryParse function. Exceptions for validity check is
             // not desirable.
 
-            Map tryParse(scanData) {
-              var parseObject = Uri.parse(scanData);
-              var address = parseObject.path;
-              var amount = parseObject.queryParameters['amount'];
-              var map = {'address': address, 'amount': amount};
+            // TODO: Need to throw errors here
+            Map tryParse(data) {
+              var parseObject = Uri.parse(data.text.toString());
+              var map = {
+                'address': parseObject.path,
+                'amount': parseObject.queryParameters['amount'],
+                'scheme': parseObject.scheme
+              };
+
+              // try checking scheme is 'bitcoincash' or throw error (SnackBar)
+              // check address conforms to Address class or throw error
+              // check amount function (>0, less than total in wallet)
 
               print(map);
+
               return map;
             }
 

@@ -9,6 +9,7 @@ import '../../viewmodel.dart';
 import '../../bitcoincash/address.dart';
 import '../../bitcoincash/transaction/transaction.dart';
 import '../../constants.dart';
+import 'custom_keyboard/custom_keyboard.dart';
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
@@ -34,6 +35,28 @@ Future showError(BuildContext context, String errMessage) {
           content: Text(errMessage),
         );
       });
+}
+
+class PaymentAmountDisplay extends StatelessWidget {
+  PaymentAmountDisplay({this.value: '0'});
+  // add currency
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(20),
+        child: Row(
+          children: <Widget>[
+            Text(
+              value,
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            ),
+          ],
+          mainAxisAlignment: MainAxisAlignment.end,
+        ));
+  }
 }
 
 class SendInfo extends StatelessWidget {
@@ -178,7 +201,7 @@ class SendInfo extends StatelessWidget {
                             'scheme': parseObject.scheme
                           };
 
-                          //  try checking scheme is 'bitcoincash' or throw error
+                          // try checking scheme is 'bitcoincash' or throw error
                           // check address conforms to Address class or throw error
                           // check amount function (>0, less than total in wallet)
 
@@ -238,38 +261,10 @@ class SendInfo extends StatelessWidget {
                 ],
               ),
             ),
-            Row(children: [
-              Expanded(
-                child: Padding(
-                  padding: stdPadding,
-                  child: TextField(
-                    autocorrect: false,
-                    enableInteractiveSelection: true,
-                    autofocus: false,
-                    toolbarOptions: ToolbarOptions(
-                      paste: true,
-                      cut: true,
-                      copy: true,
-                      selectAll: true,
-                    ),
-                    readOnly: false,
-                    focusNode: FocusNode(),
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      suffixText: 'sats',
-                      border: OutlineInputBorder(),
-                      hintText: 'Enter amount',
-                    ),
-                  ),
-                ),
-              ),
-              // TODO: This needs to actually do something
-              // FlatButton(
-              //   onPressed: () {},
-              //   child: Text('Max'),
-              // )
-            ]),
+            GestureDetector(
+              onTap: () {},
+              child: Row(children: [PaymentAmountDisplay(value: '0 sats')]),
+            ),
             Card(
               child: Row(
                 children: [
@@ -356,5 +351,83 @@ class SendInfo extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class CalculatorKeyboard extends StatefulWidget {
+  CalculatorKeyboard({Key key}) : super(key: key);
+
+  @override
+  _CalculatorKeyboardState createState() => _CalculatorKeyboardState();
+}
+
+class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
+  bool isNewEquation = true;
+  List<double> values = [];
+  List<String> operations = [];
+  List<String> calculations = [];
+  String calculatorString = '';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Column(
+      children: <Widget>[
+        PaymentAmountDisplay(value: calculatorString),
+        CalculatorButtons(onTap: _onPressed),
+      ],
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    ));
+  }
+
+  void _onPressed({String buttonText}) {
+    // Standard mathematical operations
+    if (Calculations.OPERATIONS.contains(buttonText)) {
+      return setState(() {
+        operations.add(buttonText);
+        calculatorString += " $buttonText ";
+      });
+    }
+
+    // On CLEAR press
+    if (buttonText == Calculations.CLEAR) {
+      return setState(() {
+        operations.add(Calculations.CLEAR);
+        calculatorString = "";
+      });
+    }
+
+    // On Equals press
+    if (buttonText == Calculations.EQUAL) {
+      String newCalculatorString = Calculator.parseString(calculatorString);
+
+      return setState(() {
+        if (newCalculatorString != calculatorString) {
+          // only add evaluated strings to calculations array
+          calculations.add(calculatorString);
+        }
+
+        operations.add(Calculations.EQUAL);
+        calculatorString = newCalculatorString;
+        isNewEquation = false;
+      });
+    }
+
+    if (buttonText == Calculations.PERIOD) {
+      return setState(() {
+        calculatorString = Calculator.addPeriod(calculatorString);
+      });
+    }
+
+    setState(() {
+      if (!isNewEquation &&
+          operations.length > 0 &&
+          operations.last == Calculations.EQUAL) {
+        calculatorString = buttonText;
+        isNewEquation = true;
+      } else {
+        calculatorString += buttonText;
+      }
+    });
   }
 }
