@@ -1,4 +1,5 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -35,28 +36,6 @@ Future showError(BuildContext context, String errMessage) {
           content: Text(errMessage),
         );
       });
-}
-
-class PaymentAmountDisplay extends StatelessWidget {
-  PaymentAmountDisplay({this.value: '0'});
-  // add currency
-
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          children: <Widget>[
-            Text(
-              value,
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-            ),
-          ],
-          mainAxisAlignment: MainAxisAlignment.end,
-        ));
-  }
 }
 
 class SendInfo extends StatelessWidget {
@@ -166,11 +145,14 @@ class SendInfo extends StatelessWidget {
       viewModel.sendAmount = int.tryParse(amountController.text);
     });
 
+// TODO: rework this so that the filler is checked properly before putting up QR
     final qrSendToAddress = ClipOval(
-        child: QrImage(
-      size: 90,
-      data: viewModel.sendToAddress,
-      version: QrVersions.auto,
+        child: Consumer<SendModel>(
+      builder: (context, viewModel, child) => QrImage(
+        size: 90,
+        data: viewModel.sendToAddress ?? 'filler',
+        version: QrVersions.auto,
+      ),
     ));
 
     return Scaffold(
@@ -197,11 +179,15 @@ class SendInfo extends StatelessWidget {
                           var parseObject = Uri.parse(data.text.toString());
                           var map = {
                             'address': parseObject.path,
-                            'amount': parseObject.queryParameters['amount'],
+                            'amount': (double.parse(
+                                        parseObject.queryParameters['amount']) *
+                                    100000000)
+                                .round(),
                             'scheme': parseObject.scheme
                           };
 
-                          // try checking scheme is 'bitcoincash' or throw error
+                          // if present, try checking scheme is 'bitcoincash' or throw error
+                          // (scheme should be optional)
                           // check address conforms to Address class or throw error
                           // check amount function (>0, less than total in wallet)
 
@@ -210,7 +196,7 @@ class SendInfo extends StatelessWidget {
                           return map;
                         }
 
-                        Address(tryParse(data.text.toString())['address']);
+                        Address(tryParse(data)['address']);
 
                         viewModel.sendToAddress = tryParse(data)['address'];
                         viewModel.sendAmount = tryParse(data)['amount'];
@@ -347,7 +333,9 @@ class SendInfo extends StatelessWidget {
                 )
               ],
             ),
-            CalculatorKeyboard(),
+            Consumer<SendModel>(
+                builder: (context, viewModel, child) =>
+                    CalculatorKeyboard(amount: viewModel.sendAmount)),
           ],
         ),
       ),
@@ -355,8 +343,31 @@ class SendInfo extends StatelessWidget {
   }
 }
 
+class PaymentAmountDisplay extends StatelessWidget {
+  PaymentAmountDisplay({this.value});
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: EdgeInsets.all(20),
+        child: Row(
+          children: <Widget>[
+            Text(
+              value.toString(),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            ),
+          ],
+          mainAxisAlignment: MainAxisAlignment.end,
+        ));
+  }
+}
+
 class CalculatorKeyboard extends StatefulWidget {
-  CalculatorKeyboard({Key key}) : super(key: key);
+  CalculatorKeyboard({Key key, int amount}) : super(key: key);
+
+  int amount = 500;
 
   @override
   _CalculatorKeyboardState createState() => _CalculatorKeyboardState();
@@ -364,13 +375,81 @@ class CalculatorKeyboard extends StatefulWidget {
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   bool isNewEquation = true;
-  List<double> values = [];
+  // List<double> values = [];
   List<String> operations = [];
   List<String> calculations = [];
   String calculatorString = '';
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  // void updateAmount(newAmount) {
+  //   setState(() {
+  //     values.add(newAmount);
+  //     String calculatorString = '500000';
+  //   });
+  // }
+
+  @override
   Widget build(BuildContext context) {
+    // var calculatorString = widget.amount.toString();
+
+    // On Equals press
+    void _onPressed({String buttonText}) {
+      // Standard mathematical operations
+      if (Calculations.OPERATIONS.contains(buttonText)) {
+        return setState(() {
+          operations.add(buttonText);
+          calculatorString += " $buttonText ";
+        });
+      }
+
+      // On CLEAR press
+      if (buttonText == Calculations.CLEAR) {
+        return setState(() {
+          operations.add(Calculations.CLEAR);
+          calculatorString = "";
+        });
+      }
+
+      // On Equals press
+      void equalsRefresh() {
+        String newCalculatorString = Calculator.parseString(calculatorString);
+
+        return setState(() {
+          if (newCalculatorString != calculatorString) {
+            // only add evaluated strings to calculations array
+            calculations.add(calculatorString);
+          }
+
+          operations.add(Calculations.EQUAL);
+          calculatorString = newCalculatorString;
+          isNewEquation = false;
+        });
+      }
+
+      setState(() {
+        if (!isNewEquation &&
+            operations.length > 0 &&
+            operations.last == Calculations.EQUAL) {
+          calculatorString = buttonText;
+          isNewEquation = true;
+        } else {
+          calculatorString += buttonText;
+        }
+      });
+
+      if (buttonText == Calculations.PERIOD) {
+        return setState(() {
+          calculatorString = Calculator.addPeriod(calculatorString);
+        });
+      } else {
+        equalsRefresh();
+      }
+    }
+
     return Container(
         child: Column(
       children: <Widget>[
@@ -379,58 +458,5 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       ],
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
     ));
-  }
-
-  void _onPressed({String buttonText}) {
-    // Standard mathematical operations
-    if (Calculations.OPERATIONS.contains(buttonText)) {
-      return setState(() {
-        operations.add(buttonText);
-        calculatorString += " $buttonText ";
-      });
-    }
-
-    // On CLEAR press
-    if (buttonText == Calculations.CLEAR) {
-      return setState(() {
-        operations.add(Calculations.CLEAR);
-        calculatorString = "";
-      });
-    }
-
-    // On Equals press
-    void equalsRefresh() {
-      String newCalculatorString = Calculator.parseString(calculatorString);
-
-      return setState(() {
-        if (newCalculatorString != calculatorString) {
-          // only add evaluated strings to calculations array
-          calculations.add(calculatorString);
-        }
-
-        operations.add(Calculations.EQUAL);
-        calculatorString = newCalculatorString;
-        isNewEquation = false;
-      });
-    }
-
-    setState(() {
-      if (!isNewEquation &&
-          operations.length > 0 &&
-          operations.last == Calculations.EQUAL) {
-        calculatorString = buttonText;
-        isNewEquation = true;
-      } else {
-        calculatorString += buttonText;
-      }
-    });
-
-    if (buttonText == Calculations.PERIOD) {
-      return setState(() {
-        calculatorString = Calculator.addPeriod(calculatorString);
-      });
-    } else {
-      equalsRefresh();
-    }
   }
 }

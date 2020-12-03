@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-typedef void CalculatorButtonTapCallback({String buttonText});
+typedef CalculatorButtonTapCallback = void Function({String buttonText});
 
 class CalculatorButton extends StatelessWidget {
   CalculatorButton({this.text, @required this.onTap});
