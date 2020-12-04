@@ -6,8 +6,8 @@ class Calculations {
   static const SUBTRACT = '−';
   static const ADD = '+';
   static const DIVIDE = '÷';
-  // TODO: find appropriate icon for delete
-  static const CLEAR = 'CLEAR';
+  // TODO: use Icons.backspace
+  static const BACKSPACE = 'BACK';
   static const EQUAL = '=';
   static const OPERATIONS = [
     Calculations.ADD,
@@ -62,29 +62,5 @@ class Calculator {
     }
 
     return NumberFormatter.format(result.toString());
-  }
-
-  // static String addPeriod(String calculatorString) {
-  //   if (calculatorString.isEmpty) {
-  //     return calculatorString = '0${Calculations.PERIOD}';
-  //   }
-
-  //   RegExp exp = new RegExp(r"\d\.");
-  //   Iterable<Match> matches = exp.allMatches(calculatorString);
-  //   int maxMatches = Calculator.includesOperation(calculatorString) ? 2 : 1;
-
-  //   return matches.length == maxMatches
-  //       ? calculatorString
-  //       : calculatorString += Calculations.PERIOD;
-  // }
-
-  static bool includesOperation(String calculatorString) {
-    for (var operation in Calculations.OPERATIONS) {
-      if (calculatorString.contains(operation)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }

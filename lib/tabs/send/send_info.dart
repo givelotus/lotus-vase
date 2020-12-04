@@ -333,9 +333,7 @@ class SendInfo extends StatelessWidget {
                 )
               ],
             ),
-            Consumer<SendModel>(
-                builder: (context, viewModel, child) =>
-                    CalculatorKeyboard(amount: viewModel.sendAmount)),
+            CalculatorKeyboard(),
           ],
         ),
       ),
@@ -365,7 +363,7 @@ class PaymentAmountDisplay extends StatelessWidget {
 }
 
 class CalculatorKeyboard extends StatefulWidget {
-  CalculatorKeyboard({Key key, int amount}) : super(key: key);
+  CalculatorKeyboard({Key key}) : super(key: key);
 
   @override
   _CalculatorKeyboardState createState() => _CalculatorKeyboardState();
@@ -373,24 +371,8 @@ class CalculatorKeyboard extends StatefulWidget {
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   bool isNewEquation = true;
-  // List<double> values = [];
   List<String> operations = [];
-  List<String> calculations = [];
-  int amount;
-  String calculatorString;
-
-  @override
-  void initState() {
-    super.initState();
-    calculatorString = amount.toString ?? '';
-  }
-
-  // void updateAmount(newAmount) {
-  //   setState(() {
-  //     values.add(newAmount);
-  //     String calculatorString = '500000';
-  //   });
-  // }
+  String calculatorString = '';
 
   @override
   Widget build(BuildContext context) {
@@ -399,42 +381,65 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // Standard mathematical operations
       if (Calculations.OPERATIONS.contains(buttonText)) {
         return setState(() {
-          operations.add(buttonText);
-          calculatorString += " $buttonText ";
-          print(operations);
-          print(calculatorString);
+          switch (calculatorString.length) {
+            case 0:
+              {
+                calculatorString = '';
+              }
+              break;
+            default:
+              {
+                // TODO: Rewrite this so that it additionally checks if buttonText
+                // is same as last item on calculatorString. If so,
+                // then do nothing, but if buttonText Operation is different,
+                // then replace the last item on calculatorString with
+                // buttonText. Don't want a horrible nested if situation...
+                if (Calculations.OPERATIONS.contains(
+                        calculatorString[calculatorString.length - 1]) ==
+                    false) {
+                  calculatorString += "$buttonText";
+                }
+              }
+          }
         });
       }
 
       // On CLEAR press
-      if (buttonText == Calculations.CLEAR) {
+      if (buttonText == Calculations.BACKSPACE) {
         return setState(() {
-          operations.add(Calculations.CLEAR);
-          calculatorString = "";
-          operations = [];
-          print(operations);
+          switch (calculatorString.length) {
+            case 1:
+              {
+                calculatorString = '';
+              }
+              break;
+            default:
+              {
+                if (Calculations.PERIOD
+                    .contains(calculatorString[calculatorString.length - 2])) {
+                  calculatorString = calculatorString.substring(
+                      0, calculatorString.length - 2);
+                } else {
+                  calculatorString = calculatorString.substring(
+                      0, calculatorString.length - 1);
+                }
+              }
+          }
         });
       }
 
-      // On Equals press
-      void equalsRefresh() {
-        // if (buttonText == Calculations.EQUAL) {
+      // Evaluate Expression & Refresh
+      void evaluateRefresh() {
         String newCalculatorString = Calculator.parseString(calculatorString);
 
         return setState(() {
-          // if (newCalculatorString != calculatorString) {
-          //   // only add evaluated strings to calculations array
-          //   calculations.add(calculatorString);
-          //   print(operations);
-          // }
-
-          // operations.add(Calculations.EQUAL);
           calculatorString = newCalculatorString;
           isNewEquation = false;
         });
       }
 
       setState(() {
+        // FIX: Check each of these conditions carefully - are they necessary?
         if (!isNewEquation &&
             operations.length == 1 &&
             operations.last == Calculations.EQUAL) {
@@ -443,11 +448,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
           print(operations);
         } else {
           calculatorString += buttonText;
-          print(operations);
         }
       });
 
-      equalsRefresh();
+      evaluateRefresh();
     }
 
     return Container(
