@@ -18,10 +18,10 @@ class CalculatorRow extends StatelessWidget {
   List<Widget> rowButtons() {
     List<Widget> rowButtons = [];
 
-    buttons.forEach((String buttonText) {
+    buttons.forEach((String buttonLabel) {
       rowButtons.add(
         CalculatorButton(
-          text: buttonText,
+          text: buttonLabel,
           onTap: onTap,
         ),
       );

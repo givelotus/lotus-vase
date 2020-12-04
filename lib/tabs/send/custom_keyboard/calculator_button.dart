@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-typedef CalculatorButtonTapCallback = void Function({String buttonText});
+typedef CalculatorButtonTapCallback = void Function({String buttonLabel});
 
 class CalculatorButton extends StatelessWidget {
   CalculatorButton({this.text, @required this.onTap});
@@ -11,6 +11,9 @@ class CalculatorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
+        // TODO: Update UI optics on this. Make it snazzy.
+        // TODO: Differentiate the look of operators from the numbers. Is the map
+        // really the best way to do this?
         child: Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -19,7 +22,7 @@ class CalculatorButton extends StatelessWidget {
               ),
             ),
             child: FlatButton(
-              onPressed: () => onTap(buttonText: text),
+              onPressed: () => onTap(buttonLabel: text),
               child: Text(
                 text,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),

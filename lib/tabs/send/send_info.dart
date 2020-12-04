@@ -353,7 +353,7 @@ class PaymentAmountDisplay extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Text(
-              value.toString(),
+              value,
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
           ],
@@ -370,16 +370,23 @@ class CalculatorKeyboard extends StatefulWidget {
 }
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
+  // TODO/FIX: Need to figure out what to do with these two variables
+  // in conjuction with the setState just before the evaluateRefresh()
+  // in _onPressed().
   bool isNewEquation = true;
   List<String> operations = [];
+  // calculatorString holds the stack of the calculator values/operations
+  // as a String array. When _onPressed is called for any buttton,
+  // its label is checked against Calculations.OPERATIONS for appropriate parsing
+  // and finally evaluation in evaluateRefresh().
   String calculatorString = '';
 
   @override
   Widget build(BuildContext context) {
     // On Equals press
-    void _onPressed({String buttonText}) {
+    void _onPressed({String buttonLabel}) {
       // Standard mathematical operations
-      if (Calculations.OPERATIONS.contains(buttonText)) {
+      if (Calculations.OPERATIONS.contains(buttonLabel)) {
         return setState(() {
           switch (calculatorString.length) {
             case 0:
@@ -389,15 +396,30 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
               break;
             default:
               {
-                // TODO: Rewrite this so that it additionally checks if buttonText
-                // is same as last item on calculatorString. If so,
-                // then do nothing, but if buttonText Operation is different,
-                // then replace the last item on calculatorString with
-                // buttonText. Don't want a horrible nested if situation...
-                if (Calculations.OPERATIONS.contains(
-                        calculatorString[calculatorString.length - 1]) ==
-                    false) {
-                  calculatorString += "$buttonText";
+                // Checks if last item in string array is operator;
+                // If so:
+                // - Check if last item is same as input (buttonText) - do nothing
+                // - If not, replace with new operator (default case in switch)
+                // If last item in string array not already operator, then
+                // safe to add operator to last item in string.
+                if (Calculations.OPERATIONS
+                    .contains(calculatorString[calculatorString.length - 1])) {
+                  switch (buttonLabel ==
+                      calculatorString[calculatorString.length - 1]) {
+                    case true:
+                      {
+                        // do NOTHING!
+                      }
+                      break;
+                    default:
+                      {
+                        calculatorString = calculatorString.substring(
+                            0, calculatorString.length - 1);
+                        calculatorString += "$buttonLabel";
+                      }
+                  }
+                } else {
+                  calculatorString += "$buttonLabel";
                 }
               }
           }
@@ -405,7 +427,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       }
 
       // On CLEAR press
-      if (buttonText == Calculations.BACKSPACE) {
+      if (buttonLabel == Calculations.BACKSPACE) {
         return setState(() {
           switch (calculatorString.length) {
             case 1:
@@ -415,6 +437,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
               break;
             default:
               {
+                // Checks if decimal place in the string's penultimate position:
+                // e.g., 12.9 - yes; 12.99 - no. 12 - no.
+                // If so, makes sure decimal is also deleted along with the last digit
+                // Else, delete only last item in string array.
                 if (Calculations.PERIOD
                     .contains(calculatorString[calculatorString.length - 2])) {
                   calculatorString = calculatorString.substring(
@@ -438,17 +464,20 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         });
       }
 
+      // TODO: Add cases for ignoring 00 and 0 when calculatorString is currently empty.
+
       setState(() {
         // FIX: Check each of these conditions carefully - are they necessary?
-        if (!isNewEquation &&
-            operations.length == 1 &&
-            operations.last == Calculations.EQUAL) {
-          calculatorString = buttonText;
-          isNewEquation = true;
-          print(operations);
-        } else {
-          calculatorString += buttonText;
-        }
+        // We need something in here for the string to be additive... but need to clean up.
+        // if (!isNewEquation &&
+        //     operations.length == 1 &&
+        //     operations.last == Calculations.EQUAL) {
+        //   calculatorString = buttonLabel;
+        //   isNewEquation = true;
+        //   print(operations);
+        // } else {
+        calculatorString += buttonLabel;
+        // }
       });
 
       evaluateRefresh();
