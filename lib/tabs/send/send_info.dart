@@ -367,8 +367,6 @@ class PaymentAmountDisplay extends StatelessWidget {
 class CalculatorKeyboard extends StatefulWidget {
   CalculatorKeyboard({Key key, int amount}) : super(key: key);
 
-  int amount = 500;
-
   @override
   _CalculatorKeyboardState createState() => _CalculatorKeyboardState();
 }
@@ -378,11 +376,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   // List<double> values = [];
   List<String> operations = [];
   List<String> calculations = [];
-  String calculatorString = '';
+  int amount;
+  String calculatorString;
 
   @override
   void initState() {
     super.initState();
+    calculatorString = amount.toString ?? '';
   }
 
   // void updateAmount(newAmount) {
@@ -394,8 +394,6 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-    // var calculatorString = widget.amount.toString();
-
     // On Equals press
     void _onPressed({String buttonText}) {
       // Standard mathematical operations
@@ -403,6 +401,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         return setState(() {
           operations.add(buttonText);
           calculatorString += " $buttonText ";
+          print(operations);
+          print(calculatorString);
         });
       }
 
@@ -411,20 +411,24 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         return setState(() {
           operations.add(Calculations.CLEAR);
           calculatorString = "";
+          operations = [];
+          print(operations);
         });
       }
 
       // On Equals press
       void equalsRefresh() {
+        // if (buttonText == Calculations.EQUAL) {
         String newCalculatorString = Calculator.parseString(calculatorString);
 
         return setState(() {
-          if (newCalculatorString != calculatorString) {
-            // only add evaluated strings to calculations array
-            calculations.add(calculatorString);
-          }
+          // if (newCalculatorString != calculatorString) {
+          //   // only add evaluated strings to calculations array
+          //   calculations.add(calculatorString);
+          //   print(operations);
+          // }
 
-          operations.add(Calculations.EQUAL);
+          // operations.add(Calculations.EQUAL);
           calculatorString = newCalculatorString;
           isNewEquation = false;
         });
@@ -432,27 +436,23 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
       setState(() {
         if (!isNewEquation &&
-            operations.length > 0 &&
+            operations.length == 1 &&
             operations.last == Calculations.EQUAL) {
           calculatorString = buttonText;
           isNewEquation = true;
+          print(operations);
         } else {
           calculatorString += buttonText;
+          print(operations);
         }
       });
 
-      if (buttonText == Calculations.PERIOD) {
-        return setState(() {
-          calculatorString = Calculator.addPeriod(calculatorString);
-        });
-      } else {
-        equalsRefresh();
-      }
+      equalsRefresh();
     }
 
     return Container(
         child: Column(
-      children: <Widget>[
+      children: [
         PaymentAmountDisplay(value: calculatorString),
         CalculatorButtons(onTap: _onPressed),
       ],

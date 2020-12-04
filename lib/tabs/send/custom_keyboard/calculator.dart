@@ -64,19 +64,19 @@ class Calculator {
     return NumberFormatter.format(result.toString());
   }
 
-  static String addPeriod(String calculatorString) {
-    if (calculatorString.isEmpty) {
-      return calculatorString = '0${Calculations.PERIOD}';
-    }
+  // static String addPeriod(String calculatorString) {
+  //   if (calculatorString.isEmpty) {
+  //     return calculatorString = '0${Calculations.PERIOD}';
+  //   }
 
-    RegExp exp = new RegExp(r"\d\.");
-    Iterable<Match> matches = exp.allMatches(calculatorString);
-    int maxMatches = Calculator.includesOperation(calculatorString) ? 2 : 1;
+  //   RegExp exp = new RegExp(r"\d\.");
+  //   Iterable<Match> matches = exp.allMatches(calculatorString);
+  //   int maxMatches = Calculator.includesOperation(calculatorString) ? 2 : 1;
 
-    return matches.length == maxMatches
-        ? calculatorString
-        : calculatorString += Calculations.PERIOD;
-  }
+  //   return matches.length == maxMatches
+  //       ? calculatorString
+  //       : calculatorString += Calculations.PERIOD;
+  // }
 
   static bool includesOperation(String calculatorString) {
     for (var operation in Calculations.OPERATIONS) {

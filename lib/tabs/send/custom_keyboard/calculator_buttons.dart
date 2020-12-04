@@ -11,7 +11,8 @@ class CalculatorButtons extends StatelessWidget {
     ['7', '8', '9', Calculations.DIVIDE],
     ['4', '5', '6', Calculations.MULTIPLY],
     ['1', '2', '3', Calculations.SUBTRACT],
-    [Calculations.PERIOD, '0', Calculations.CLEAR, Calculations.ADD],
+    // [Calculations.PERIOD, '0', Calculations.CLEAR, Calculations.ADD],
+    ['00', '0', Calculations.CLEAR, Calculations.ADD],
     // TODO: make this equal function auto-refresh state instead of a button
     // [Calculations.EQUAL]
   ];
