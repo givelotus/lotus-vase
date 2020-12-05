@@ -88,7 +88,7 @@ class SendInfo extends StatelessWidget {
                           return Text.rich(TextSpan(
                             text: '${balance}',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontWeight: FontWeight.bold,
                               fontSize: 17,
                             ),
@@ -96,7 +96,7 @@ class SendInfo extends StatelessWidget {
                               TextSpan(
                                 text: ' sats',
                                 style: TextStyle(
-                                    color: Colors.white.withOpacity(.8),
+                                    color: Colors.black.withOpacity(.8),
                                     fontSize: 15),
                               ),
                             ],
