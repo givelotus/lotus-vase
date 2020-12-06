@@ -37,8 +37,8 @@ class _SendTabState extends State<SendTab> {
 
     // WE don't want to be redrawing
     final viewModel = Provider.of<SendModel>(context, listen: false);
-    final balanceNotifier =
-        Provider.of<WalletModel>(context, listen: false).balance;
+    final walletModel = Provider.of<WalletModel>(context, listen: false);
+    final balanceNotifier = walletModel.balance;
 
     final overlay = QrScannerOverlayShape(
       borderColor: Colors.green,
@@ -73,7 +73,8 @@ class _SendTabState extends State<SendTab> {
         valueListenable: showSendInfoScreen,
         builder: (context, shouldShowSendInfoScreen, child) => Scaffold(
             body: shouldShowSendInfoScreen
-                ? SendInfo(visible: showSendInfoScreen)
+                ? SendInfo(
+                    visible: showSendInfoScreen, wallet: walletModel.wallet)
                 : Scaffold(
                     body: Stack(alignment: Alignment.center, children: [
                       Container(
