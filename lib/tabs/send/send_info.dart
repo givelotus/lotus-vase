@@ -13,8 +13,20 @@ Future showReceipt(BuildContext context, Transaction transaction) {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Receipt'),
-          content: Text('TODO'),
+          title: const Text('Transaction sent'),
+          content: Text(transaction.id),
+        );
+      });
+}
+
+Future showError(BuildContext context, String errMessage) {
+  // TODO: Create nice looking receipt dialog.
+  return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error sending...'),
+          content: Text(errMessage),
         );
       });
 }
@@ -23,7 +35,7 @@ class SendInfo extends StatelessWidget {
   final ValueNotifier<bool> visible;
   final Wallet wallet;
 
-  SendInfo({this.visible, this.wallet});
+  SendInfo({this.visible, @required this.wallet});
 
   void sendButtonClicked(BuildContext context, String address, int amount) {
     final primaryValidation = (amount != null && amount > 0);
@@ -34,7 +46,8 @@ class SendInfo extends StatelessWidget {
     // somehow to indicate the address is bad.
     wallet
         .sendTransaction(Address(address), BigInt.from(amount))
-        .then((transaction) => showReceipt(context, transaction));
+        .then((transaction) => showReceipt(context, transaction))
+        .catchError((error) => showError(context, error.toString()));
   }
 
   @override
