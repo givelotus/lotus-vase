@@ -46,81 +46,18 @@ class SendInfo extends StatelessWidget {
 
   Future<void> sendButtonClicked(
       BuildContext context, String address, int amount) async {
-    final addressNotBlank = (address != null);
-    final primaryValidation = (amount != null && amount > 0);
-    // TODO: Need additional validation checks -- not spending sats
-    // you don't have
-    if (!primaryValidation || !addressNotBlank) {
-      return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Get your facts right!'),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  Text('Or I\'ll bankrupt you.'),
-                  Text('Consider yourself warned...!'),
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('um.. OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-      ;
-    }
+    // the address and amount should have been pre-validated at the form and corrected
+    // by user before being able to hit send; we are thus sending direct to Electrum library.
 
-    // TODO: Need address validation here. Should attach to entry field
-    // somehow to indicate the address is bad.
-
- await wallet
-        .sendTransaction(Address(address), BigInt.from(amount))
-        .then((transaction) => showReceipt(context, transaction))
-        .catchError((error) => showError(context, error.toString()));
-
-
-    try {
+    await {
       wallet
           .sendTransaction(Address(address), BigInt.from(amount))
-          .then((transaction) => showReceipt(context, transaction));
-    } on AddressFormatException {
-      return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Fix address please!'),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  Text('Or I\'ll bankrupt you.'),
-                  Text('Consider yourself warned...!'),
-                ],
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('um.. OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
+          .then((transaction) => showReceipt(context, transaction))
+          .catchError((error) => showError(context, error.toString()))
+    };
+
     // only close SendInfo screen in case transaction is successful
-    visible.value = false;
+    // visible.value = false
   }
 
   @override
@@ -155,6 +92,17 @@ class SendInfo extends StatelessWidget {
       ),
     ));
 
+    void _validateAddress(String address) {
+      // Address(tryParse(data)['address']);
+      Address(address);
+    }
+
+    void _validateSendAmount(int amount) {
+      switch (amount) {
+        case 0:
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Send'),
@@ -163,7 +111,6 @@ class SendInfo extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-
             Padding(
               padding: stdPadding,
               child: Row(
@@ -191,12 +138,10 @@ class SendInfo extends StatelessWidget {
                           // check address conforms to Address class or throw error
                           // check amount function (>0, less than total in wallet)
 
+                          // Dev purposes only:
                           print(map);
-
                           return map;
                         }
-
-                        Address(tryParse(data)['address']);
 
                         viewModel.sendToAddress = tryParse(data)['address'];
                         viewModel.sendAmount = tryParse(data)['amount'];
@@ -319,11 +264,17 @@ class SendInfo extends StatelessWidget {
                       // specifically for this component
                       // Rather than wiring directly to the global viewmodel
                       onPressed: () {
+                        CalculatorKeyboard._onTapOutside();
+
+                        _validateAddress(viewModel.sendToAddress);
+                        _validateSendAmount(viewModel.sendAmount);
+
                         sendButtonClicked(
                           context,
                           viewModel.sendToAddress,
                           viewModel.sendAmount,
                         );
+
                         viewModel.sendAmount = null;
                         viewModel.sendToAddress = null;
                       },
@@ -363,6 +314,8 @@ class PaymentAmountDisplay extends StatelessWidget {
 }
 
 class CalculatorKeyboard extends StatefulWidget {
+// TODO: Work on UI here (in library)
+
   CalculatorKeyboard({Key key}) : super(key: key);
 
   @override
@@ -456,10 +409,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
       // Evaluate Expression & Refresh
       void evaluateRefresh() {
-        String newCalculatorString = Calculator.parseString(calculatorString);
-
         return setState(() {
-          calculatorString = newCalculatorString;
+          calculatorString = Calculator.parseString(calculatorString);
           isNewEquation = false;
         });
       }
@@ -482,6 +433,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
       evaluateRefresh();
     }
+
+    void _onTapOutside(String calculatorString) {}
 
     return Container(
         child: Column(
