@@ -1,120 +1,120 @@
 class AddressFormatException implements Exception {
-  String cause;
+  String message;
 
-  AddressFormatException(this.cause);
+  AddressFormatException(this.message);
 }
 
 class BadChecksumException implements AddressFormatException {
   @override
-  String cause;
+  String message;
 
-  BadChecksumException(this.cause);
+  BadChecksumException(this.message);
 }
 
 class BadParameterException implements Exception {
-  String cause;
+  String message;
 
-  BadParameterException(this.cause);
+  BadParameterException(this.message);
 }
 
 class InvalidPointException implements Exception {
-  String cause;
+  String message;
 
-  InvalidPointException(this.cause);
+  InvalidPointException(this.message);
 }
 
 class InvalidNetworkException implements Exception {
-  String cause;
+  String message;
 
-  InvalidNetworkException(this.cause);
+  InvalidNetworkException(this.message);
 }
 
 class InvalidKeyException implements Exception {
-  String cause;
+  String message;
 
-  InvalidKeyException(this.cause);
+  InvalidKeyException(this.message);
 }
 
 class IllegalArgumentException implements Exception {
-  String cause;
+  String message;
 
-  IllegalArgumentException(this.cause);
+  IllegalArgumentException(this.message);
 }
 
 class DerivationException implements Exception {
-  String cause;
+  String message;
 
-  DerivationException(this.cause);
+  DerivationException(this.message);
 }
 
 class InvalidPathException implements Exception {
-  String cause;
+  String message;
 
-  InvalidPathException(this.cause);
+  InvalidPathException(this.message);
 }
 
 class UTXOException implements Exception {
-  String cause;
+  String message;
 
-  UTXOException(this.cause);
+  UTXOException(this.message);
 }
 
 class TransactionAmountException implements Exception {
-  String cause;
+  String message;
 
-  TransactionAmountException(this.cause);
+  TransactionAmountException(this.message);
 }
 
 class ScriptException implements Exception {
-  String cause;
+  String message;
 
-  ScriptException(this.cause);
+  ScriptException(this.message);
 }
 
 class SignatureException implements Exception {
-  String cause;
+  String message;
 
-  SignatureException(this.cause);
+  SignatureException(this.message);
 }
 
 class TransactionFeeException implements Exception {
-  String cause;
+  String message;
 
-  TransactionFeeException(this.cause);
+  TransactionFeeException(this.message);
 }
 
 class InputScriptException implements Exception {
-  String cause;
+  String message;
 
-  InputScriptException(this.cause);
+  InputScriptException(this.message);
 }
 
 class TransactionException implements Exception {
-  String cause;
+  String message;
 
-  TransactionException(this.cause);
+  TransactionException(this.message);
 }
 
 class LockTimeException implements Exception {
-  String cause;
+  String message;
 
-  LockTimeException(this.cause);
+  LockTimeException(this.message);
 }
 
 class InterpreterException implements Exception {
-  String cause;
+  String message;
 
-  InterpreterException(this.cause);
+  InterpreterException(this.message);
 }
 
 class BlockException implements Exception {
-  String cause;
+  String message;
 
-  BlockException(this.cause);
+  BlockException(this.message);
 }
 
 class MerkleTreeException implements Exception {
-  String cause;
+  String message;
 
-  MerkleTreeException(this.cause);
+  MerkleTreeException(this.message);
 }
