@@ -253,11 +253,15 @@ class Transaction {
       _doSerializationChecks();
     }
 
-    return uncheckedSerialize();
+    return HEX.encode(uncheckedSerialize());
+  }
+
+  int get estimatedSize {
+    return uncheckedSerialize().length;
   }
 
   /// Returns the raw transaction as a hexadecimal string, skipping all checks.
-  String uncheckedSerialize() {
+  List<int> uncheckedSerialize() {
     var writer = ByteDataWriter();
 
     // set the transaction version
@@ -282,7 +286,7 @@ class Transaction {
     // write the locktime
     writer.writeUint32(nLockTime, Endian.little);
 
-    return HEX.encode(writer.toBytes().toList());
+    return writer.toBytes().toList();
   }
 
   ///
