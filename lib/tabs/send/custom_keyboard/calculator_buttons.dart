@@ -8,9 +8,9 @@ class CalculatorButtons extends StatelessWidget {
 
   final CalculatorButtonTapCallback onTap;
   final calculatorButtonRows = [
-    ['7', '8', '9', Calculations.DIVIDE],
+    ['1', '2', '3', Calculations.DIVIDE],
     ['4', '5', '6', Calculations.MULTIPLY],
-    ['1', '2', '3', Calculations.SUBTRACT],
+    ['7', '8', '9', Calculations.SUBTRACT],
     ['00', '0', Calculations.BACKSPACE, Calculations.ADD]
   ];
 
