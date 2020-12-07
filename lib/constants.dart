@@ -10,7 +10,7 @@ const electrumUrls = [
 
 const inputSize = 148;
 const outputSize = 34;
-const defaultFeePerByte = 1.5;
+const defaultFeePerByte = 10;
 
 // UI constants
 const stdElevation =
