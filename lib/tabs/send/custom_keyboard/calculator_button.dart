@@ -22,15 +22,16 @@ class CalculatorButton extends StatelessWidget {
                 width: 0.5,
               ),
             ),
-            child: FlatButton(
+            child: TextButton(
               onPressed: () => onTap(buttonLabel: text),
               child: Text(
                 text,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
               ),
+              style: ButtonStyle(),
               // padding: EdgeInsets.all(10),
-              highlightColor: Colors.blueGrey[100],
-              splashColor: Colors.blueAccent[100],
+              // highlightColor: Colors.blueGrey[100],
+              // splashColor: Colors.blueAccent[100],
             )));
   }
 }

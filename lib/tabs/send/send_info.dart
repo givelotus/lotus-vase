@@ -19,10 +19,12 @@ void _validateAddress(String address) {
 }
 
 void _validateSendAmount(int amount) {
-  switch (amount) {
-    case 0:
+  if (amount == 0) {
+      return;
+    }
+  
   }
-}
+
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
