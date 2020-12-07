@@ -1,4 +1,5 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,17 @@ import '../../bitcoincash/address.dart';
 import '../../bitcoincash/transaction/transaction.dart';
 import '../../constants.dart';
 import 'custom_keyboard/custom_keyboard.dart';
+
+void _validateAddress(String address) {
+  // Address(tryParse(data)['address']);
+  Address(address);
+}
+
+void _validateSendAmount(int amount) {
+  switch (amount) {
+    case 0:
+  }
+}
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
@@ -44,22 +56,6 @@ class SendInfo extends StatelessWidget {
 
   SendInfo({this.visible, @required this.wallet});
 
-  Future<void> sendButtonClicked(
-      BuildContext context, String address, int amount) async {
-    // the address and amount should have been pre-validated at the form and corrected
-    // by user before being able to hit send; we are thus sending direct to Electrum library.
-
-    await {
-      wallet
-          .sendTransaction(Address(address), BigInt.from(amount))
-          .then((transaction) => showReceipt(context, transaction))
-          .catchError((error) => showError(context, error.toString()))
-    };
-
-    // only close SendInfo screen in case transaction is successful
-    // visible.value = false
-  }
-
   @override
   Widget build(context) {
     var screenDimension = MediaQuery.of(context).size;
@@ -92,21 +88,22 @@ class SendInfo extends StatelessWidget {
       ),
     ));
 
-    void _validateAddress(String address) {
-      // Address(tryParse(data)['address']);
-      Address(address);
-    }
-
-    void _validateSendAmount(int amount) {
-      switch (amount) {
-        case 0:
-      }
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Send'),
-        actions: [],
+      appBar: CupertinoNavigationBar(
+        middle: Text('Send', style: TextStyle(fontWeight: FontWeight.bold)),
+        leading: Consumer<SendModel>(
+          builder: (context, viewModel, child) => TextButton(
+            // TODO: we should probably have ValueNotifiable props
+            // specifically for this component
+            // Rather than wiring directly to the global viewmodel
+            onPressed: () {
+              visible.value = false;
+              viewModel.sendAmount = null;
+              viewModel.sendToAddress = null;
+            },
+            child: Text('Cancel'),
+          ),
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -114,6 +111,7 @@ class SendInfo extends StatelessWidget {
             Padding(
               padding: stdPadding,
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Consumer<SendModel>(builder: (context, viewModel, child) {
                     return GestureDetector(
@@ -143,8 +141,12 @@ class SendInfo extends StatelessWidget {
                           return map;
                         }
 
+                        _validateAddress(viewModel.sendToAddress);
                         viewModel.sendToAddress = tryParse(data)['address'];
+
+                        _validateSendAmount(viewModel.sendAmount);
                         viewModel.sendAmount = tryParse(data)['amount'];
+
                         print(viewModel.sendToAddress);
                         print(viewModel.sendAmount);
                       },
@@ -239,52 +241,7 @@ class SendInfo extends StatelessWidget {
             //     ],
             //   ),
             // ),
-            Row(
-              children: [
-                Expanded(
-                  child: Consumer<SendModel>(
-                    builder: (context, viewModel, child) => ElevatedButton(
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        visible.value = false;
-                        viewModel.sendAmount = null;
-                        viewModel.sendToAddress = null;
-                      },
-                      child: Text('Cancel'),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Consumer<SendModel>(
-                    builder: (context, viewModel, child) => ElevatedButton(
-                      autofocus: true,
-                      // TODO: we should probably have ValueNotifiable props
-                      // specifically for this component
-                      // Rather than wiring directly to the global viewmodel
-                      onPressed: () {
-                        CalculatorKeyboard._onTapOutside();
-
-                        _validateAddress(viewModel.sendToAddress);
-                        _validateSendAmount(viewModel.sendAmount);
-
-                        sendButtonClicked(
-                          context,
-                          viewModel.sendToAddress,
-                          viewModel.sendAmount,
-                        );
-
-                        viewModel.sendAmount = null;
-                        viewModel.sendToAddress = null;
-                      },
-                      child: Text('Send'),
-                    ),
-                  ),
-                )
-              ],
-            ),
-            CalculatorKeyboard(),
+            CalculatorKeyboard(wallet: wallet),
           ],
         ),
       ),
@@ -302,13 +259,16 @@ class PaymentAmountDisplay extends StatelessWidget {
     return Padding(
         padding: EdgeInsets.all(20),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              value,
+              // TODO: - FIX Add default = 0 sats
+              // - Add TextSpan widget for making 'sats' smaller size,
+              // - and number formatter for value
+              '${value ?? '0'} sats',
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
           ],
-          mainAxisAlignment: MainAxisAlignment.end,
         ));
   }
 }
@@ -316,13 +276,14 @@ class PaymentAmountDisplay extends StatelessWidget {
 class CalculatorKeyboard extends StatefulWidget {
 // TODO: Work on UI here (in library)
 
-  CalculatorKeyboard({Key key}) : super(key: key);
+  CalculatorKeyboard({Key key, @required Wallet wallet}) : super(key: key);
 
   @override
   _CalculatorKeyboardState createState() => _CalculatorKeyboardState();
 }
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
+  Wallet wallet;
   // TODO/FIX: Need to figure out what to do with these two variables
   // in conjuction with the setState just before the evaluateRefresh()
   // in _onPressed().
@@ -332,12 +293,29 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   // as a String array. When _onPressed is called for any buttton,
   // its label is checked against Calculations.OPERATIONS for appropriate parsing
   // and finally evaluation in evaluateRefresh().
-  String calculatorString = '';
+  String calculatorString = '0';
 
   @override
   Widget build(BuildContext context) {
     // On Equals press
     void _onPressed({String buttonLabel}) {
+      switch (calculatorString) {
+        case '0':
+          if ((Calculations.BACKSPACE.contains(buttonLabel) ||
+              buttonLabel == '00' ||
+              Calculations.OPERATIONS.contains(buttonLabel))) {
+            return;
+          }
+          if ((!Calculations.BACKSPACE.contains(buttonLabel) &&
+              buttonLabel != '00' &&
+              !Calculations.OPERATIONS.contains(buttonLabel))) {
+            setState(() {
+              calculatorString = "$buttonLabel";
+            });
+            return;
+          }
+      }
+
       // Standard mathematical operations
       if (Calculations.OPERATIONS.contains(buttonLabel)) {
         return setState(() {
@@ -377,8 +355,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
               }
           }
         });
-      }
-
+      } else
       // On CLEAR press
       if (buttonLabel == Calculations.BACKSPACE) {
         return setState(() {
@@ -436,10 +413,57 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
     void _onTapOutside(String calculatorString) {}
 
+    Future<void> sendButtonClicked(
+        BuildContext context, String address, int amount) async {
+      // the address and amount should have been pre-validated at the form and corrected
+      // by user before being able to hit send; we are thus sending direct to Electrum library.
+
+      await {
+        wallet
+            .sendTransaction(Address(address), BigInt.from(amount))
+            .then((transaction) => showReceipt(context, transaction))
+            .catchError((error) => showError(context, error.toString()))
+      };
+
+      // only close SendInfo screen in case transaction is successful
+      // visible.value = false
+    }
+
     return Container(
         child: Column(
       children: [
         PaymentAmountDisplay(value: calculatorString),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Consumer<SendModel>(
+                  builder: (context, viewModel, child) => ElevatedButton(
+                    autofocus: true,
+                    // TODO: we should probably have ValueNotifiable props
+                    // specifically for this component
+                    // Rather than wiring directly to the global viewmodel
+                    onPressed: () {
+                      _validateAddress(viewModel.sendToAddress);
+                      _validateSendAmount(viewModel.sendAmount);
+
+                      sendButtonClicked(
+                        context,
+                        viewModel.sendToAddress,
+                        viewModel.sendAmount,
+                      );
+
+                      viewModel.sendAmount = null;
+                      viewModel.sendToAddress = null;
+                    },
+                    child: Text('Confirm Amount'),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
         CalculatorButtons(onTap: _onPressed),
       ],
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

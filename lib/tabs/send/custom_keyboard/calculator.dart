@@ -6,8 +6,7 @@ class Calculations {
   static const SUBTRACT = '−';
   static const ADD = '+';
   static const DIVIDE = '÷';
-  // TODO: use Icons.backspace
-  static const BACKSPACE = 'BACK';
+  static const BACKSPACE = '↩';
   static const EQUAL = '=';
   static const OPERATIONS = [
     Calculations.ADD,
