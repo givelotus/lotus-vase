@@ -59,24 +59,7 @@ class SendInfo extends StatelessWidget {
   @override
   Widget build(context) {
     var screenDimension = MediaQuery.of(context).size;
-    final balanceNotifier =
-        Provider.of<WalletModel>(context, listen: false).balance;
-    final viewModel = Provider.of<SendModel>(context, listen: false);
-    // final addressController =
-    //     TextEditingController(text: viewModel.sendToAddress);
-
-    // addressController.addListener(() {
-    //   viewModel.sendToAddress = addressController.text;
-    // });
-
-    final amountController = TextEditingController(
-        text: viewModel.sendAmount == null
-            ? ''
-            : viewModel.sendAmount.toString());
-
-    amountController.addListener(() {
-      viewModel.sendAmount = int.tryParse(amountController.text);
-    });
+    // final viewModel = Provider.of<SendModel>(context, listen: false);
 
 // TODO: rework this so that the filler is checked properly before putting up QR
     final qrSendToAddress = ClipOval(
@@ -111,7 +94,7 @@ class SendInfo extends StatelessWidget {
             Padding(
               padding: stdPadding,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Consumer<SendModel>(builder: (context, viewModel, child) {
                     return GestureDetector(
@@ -194,54 +177,7 @@ class SendInfo extends StatelessWidget {
                 ],
               ),
             ),
-            // GestureDetector(
-            //   onTap: () {},
-            //   child: Row(children: [PaymentAmountDisplay(value: '0 sats')]),
-            // ),
-            // Card(
-            //   child: Row(
-            //     children: [
-            //       Expanded(
-            //         child: ListTile(
-            //           title: const Text('Balance'),
-            //           subtitle: const Text('in satoshis'),
-            //         ),
-            //       ),
-            //       Expanded(
-            //         child: ValueListenableBuilder(
-            //             valueListenable: balanceNotifier,
-            //             builder: (context, balance, child) {
-            //               if (balance == null) {
-            //                 return Text(
-            //                   'Loading...',
-            //                   style: TextStyle(
-            //                       color: Colors.red.withOpacity(.8),
-            //                       fontWeight: FontWeight.bold,
-            //                       fontSize: 13),
-            //                 );
-            //               }
-            //               return Text.rich(TextSpan(
-            //                 text: '${balance}',
-            //                 style: TextStyle(
-            //                   color: Colors.white,
-            //                   fontWeight: FontWeight.bold,
-            //                   fontSize: 17,
-            //                 ),
-            //                 children: [
-            //                   TextSpan(
-            //                     text: ' sats',
-            //                     style: TextStyle(
-            //                         color: Colors.white.withOpacity(.8),
-            //                         fontSize: 15),
-            //                   ),
-            //                 ],
-            //               ));
-            //             }),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            CalculatorKeyboard(wallet: wallet),
+            CalculatorKeyboard(wallet: wallet)
           ],
         ),
       ),
@@ -284,6 +220,7 @@ class CalculatorKeyboard extends StatefulWidget {
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   Wallet wallet;
+
   // TODO/FIX: Need to figure out what to do with these two variables
   // in conjuction with the setState just before the evaluateRefresh()
   // in _onPressed().
@@ -301,14 +238,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
     void _onPressed({String buttonLabel}) {
       switch (calculatorString) {
         case '0':
-          if ((Calculations.BACKSPACE.contains(buttonLabel) ||
-              buttonLabel == '00' ||
-              Calculations.OPERATIONS.contains(buttonLabel))) {
+          if ((Calculations.NONINTEGERS.contains(buttonLabel))) {
             return;
           }
-          if ((!Calculations.BACKSPACE.contains(buttonLabel) &&
-              buttonLabel != '00' &&
-              !Calculations.OPERATIONS.contains(buttonLabel))) {
+          if ((!Calculations.NONINTEGERS.contains(buttonLabel))) {
             setState(() {
               calculatorString = "$buttonLabel";
             });
@@ -411,7 +344,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       evaluateRefresh();
     }
 
-    void _onTapOutside(String calculatorString) {}
+    int calStringToInt(String calculatorString) {}
 
     Future<void> sendButtonClicked(
         BuildContext context, String address, int amount) async {
@@ -445,6 +378,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                     // specifically for this component
                     // Rather than wiring directly to the global viewmodel
                     onPressed: () {
+                      calStringToInt(calculatorString);
                       _validateAddress(viewModel.sendToAddress);
                       _validateSendAmount(viewModel.sendAmount);
 
@@ -468,5 +402,58 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       ],
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
     ));
+  }
+}
+
+class ViewBalance extends StatelessWidget {
+  const ViewBalance({Key key}) : super(key: key);
+
+  // final walletModel = Provider.of<WalletModel>(context, listen: false);
+  // final balanceNotifier = walletModel.balance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Row(
+        children: [
+          Expanded(
+            child: ListTile(
+              title: const Text('Balance'),
+              subtitle: const Text('in satoshis'),
+            ),
+          ),
+          Expanded(
+            child: ValueListenableBuilder(
+                valueListenable: balanceNotifier,
+                builder: (context, balance, child) {
+                  if (balance == null) {
+                    return Text(
+                      'Loading...',
+                      style: TextStyle(
+                          color: Colors.red.withOpacity(.8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    );
+                  }
+                  return Text.rich(TextSpan(
+                    text: '${balance}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
+                    children: [
+                      TextSpan(
+                        text: ' sats',
+                        style: TextStyle(
+                            color: Colors.white.withOpacity(.8), fontSize: 15),
+                      ),
+                    ],
+                  ));
+                }),
+          ),
+        ],
+      ),
+    );
   }
 }

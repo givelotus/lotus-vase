@@ -14,6 +14,14 @@ class Calculations {
     Calculations.SUBTRACT,
     Calculations.DIVIDE,
   ];
+  static const NONINTEGERS = [
+    Calculations.BACKSPACE,
+    Calculations.ADD,
+    Calculations.MULTIPLY,
+    Calculations.SUBTRACT,
+    Calculations.DIVIDE,
+    '00'
+  ];
 
   static double add(double val1, val2) {
     return val1 + val2;

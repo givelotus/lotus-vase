@@ -55,7 +55,7 @@ class _SendTabState extends State<SendTab> {
       onQRViewCreated: (QRViewController controller) {
         controller.scannedDataStream.listen((scanData) {
           try {
-            // Try parsing
+            // TODO: WIP Refactor after done with SendInfo screen -- ignore for now
             // TODO: We need a tryParse function. Exceptions for validity check is
             // not desirable.
 
