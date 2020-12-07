@@ -15,7 +15,7 @@ import 'custom_keyboard/custom_keyboard.dart';
 
 void _validateAddress(String address) {
   // Address(tryParse(data)['address']);
-  Address(address);
+  // Address(address);
 }
 
 void _validateSendAmount(int amount) {
@@ -94,7 +94,7 @@ class SendInfo extends StatelessWidget {
             Padding(
               padding: stdPadding,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Consumer<SendModel>(builder: (context, viewModel, child) {
                     return GestureDetector(
@@ -232,15 +232,45 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   // and finally evaluation in evaluateRefresh().
   String calculatorString = '0';
 
+  // Evaluate Expression & Refresh
+  void evaluateRefresh() {
+    return setState(() {
+      calculatorString = Calculator.parseString(calculatorString);
+      isNewEquation = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // On Equals press
+    // On every press of any button, checks for conditions and then executes
     void _onPressed({String buttonLabel}) {
+      // Checks before adding any operation or any digit
+      // 1. Divide by zero or 00 gives you ''.
+      if ((buttonLabel == '0' || buttonLabel == '00') &&
+          (calculatorString[calculatorString.length - 1] ==
+              Calculations.DIVIDE)) {
+        setState(() {
+          calculatorString = '';
+        });
+        return;
+      }
+
+      // 2. Checks for when starting from '' or '0' (default)
       switch (calculatorString) {
+        case '':
+          {
+            // Ignore 00 and 0 when calculatorString is currently empty.
+            if (buttonLabel == '0' || buttonLabel == '00') {
+              return;
+            }
+          }
+          break;
         case '0':
+          // Ignore all non-integers when calculatorString is '0'.
           if ((Calculations.NONINTEGERS.contains(buttonLabel))) {
             return;
           }
+          // Get rid of leading zero '0' on legitimate integer input.
           if ((!Calculations.NONINTEGERS.contains(buttonLabel))) {
             setState(() {
               calculatorString = "$buttonLabel";
@@ -317,34 +347,39 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         });
       }
 
-      // Evaluate Expression & Refresh
-      void evaluateRefresh() {
-        return setState(() {
-          calculatorString = Calculator.parseString(calculatorString);
-          isNewEquation = false;
-        });
-      }
-
-      // TODO: Add cases for ignoring 00 and 0 when calculatorString is currently empty.
-
       setState(() {
-        // FIX: Check each of these conditions carefully - are they necessary?
-        // We need something in here for the string to be additive... but need to clean up.
-        // if (!isNewEquation &&
-        //     operations.length == 1 &&
-        //     operations.last == Calculations.EQUAL) {
-        //   calculatorString = buttonLabel;
-        //   isNewEquation = true;
-        //   print(operations);
-        // } else {
         calculatorString += buttonLabel;
-        // }
       });
 
       evaluateRefresh();
     }
 
-    int calStringToInt(String calculatorString) {}
+    int calStringToInt(String calculatorString) {
+      // function returns this
+      int amount;
+
+      // Check and delete operators at end of string.
+      if (Calculations.OPERATIONS
+          .contains(calculatorString[calculatorString.length - 1])) {
+        calculatorString =
+            calculatorString.substring(0, calculatorString.length - 1);
+      }
+
+      // Can we get rid of these two lines below... hmm..
+      if (calculatorString == '0') {
+        return amount = 0;
+      } else {
+        // Convert to double, then round up or down to nearest integer
+        amount = (double.parse(calculatorString)).round();
+
+        // Check if amount negative; return error
+        if (amount <= 0) {
+          return amount = 0;
+        } else {
+          return amount;
+        }
+      }
+    }
 
     Future<void> sendButtonClicked(
         BuildContext context, String address, int amount) async {
@@ -378,18 +413,26 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                     // specifically for this component
                     // Rather than wiring directly to the global viewmodel
                     onPressed: () {
-                      calStringToInt(calculatorString);
+                      int updatedAmount = calStringToInt(calculatorString);
+
+                      setState(() {
+                        calculatorString = updatedAmount.toString();
+                        switch (updatedAmount) {
+                          case 0:
+                            {
+                              // Do nothing
+                              // Prefer not to show error; obvious that user needs to
+                              // recalc things...
+                            }
+                            break;
+                          default:
+                            _validateSendAmount(updatedAmount);
+                          // TODO: Change the button to slide to send widget :)
+                        }
+                      });
                       _validateAddress(viewModel.sendToAddress);
-                      _validateSendAmount(viewModel.sendAmount);
 
-                      sendButtonClicked(
-                        context,
-                        viewModel.sendToAddress,
-                        viewModel.sendAmount,
-                      );
-
-                      viewModel.sendAmount = null;
-                      viewModel.sendToAddress = null;
+                      print(updatedAmount);
                     },
                     child: Text('Confirm Amount'),
                   ),
@@ -405,55 +448,55 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   }
 }
 
-class ViewBalance extends StatelessWidget {
-  const ViewBalance({Key key}) : super(key: key);
+// class ViewBalance extends StatelessWidget {
+//   const ViewBalance({Key key}) : super(key: key);
 
-  // final walletModel = Provider.of<WalletModel>(context, listen: false);
-  // final balanceNotifier = walletModel.balance;
+//   // final walletModel = Provider.of<WalletModel>(context, listen: false);
+//   // final balanceNotifier = walletModel.balance;
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Row(
-        children: [
-          Expanded(
-            child: ListTile(
-              title: const Text('Balance'),
-              subtitle: const Text('in satoshis'),
-            ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder(
-                valueListenable: balanceNotifier,
-                builder: (context, balance, child) {
-                  if (balance == null) {
-                    return Text(
-                      'Loading...',
-                      style: TextStyle(
-                          color: Colors.red.withOpacity(.8),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
-                    );
-                  }
-                  return Text.rich(TextSpan(
-                    text: '${balance}',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: ' sats',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(.8), fontSize: 15),
-                      ),
-                    ],
-                  ));
-                }),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//       child: Row(
+//         children: [
+//           Expanded(
+//             child: ListTile(
+//               title: const Text('Balance'),
+//               subtitle: const Text('in satoshis'),
+//             ),
+//           ),
+//           Expanded(
+//             child: ValueListenableBuilder(
+//                 valueListenable: balanceNotifier,
+//                 builder: (context, balance, child) {
+//                   if (balance == null) {
+//                     return Text(
+//                       'Loading...',
+//                       style: TextStyle(
+//                           color: Colors.red.withOpacity(.8),
+//                           fontWeight: FontWeight.bold,
+//                           fontSize: 13),
+//                     );
+//                   }
+//                   return Text.rich(TextSpan(
+//                     text: '${balance}',
+//                     style: TextStyle(
+//                       color: Colors.white,
+//                       fontWeight: FontWeight.bold,
+//                       fontSize: 17,
+//                     ),
+//                     children: [
+//                       TextSpan(
+//                         text: ' sats',
+//                         style: TextStyle(
+//                             color: Colors.white.withOpacity(.8), fontSize: 15),
+//                       ),
+//                     ],
+//                   ));
+//                 }),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
