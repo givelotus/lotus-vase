@@ -20,11 +20,9 @@ void _validateAddress(String address) {
 
 void _validateSendAmount(int amount) {
   if (amount == 0) {
-      return;
-    }
-  
+    return;
   }
-
+}
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
@@ -383,10 +381,11 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       }
     }
 
-    Future<void> sendButtonClicked(
+    Future<void> sendButtonSwiped(
         BuildContext context, String address, int amount) async {
-      // the address and amount should have been pre-validated at the form and corrected
-      // by user before being able to hit send; we are thus sending direct to Electrum library.
+      // This is at the 'swipe to send' level, after confirming the amount.
+      // The address and amount should have been pre-validated at the form and corrected
+      // by user before even being able to swipe send; we are thus sending direct to Electrum library.
 
       await {
         wallet
@@ -399,10 +398,57 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // visible.value = false
     }
 
+    final viewModel = Provider.of<SendModel>(context, listen: true);
+    final walletModel = Provider.of<WalletModel>(context, listen: false);
+    final balanceNotifier = walletModel.balance;
+
     return Container(
         child: Column(
       children: [
         PaymentAmountDisplay(value: calculatorString),
+        Card(
+          child: Row(
+            children: [
+              Expanded(
+                child: ListTile(
+                  title: const Text('Balance'),
+                  subtitle: const Text('in satoshis'),
+                ),
+              ),
+              Expanded(
+                child: ValueListenableBuilder(
+                    valueListenable: balanceNotifier,
+                    builder: (context, balance, child) {
+                      if (balance == null) {
+                        return Text(
+                          'Loading...',
+                          style: TextStyle(
+                              color: Colors.red.withOpacity(.8),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13),
+                        );
+                      }
+                      return Text.rich(TextSpan(
+                        text: '${balance}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: ' sats',
+                            style: TextStyle(
+                                color: Colors.white.withOpacity(.8),
+                                fontSize: 15),
+                          ),
+                        ],
+                      ));
+                    }),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
@@ -429,12 +475,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                             break;
                           default:
                             _validateSendAmount(updatedAmount);
+                            viewModel.sendAmount = updatedAmount;
+                            print(updatedAmount);
                           // TODO: Change the button to slide to send widget :)
                         }
-                      });
-                      _validateAddress(viewModel.sendToAddress);
 
-                      print(updatedAmount);
+                        _validateAddress(viewModel.sendToAddress);
+                      });
                     },
                     child: Text('Confirm Amount'),
                   ),
@@ -445,60 +492,6 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         ),
         CalculatorButtons(onTap: _onPressed),
       ],
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
     ));
   }
 }
-
-// class ViewBalance extends StatelessWidget {
-//   const ViewBalance({Key key}) : super(key: key);
-
-//   // final walletModel = Provider.of<WalletModel>(context, listen: false);
-//   // final balanceNotifier = walletModel.balance;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Card(
-//       child: Row(
-//         children: [
-//           Expanded(
-//             child: ListTile(
-//               title: const Text('Balance'),
-//               subtitle: const Text('in satoshis'),
-//             ),
-//           ),
-//           Expanded(
-//             child: ValueListenableBuilder(
-//                 valueListenable: balanceNotifier,
-//                 builder: (context, balance, child) {
-//                   if (balance == null) {
-//                     return Text(
-//                       'Loading...',
-//                       style: TextStyle(
-//                           color: Colors.red.withOpacity(.8),
-//                           fontWeight: FontWeight.bold,
-//                           fontSize: 13),
-//                     );
-//                   }
-//                   return Text.rich(TextSpan(
-//                     text: '${balance}',
-//                     style: TextStyle(
-//                       color: Colors.white,
-//                       fontWeight: FontWeight.bold,
-//                       fontSize: 17,
-//                     ),
-//                     children: [
-//                       TextSpan(
-//                         text: ' sats',
-//                         style: TextStyle(
-//                             color: Colors.white.withOpacity(.8), fontSize: 15),
-//                       ),
-//                     ],
-//                   ));
-//                 }),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
