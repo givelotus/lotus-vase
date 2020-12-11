@@ -130,7 +130,9 @@ class SendInfo extends StatelessWidget {
                         viewModel.sendToAddress = tryParse(data)['address'];
 
                         _validateSendAmount(viewModel.sendAmount);
-                        viewModel.sendAmount = tryParse(data)['amount'];
+                        // viewModel.sendAmount = tryParse(data)['amount'];
+                        _paymentAmount.value =
+                            tryParse(data)['amount'].toString();
 
                         print(viewModel.sendToAddress);
                         print(viewModel.sendAmount);
@@ -188,9 +190,6 @@ class SendInfo extends StatelessWidget {
 }
 
 class PaymentAmountDisplay extends StatelessWidget {
-  // PaymentAmountDisplay({this.value});
-  // final String value;
-
   PaymentAmountDisplay({Key key}) : super(key: key);
 
   @override
@@ -201,7 +200,6 @@ class PaymentAmountDisplay extends StatelessWidget {
           Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
         ValueListenableBuilder(
             valueListenable: _paymentAmount,
-            // child: ,
             builder: (context, _paymentAmount, child) {
               return Text(
                 // TODO: - FIX Add default = 0 sats
@@ -235,14 +233,14 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   // as a String array. When _onPressed is called for any buttton,
   // its label is checked against Calculations.OPERATIONS for appropriate parsing
   // and finally evaluation in evaluateRefresh().
-  String _paymentAmount = '0';
 
   // Evaluate Expression & Refresh
   void evaluateRefresh() {
-    return setState(() {
-      _paymentAmount = Calculator.parseString(_paymentAmount);
-      isNewEquation = false;
-    });
+    print(_paymentAmount);
+    _paymentAmount.value = Calculator.parseString(_paymentAmount.value);
+    isNewEquation = false;
+
+    print(_paymentAmount.value);
   }
 
   @override
@@ -252,15 +250,14 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // Checks before adding any operation or any digit
       // 1. Divide by zero or 00 gives you ''.
       if ((buttonLabel == '0' || buttonLabel == '00') &&
-          (_paymentAmount[_paymentAmount.length - 1] == Calculations.DIVIDE)) {
-        setState(() {
-          _paymentAmount = '';
-        });
+          (_paymentAmount.value[_paymentAmount.value.length - 1] ==
+              Calculations.DIVIDE)) {
+        _paymentAmount.value = '';
         return;
       }
 
       // 2. Checks for when starting from '' or '0' (default)
-      switch (_paymentAmount) {
+      switch (_paymentAmount.value) {
         case '':
           {
             // Ignore 00 and 0 when _paymentAmount is currently empty.
@@ -276,9 +273,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
           }
           // Get rid of leading zero '0' on legitimate integer input.
           if ((!Calculations.NONINTEGERS.contains(buttonLabel))) {
-            setState(() {
-              _paymentAmount = "$buttonLabel";
-            });
+            _paymentAmount.value = "$buttonLabel";
+            print(_paymentAmount.value);
             return;
           }
       }
@@ -286,10 +282,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // Standard mathematical operations
       if (Calculations.OPERATIONS.contains(buttonLabel)) {
         return setState(() {
-          switch (_paymentAmount.length) {
+          switch (_paymentAmount.value.length) {
             case 0:
               {
-                _paymentAmount = '';
+                _paymentAmount.value = '';
               }
               break;
             default:
@@ -300,10 +296,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                 // - If not, replace with new operator (default case in switch)
                 // If last item in string array not already operator, then
                 // safe to add operator to last item in string.
-                if (Calculations.OPERATIONS
-                    .contains(_paymentAmount[_paymentAmount.length - 1])) {
+                if (Calculations.OPERATIONS.contains(
+                    _paymentAmount.value[_paymentAmount.value.length - 1])) {
                   switch (buttonLabel ==
-                      _paymentAmount[_paymentAmount.length - 1]) {
+                      _paymentAmount.value[_paymentAmount.value.length - 1]) {
                     case true:
                       {
                         // do NOTHING!
@@ -311,13 +307,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                       break;
                     default:
                       {
-                        _paymentAmount = _paymentAmount.substring(
-                            0, _paymentAmount.length - 1);
-                        _paymentAmount += "$buttonLabel";
+                        _paymentAmount.value = _paymentAmount.value
+                            .substring(0, _paymentAmount.value.length - 1);
+                        _paymentAmount.value += "$buttonLabel";
                       }
                   }
                 } else {
-                  _paymentAmount += "$buttonLabel";
+                  _paymentAmount.value += "$buttonLabel";
                 }
               }
           }
@@ -326,10 +322,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // On CLEAR press
       if (buttonLabel == Calculations.BACKSPACE) {
         return setState(() {
-          switch (_paymentAmount.length) {
+          switch (_paymentAmount.value.length) {
             case 1:
               {
-                _paymentAmount = '';
+                _paymentAmount.value = '';
               }
               break;
             default:
@@ -338,13 +334,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                 // e.g., 12.9 - yes; 12.99 - no. 12 - no.
                 // If so, makes sure decimal is also deleted along with the last digit
                 // Else, delete only last item in string array.
-                if (Calculations.PERIOD
-                    .contains(_paymentAmount[_paymentAmount.length - 2])) {
-                  _paymentAmount =
-                      _paymentAmount.substring(0, _paymentAmount.length - 2);
+                if (Calculations.PERIOD.contains(
+                    _paymentAmount.value[_paymentAmount.value.length - 2])) {
+                  _paymentAmount.value = _paymentAmount.value
+                      .substring(0, _paymentAmount.value.length - 2);
                 } else {
-                  _paymentAmount =
-                      _paymentAmount.substring(0, _paymentAmount.length - 1);
+                  _paymentAmount.value = _paymentAmount.value
+                      .substring(0, _paymentAmount.value.length - 1);
                 }
               }
           }
@@ -352,7 +348,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       }
 
       setState(() {
-        _paymentAmount += buttonLabel;
+        _paymentAmount.value += buttonLabel;
       });
 
       evaluateRefresh();
@@ -362,6 +358,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // function returns this
       int amount;
 
+// rework rest of code for paymentmount .value
       // Check and delete operators at end of string.
       if (Calculations.OPERATIONS
           .contains(_paymentAmount[_paymentAmount.length - 1])) {
@@ -464,10 +461,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                     // specifically for this component
                     // Rather than wiring directly to the global viewmodel
                     onPressed: () {
-                      int updatedAmount = calStringToInt(_paymentAmount);
+                      int updatedAmount = calStringToInt(_paymentAmount.value);
 
                       setState(() {
-                        _paymentAmount = updatedAmount.toString();
+                        _paymentAmount.value = updatedAmount.toString();
                         switch (updatedAmount) {
                           case 0:
                             {
