@@ -13,6 +13,8 @@ import '../../bitcoincash/transaction/transaction.dart';
 import '../../constants.dart';
 import 'custom_keyboard/custom_keyboard.dart';
 
+ValueNotifier<String> _paymentAmount = ValueNotifier('0');
+
 void _validateAddress(String address) {
   // Address(tryParse(data)['address']);
   // Address(address);
@@ -186,32 +188,35 @@ class SendInfo extends StatelessWidget {
 }
 
 class PaymentAmountDisplay extends StatelessWidget {
-  PaymentAmountDisplay({this.value});
+  // PaymentAmountDisplay({this.value});
+  // final String value;
 
-  final String value;
+  PaymentAmountDisplay({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              // TODO: - FIX Add default = 0 sats
-              // - Add TextSpan widget for making 'sats' smaller size,
-              // - and number formatter for value
-              '${value ?? '0'} sats',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ));
+      padding: EdgeInsets.all(20),
+      child:
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[
+        ValueListenableBuilder(
+            valueListenable: _paymentAmount,
+            // child: ,
+            builder: (context, _paymentAmount, child) {
+              return Text(
+                // TODO: - FIX Add default = 0 sats
+                // - Add TextSpan widget for making 'sats' smaller size,
+                // - and number formatter for value
+                '${_paymentAmount} sats',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              );
+            })
+      ]),
+    );
   }
 }
 
 class CalculatorKeyboard extends StatefulWidget {
-// TODO: Work on UI here (in library)
-
   CalculatorKeyboard({Key key, @required Wallet wallet}) : super(key: key);
 
   @override
@@ -226,16 +231,16 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
   // in _onPressed().
   bool isNewEquation = true;
   List<String> operations = [];
-  // calculatorString holds the stack of the calculator values/operations
+  // _paymentAmount holds the stack of the calculator values/operations
   // as a String array. When _onPressed is called for any buttton,
   // its label is checked against Calculations.OPERATIONS for appropriate parsing
   // and finally evaluation in evaluateRefresh().
-  String calculatorString = '0';
+  String _paymentAmount = '0';
 
   // Evaluate Expression & Refresh
   void evaluateRefresh() {
     return setState(() {
-      calculatorString = Calculator.parseString(calculatorString);
+      _paymentAmount = Calculator.parseString(_paymentAmount);
       isNewEquation = false;
     });
   }
@@ -247,33 +252,32 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // Checks before adding any operation or any digit
       // 1. Divide by zero or 00 gives you ''.
       if ((buttonLabel == '0' || buttonLabel == '00') &&
-          (calculatorString[calculatorString.length - 1] ==
-              Calculations.DIVIDE)) {
+          (_paymentAmount[_paymentAmount.length - 1] == Calculations.DIVIDE)) {
         setState(() {
-          calculatorString = '';
+          _paymentAmount = '';
         });
         return;
       }
 
       // 2. Checks for when starting from '' or '0' (default)
-      switch (calculatorString) {
+      switch (_paymentAmount) {
         case '':
           {
-            // Ignore 00 and 0 when calculatorString is currently empty.
+            // Ignore 00 and 0 when _paymentAmount is currently empty.
             if (buttonLabel == '0' || buttonLabel == '00') {
               return;
             }
           }
           break;
         case '0':
-          // Ignore all non-integers when calculatorString is '0'.
+          // Ignore all non-integers when _paymentAmount is '0'.
           if ((Calculations.NONINTEGERS.contains(buttonLabel))) {
             return;
           }
           // Get rid of leading zero '0' on legitimate integer input.
           if ((!Calculations.NONINTEGERS.contains(buttonLabel))) {
             setState(() {
-              calculatorString = "$buttonLabel";
+              _paymentAmount = "$buttonLabel";
             });
             return;
           }
@@ -282,10 +286,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // Standard mathematical operations
       if (Calculations.OPERATIONS.contains(buttonLabel)) {
         return setState(() {
-          switch (calculatorString.length) {
+          switch (_paymentAmount.length) {
             case 0:
               {
-                calculatorString = '';
+                _paymentAmount = '';
               }
               break;
             default:
@@ -297,9 +301,9 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                 // If last item in string array not already operator, then
                 // safe to add operator to last item in string.
                 if (Calculations.OPERATIONS
-                    .contains(calculatorString[calculatorString.length - 1])) {
+                    .contains(_paymentAmount[_paymentAmount.length - 1])) {
                   switch (buttonLabel ==
-                      calculatorString[calculatorString.length - 1]) {
+                      _paymentAmount[_paymentAmount.length - 1]) {
                     case true:
                       {
                         // do NOTHING!
@@ -307,13 +311,13 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                       break;
                     default:
                       {
-                        calculatorString = calculatorString.substring(
-                            0, calculatorString.length - 1);
-                        calculatorString += "$buttonLabel";
+                        _paymentAmount = _paymentAmount.substring(
+                            0, _paymentAmount.length - 1);
+                        _paymentAmount += "$buttonLabel";
                       }
                   }
                 } else {
-                  calculatorString += "$buttonLabel";
+                  _paymentAmount += "$buttonLabel";
                 }
               }
           }
@@ -322,10 +326,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // On CLEAR press
       if (buttonLabel == Calculations.BACKSPACE) {
         return setState(() {
-          switch (calculatorString.length) {
+          switch (_paymentAmount.length) {
             case 1:
               {
-                calculatorString = '';
+                _paymentAmount = '';
               }
               break;
             default:
@@ -335,12 +339,12 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                 // If so, makes sure decimal is also deleted along with the last digit
                 // Else, delete only last item in string array.
                 if (Calculations.PERIOD
-                    .contains(calculatorString[calculatorString.length - 2])) {
-                  calculatorString = calculatorString.substring(
-                      0, calculatorString.length - 2);
+                    .contains(_paymentAmount[_paymentAmount.length - 2])) {
+                  _paymentAmount =
+                      _paymentAmount.substring(0, _paymentAmount.length - 2);
                 } else {
-                  calculatorString = calculatorString.substring(
-                      0, calculatorString.length - 1);
+                  _paymentAmount =
+                      _paymentAmount.substring(0, _paymentAmount.length - 1);
                 }
               }
           }
@@ -348,29 +352,28 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       }
 
       setState(() {
-        calculatorString += buttonLabel;
+        _paymentAmount += buttonLabel;
       });
 
       evaluateRefresh();
     }
 
-    int calStringToInt(String calculatorString) {
+    int calStringToInt(String _paymentAmount) {
       // function returns this
       int amount;
 
       // Check and delete operators at end of string.
       if (Calculations.OPERATIONS
-          .contains(calculatorString[calculatorString.length - 1])) {
-        calculatorString =
-            calculatorString.substring(0, calculatorString.length - 1);
+          .contains(_paymentAmount[_paymentAmount.length - 1])) {
+        _paymentAmount = _paymentAmount.substring(0, _paymentAmount.length - 1);
       }
 
       // Can we get rid of these two lines below... hmm..
-      if (calculatorString == '0') {
+      if (_paymentAmount == '0') {
         return amount = 0;
       } else {
         // Convert to double, then round up or down to nearest integer
-        amount = (double.parse(calculatorString)).round();
+        amount = (double.parse(_paymentAmount)).round();
 
         // Check if amount negative; return error
         if (amount <= 0) {
@@ -405,7 +408,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
     return Container(
         child: Column(
       children: [
-        PaymentAmountDisplay(value: calculatorString),
+        PaymentAmountDisplay(),
         Card(
           child: Row(
             children: [
@@ -461,10 +464,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                     // specifically for this component
                     // Rather than wiring directly to the global viewmodel
                     onPressed: () {
-                      int updatedAmount = calStringToInt(calculatorString);
+                      int updatedAmount = calStringToInt(_paymentAmount);
 
                       setState(() {
-                        calculatorString = updatedAmount.toString();
+                        _paymentAmount = updatedAmount.toString();
                         switch (updatedAmount) {
                           case 0:
                             {
