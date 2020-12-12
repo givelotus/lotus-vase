@@ -14,11 +14,19 @@ import '../../constants.dart';
 import 'custom_keyboard/custom_keyboard.dart';
 
 ValueNotifier<String> _paymentAmount = ValueNotifier('0');
+ValueNotifier<bool> _showKeyboard = ValueNotifier<bool>(true);
 
 void _validateAddress(String address) {
+// TODO: if present, try checking scheme is 'bitcoincash' or throw error
+// (scheme should be optional)
+// check address conforms to Address class or throw error
+// check amount function (>0, less than total in wallet)
+
   // Address(tryParse(data)['address']);
   // Address(address);
 }
+
+// TODO: Add check amount is > 0 and < amount of sats in wallet.
 
 void _validateSendAmount(int amount) {
   if (amount == 0) {
@@ -85,6 +93,9 @@ class SendInfo extends StatelessWidget {
               visible.value = false;
               viewModel.sendAmount = null;
               viewModel.sendToAddress = null;
+
+              _showKeyboard.value = true;
+              _paymentAmount.value = '0';
             },
             child: Text('Cancel'),
           ),
@@ -116,21 +127,15 @@ class SendInfo extends StatelessWidget {
                             'scheme': parseObject.scheme
                           };
 
-                          // if present, try checking scheme is 'bitcoincash' or throw error
-                          // (scheme should be optional)
-                          // check address conforms to Address class or throw error
-                          // check amount function (>0, less than total in wallet)
+                          _validateAddress(viewModel.sendToAddress);
+                          _validateSendAmount(viewModel.sendAmount);
 
                           // Dev purposes only:
                           print(map);
                           return map;
                         }
 
-                        _validateAddress(viewModel.sendToAddress);
                         viewModel.sendToAddress = tryParse(data)['address'];
-
-                        _validateSendAmount(viewModel.sendAmount);
-                        // viewModel.sendAmount = tryParse(data)['amount'];
                         _paymentAmount.value =
                             tryParse(data)['amount'].toString();
 
@@ -164,6 +169,7 @@ class SendInfo extends StatelessWidget {
                                             color: Colors.black.withOpacity(.8),
                                             fontSize: 15),
                                         children: <TextSpan>[
+                                          // TODO: Add regex for address jere
                                           TextSpan(
                                             text: viewModel.sendToAddress,
                                             style: TextStyle(
@@ -202,9 +208,9 @@ class PaymentAmountDisplay extends StatelessWidget {
             valueListenable: _paymentAmount,
             builder: (context, _paymentAmount, child) {
               return Text(
-                // TODO: - FIX Add default = 0 sats
+                // TODO: (Low priority)
                 // - Add TextSpan widget for making 'sats' smaller size,
-                // - and number formatter for value
+                // - Number formatter for value
                 '${_paymentAmount} sats',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               );
@@ -355,10 +361,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
     }
 
     int calStringToInt(String _paymentAmount) {
-      // function returns this
+      // function returns int from String
       int amount;
 
-// rework rest of code for paymentmount .value
+      // rework rest of code for paymentmount .value
       // Check and delete operators at end of string.
       if (Calculations.OPERATIONS
           .contains(_paymentAmount[_paymentAmount.length - 1])) {
@@ -449,48 +455,82 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
             ],
           ),
         ),
+        // Confirm Amount button widget writes to global SendModel:
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             children: [
               Expanded(
                 child: Consumer<SendModel>(
-                  builder: (context, viewModel, child) => ElevatedButton(
-                    autofocus: true,
-                    // TODO: we should probably have ValueNotifiable props
-                    // specifically for this component
-                    // Rather than wiring directly to the global viewmodel
-                    onPressed: () {
-                      int updatedAmount = calStringToInt(_paymentAmount.value);
+                  builder: (context, viewModel, child) {
+                    switch (_showKeyboard.value) {
+                      case true:
+                        {
+                          return ElevatedButton(
+                            autofocus: true,
+                            // TODO: we should probably have ValueNotifiable props
+                            // specifically for this component
+                            // Rather than wiring directly to the global viewmodel
+                            // (I decided to keep it - aj 12/11/20)
+                            onPressed: () {
+                              int updatedAmount =
+                                  calStringToInt(_paymentAmount.value);
 
-                      setState(() {
-                        _paymentAmount.value = updatedAmount.toString();
-                        switch (updatedAmount) {
-                          case 0:
-                            {
-                              // Do nothing
-                              // Prefer not to show error; obvious that user needs to
-                              // recalc things...
-                            }
-                            break;
-                          default:
-                            _validateSendAmount(updatedAmount);
-                            viewModel.sendAmount = updatedAmount;
-                            print(updatedAmount);
-                          // TODO: Change the button to slide to send widget :)
+                              setState(() {
+                                _paymentAmount.value = updatedAmount.toString();
+                                switch (updatedAmount) {
+                                  case 0:
+                                    {
+                                      return; // Prefer not to show error; obvious that user needs to recalc.
+                                    }
+                                    break;
+                                  default:
+                                    _validateAddress(viewModel.sendToAddress);
+
+                                    _validateSendAmount(updatedAmount);
+                                    viewModel.sendAmount = updatedAmount;
+                                    print(updatedAmount);
+                                    print(viewModel.sendAmount);
+
+                                    _showKeyboard.value = false;
+
+                                  // TODO: Change the button to slide to send widget :)
+                                }
+                              });
+                            },
+                            child: Text('Confirm Amount'),
+                          );
                         }
-
-                        _validateAddress(viewModel.sendToAddress);
-                      });
-                    },
-                    child: Text('Confirm Amount'),
-                  ),
+                        break;
+                      default:
+                        {
+                          return ElevatedButton(
+                            autofocus: true,
+                            onPressed: () {
+                              ;
+                            },
+                            child: Text('Send ${viewModel.sendAmount}!'),
+                          );
+                        }
+                        ;
+                    }
+                  },
                 ),
               )
             ],
           ),
         ),
-        CalculatorButtons(onTap: _onPressed),
+        ValueListenableBuilder(
+            builder: (context, balance, child) {
+              if (_showKeyboard.value == true) {
+                return CalculatorButtons(onTap: _onPressed);
+              } else {
+                return Container(
+                  height: 100,
+                );
+              }
+            },
+            valueListenable: _showKeyboard),
       ],
     ));
   }
