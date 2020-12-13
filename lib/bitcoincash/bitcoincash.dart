@@ -18,7 +18,6 @@ export 'src/block/blockheader.dart';
 export 'src/block/merkleblock.dart';
 export 'src/script/bchscript.dart';
 export 'src/script/opcodes.dart';
-export 'src/script/stack.dart';
 export 'src/script/scriptflags.dart';
 export 'src/transaction/transaction.dart';
 export 'src/transaction/transaction_output.dart';
