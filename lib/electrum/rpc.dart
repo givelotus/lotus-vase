@@ -66,7 +66,7 @@ class RPCResponse {
   @JsonKey(includeIfNull: true)
   final Object result;
   @JsonKey(includeIfNull: true)
-  final Error error;
+  final Object error;
   @JsonKey(disallowNullValue: true)
   final int id;
 
@@ -86,13 +86,16 @@ class GetBalanceResponse {
   int unconfirmed;
 }
 
+typedef DisconnectHandler = void Function(dynamic err);
+
 class JSONRPCWebsocket {
   WebSocket rpcSocket;
   Map<int, ResponseHandler> outstandingRequests = {};
   Map<String, SubscriptionHandler> subscriptions = {};
   var currentRequestId = 0;
+  DisconnectHandler disconnectHandler;
 
-  JSONRPCWebsocket();
+  JSONRPCWebsocket({this.disconnectHandler});
 
   void _handleResponse(RPCResponse response) {
     final handler = outstandingRequests[response.id] ??
@@ -145,8 +148,18 @@ class JSONRPCWebsocket {
         _handleNotification(notification);
       }
     }, onError: (Object error) {
-      throw UnknownElectrumError('Websocket errored to electrum server', error);
+      if (disconnectHandler != null) {
+        disconnectHandler(error);
+      }
     }, onDone: () {
+      if (disconnectHandler != null) {
+        disconnectHandler(null);
+      }
+      for (final requestHandler in outstandingRequests.entries) {
+        requestHandler.value(RPCResponse(null,
+            error: Exception(
+                'Disconnected from electrum while awaiting response')));
+      }
       // Nothing to do?
     }, cancelOnError: false);
   }
