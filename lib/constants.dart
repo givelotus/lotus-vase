@@ -6,6 +6,7 @@ import 'package:cashew/bitcoincash/src/networks.dart';
 const electrumUrls = [
   'http://bchabc.fmarcosh.xyz:50003',
   'https://electrum.bitcoinabc.org:50004',
+  'https://fulcrum.cashweb.io',
 ];
 
 const inputSize = 148;
