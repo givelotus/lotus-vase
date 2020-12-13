@@ -11,7 +11,9 @@ typedef BalanceUpdateHandler = void Function(int result);
 class Wallet {
   BalanceUpdateHandler balanceUpdateHandler;
   Wallet(this.keys, this.electrumFactory,
-      {this.network, this.balanceUpdateHandler});
+      {this.network, this.balanceUpdateHandler}) {
+    electrumFactory.onConnected = (client) => startUtxoListeners(client);
+  }
 
   NetworkType network;
   ElectrumFactory electrumFactory;
@@ -60,10 +62,7 @@ class Wallet {
   }
 
   /// Start UTXO listeners.
-  Future<void> startUtxoListeners() async {
-    final clientFuture = electrumFactory.build();
-    final client = await clientFuture;
-
+  Future<void> startUtxoListeners(ElectrumClient client) async {
     for (final keyInfo in keys.keys) {
       final hexScriptHash = hex.encode(keyInfo.scriptHash);
 
@@ -72,11 +71,7 @@ class Wallet {
   }
 
   /// Fetch UTXOs from electrum then update vault.
-  Future<void> updateUtxos() async {
-    final clientFuture = electrumFactory.build();
-
-    final client = await clientFuture;
-
+  Future<void> updateUtxos(ElectrumClient client) async {
     var keyIndex = 0;
     for (final keyInfo in keys.keys) {
       final hexScriptHash = hex.encode(keyInfo.scriptHash);
@@ -122,13 +117,16 @@ class Wallet {
   }
 
   Future<void> initialize() async {
+    final clientFuture = electrumFactory.build();
+    final client = await clientFuture;
+
     // Wipe out the vault before refreshing UTXOs
-    await updateUtxos();
+    await updateUtxos(client);
     refreshBalanceLocal();
     // TODO: we need a way to restart these when electrum connection dies
     // currently, we won't get any updates if we ever have to reconnect
     // again.
-    await startUtxoListeners();
+    await startUtxoListeners(client);
   }
 
   int balanceSatoshis() {
@@ -200,6 +198,8 @@ class Wallet {
     } catch (err) {
       print(err.message);
       rethrow;
+    } finally {
+      refreshBalanceLocal();
     }
     return transaction;
   }
