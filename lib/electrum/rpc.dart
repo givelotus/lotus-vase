@@ -66,7 +66,7 @@ class RPCResponse {
   @JsonKey(includeIfNull: true)
   final Object result;
   @JsonKey(includeIfNull: true)
-  final Object error;
+  final Error error;
   @JsonKey(disallowNullValue: true)
   final int id;
 
@@ -155,8 +155,8 @@ class JSONRPCWebsocket {
       }
       for (final requestHandler in outstandingRequests.entries) {
         requestHandler.value(RPCResponse(null,
-            error: Exception(
-                'Disconnected from electrum while awaiting response')));
+            error: Error(
+                0, 'Disconnected from electrum while awaiting response')));
       }
       // Nothing to do?
     }, cancelOnError: false);
