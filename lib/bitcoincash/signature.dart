@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../bitcoincash.dart';
+import './bitcoincash.dart';
 import 'privatekey.dart';
 import 'publickey.dart';
 import 'package:pointycastle/api.dart';

@@ -2,9 +2,9 @@ import 'package:hex/hex.dart';
 import 'package:sprintf/sprintf.dart';
 
 import '../exceptions.dart';
-import '../transaction/signed_unlock_builder.dart';
-import '../transaction/locking_script_builder.dart';
-import '../transaction/unlocking_script_builder.dart';
+import './signed_unlock_builder.dart';
+import './locking_script_builder.dart';
+import './unlocking_script_builder.dart';
 import '../script/bchscript.dart';
 import '../signature.dart';
 import '../publickey.dart';

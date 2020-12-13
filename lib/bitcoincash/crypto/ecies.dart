@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import '../../bitcoincash.dart';
+import '.././bitcoincash.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/digests/sha512.dart';

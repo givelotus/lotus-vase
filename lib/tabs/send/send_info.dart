@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'sendModel.dart';
 import '../../wallet/wallet.dart';
 import '../../viewmodel.dart';
-import '../../bitcoincash/src/address.dart';
-import '../../bitcoincash/src/transaction/transaction.dart';
+import '../../bitcoincash/address.dart';
+import '../../bitcoincash/transaction/transaction.dart';
 import '../../constants.dart';
 
 Future showReceipt(BuildContext context, Transaction transaction) {

@@ -8,7 +8,7 @@ import 'package:cashew/wallet/keys.dart';
 import 'package:cashew/wallet/storage/keys.dart';
 import 'package:cashew/constants.dart';
 
-import 'package:cashew/bitcoincash/src/networks.dart';
+import 'package:cashew/bitcoincash/networks.dart';
 
 import 'electrum/client.dart';
 

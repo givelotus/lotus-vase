@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../bitcoincash.dart';
+import './bitcoincash.dart';
 
 import 'encoding/base58check.dart' as bs58check;
 import 'package:hex/hex.dart';

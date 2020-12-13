@@ -1,4 +1,4 @@
-import '../../bitcoincash.dart';
+import '.././bitcoincash.dart';
 
 import 'signed_unlock_builder.dart';
 

@@ -1,6 +1,6 @@
 import 'package:cashew/constants.dart';
 import 'package:cashew/viewmodel.dart';
-import 'package:cashew/bitcoincash/src/bip39/bip39.dart';
+import 'package:cashew/bitcoincash/bip39/bip39.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

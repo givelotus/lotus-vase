@@ -9,14 +9,14 @@ import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:buffer/buffer.dart';
 
-import '../../bitcoincash.dart';
+import '.././bitcoincash.dart';
 import '../encoding/utils.dart';
 import '../signature.dart';
-import '../transaction/data_builder.dart';
-import '../transaction/default_builder.dart';
-import '../transaction/signed_unlock_builder.dart';
-import '../transaction/transaction_input.dart';
-import '../transaction/transaction_output.dart';
+import './data_builder.dart';
+import './default_builder.dart';
+import './signed_unlock_builder.dart';
+import './transaction_input.dart';
+import './transaction_output.dart';
 import '../exceptions.dart';
 import '../sighash.dart';
 

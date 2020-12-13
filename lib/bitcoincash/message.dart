@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import '../bitcoincash.dart';
+import './bitcoincash.dart';
 import 'package:hex/hex.dart';
 
 import 'encoding/utils.dart';
