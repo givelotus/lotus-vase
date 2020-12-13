@@ -138,15 +138,13 @@ class JSONRPCWebsocket {
 
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      try {
-        // Attempt to deserialize response
-        final response = RPCResponse.fromJson(jsonResult);
-        _handleResponse(response);
-      } catch (_) {
-        // Attempt to deserialize notifcation
+      // Attempt to deserialize response
+      final response = RPCResponse.fromJson(jsonResult);
+      if (response.id == null) {
         final notification = RPCRequest.fromJson(jsonResult);
-        _handleNotification(notification);
+        return _handleNotification(notification);
       }
+      return _handleResponse(response);
     }, onError: (Object error) {
       if (disconnectHandler != null) {
         disconnectHandler(error);
