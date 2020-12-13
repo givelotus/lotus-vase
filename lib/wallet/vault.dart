@@ -101,7 +101,14 @@ class Vault {
   }
 
   BigInt calculateBalance() {
-    return _pool.keys.fold(BigInt.zero, (p, c) => p + c);
+    return _pool.values.fold(
+        BigInt.zero,
+        (p, c) =>
+            p +
+            c.fold(
+                BigInt.zero,
+                (totalOutputs, output) =>
+                    totalOutputs + output.outpoint.amount));
   }
 
   /// Collect enough utxos to cover the [amount] and any additional fees.
