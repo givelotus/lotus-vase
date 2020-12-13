@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cashew/electrum/rpc.dart';
 
 class ListUnspentResponseItem {
@@ -10,8 +12,24 @@ class ListUnspentResponseItem {
 }
 
 class ElectrumClient extends JSONRPCWebsocket {
+  Timer _pingTimer;
+
+  ElectrumClient({DisconnectHandler disconnectHandler})
+      : super(disconnectHandler: disconnectHandler) {
+    _pingTimer = Timer(Duration(seconds: 30), () {
+      if (rpcSocket != null) {
+        print('ping');
+        serverPing();
+      }
+    });
+  }
+
   Future<Object> blockchainTransactionBroadcast(String transaction) {
     return call('blockchain.transaction.broadcast', [transaction]);
+  }
+
+  Future<Object> serverPing() {
+    return call('server.ping', []);
   }
 
   Future<List<ListUnspentResponseItem>> blockchainScripthashListunspent(
@@ -48,19 +66,26 @@ class ElectrumClient extends JSONRPCWebsocket {
   }
 }
 
+typedef ConnectHandler = Future<void> Function(ElectrumClient client);
+
 class ElectrumFactory {
-  ElectrumFactory(this.urls);
+  ElectrumFactory(this.urls, {this.onConnected});
 
   Future<ElectrumClient> _client;
   List<String> urls;
+  ConnectHandler onConnected;
 
   /// Builds client if non-existent and attempts to connect before resolving.
   Future<ElectrumClient> build() {
     if (_client == null) {
-      final newClient = ElectrumClient();
+      final newClient =
+          ElectrumClient(disconnectHandler: (error) => {_client = null});
       final urls = this.urls.sublist(0);
       urls.shuffle();
-      _client = newClient.connect(Uri.parse(urls[0])).then((_) => newClient);
+      _client = newClient
+          .connect(Uri.parse(urls[0]))
+          .then((_) => onConnected(newClient))
+          .then((_) => newClient);
     }
     return _client;
   }
