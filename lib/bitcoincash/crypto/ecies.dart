@@ -16,8 +16,6 @@ import '../privatekey.dart';
 /// This class only makes provision for the "Electrum ECIES" aka "BIE1" serialization
 /// format for the cipherText.
 class Ecies {
-  // TODO: FIX Unused var?
-  // final ECDomainParameters _domainParams = ECDomainParameters('secp256k1');
   final SHA256Digest _sha256Digest = SHA256Digest();
   final tagLength = 32; // size of hmac
 
@@ -117,8 +115,6 @@ class Ecies {
     // calculate S = recipientPrivateKey o senderPublicKey
     final S = senderPublicKey.point *
         recipientPrivateKey.privateKey; // point multiplication
-    // TODO: FIX unused var?
-    // final cipher = S.x;
 
     if (cipherText.length - tagLength <= 37) {
       throw Exception(

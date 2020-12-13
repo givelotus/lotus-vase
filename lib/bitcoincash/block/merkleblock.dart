@@ -143,9 +143,9 @@ class MerkleBlock {
   ///
   /// [txId] - Transaction ID of the transaction we are looking for
   bool hasTransactionId(String txId) {
+    // TODO: FIX Another place where TransactionID is expected to be reversed and needs flippening. !!!
     // flip and reverse it !
-    var hash =
-        txId; // TODO: FIX Another place where TransactionID is expected to be reversed and needs flippening. !!!
+    var hash = txId;
 
     var txs = <String>[];
     var height = _calcTreeHeight();
@@ -157,10 +157,8 @@ class MerkleBlock {
   ///
   /// [tx] - The transaction to search for
   bool hasTransaction(Transaction tx) {
-    return hasTransactionId(HEX.encode(HEX
-        .decode(tx.id)
-        .reversed
-        .toList())); // TODO: FIX More txId flippening shenanigans. FIX !!!
+    // TODO: FIX More txId flippening shenanigans. FIX !!!
+    return hasTransactionId(HEX.encode(HEX.decode(tx.id).reversed.toList()));
   }
 
   void _parseBuffer(List<int> blockbuf) {

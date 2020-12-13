@@ -267,16 +267,12 @@ class BlockHeader {
   List<int> get buffer {
     var writer = ByteDataWriter();
 
-    writer.writeInt32(
-        _version, Endian.little); //  = byteDataReader.readInt32(Endian.little);
-    writer.write(_prevHash); // = byteDataReader.read(32);
-    writer.write(_merkleRoot); // = byteDataReader.read(32);
-    writer.writeUint32(
-        _time, Endian.little); // = byteDataReader.readUint32(Endian.little);
-    writer.writeUint32(
-        _bits, Endian.little); // = byteDataReader.readUint32(Endian.little);
-    writer.writeUint32(
-        _nonce, Endian.little); // = byteDataReader.readUint32(Endian.little);
+    writer.writeInt32(_version, Endian.little);
+    writer.write(_prevHash);
+    writer.write(_merkleRoot);
+    writer.writeUint32(_time, Endian.little);
+    writer.writeUint32(_bits, Endian.little);
+    writer.writeUint32(_nonce, Endian.little);
 
     return writer.toBytes().toList();
   }

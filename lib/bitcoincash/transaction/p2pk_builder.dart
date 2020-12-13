@@ -12,7 +12,9 @@ import '../publickey.dart';
 mixin P2PKLockMixin on _P2PKLockBuilder implements LockingScriptBuilder {
   @override
   BCHScript getScriptPubkey() {
-    if (signerPubkey == null) return BCHScript();
+    if (signerPubkey == null) {
+      return BCHScript();
+    }
 
     var pubKeySize = HEX.decode(signerPubkey.toString()).length;
     var scriptString =
@@ -53,7 +55,9 @@ class P2PKLockBuilder extends _P2PKLockBuilder with P2PKLockMixin {
 mixin P2PKUnlockMixin on _P2PKUnlockBuilder implements UnlockingScriptBuilder {
   @override
   BCHScript getScriptSig() {
-    if (signatures.isEmpty) return BCHScript();
+    if (signatures.isEmpty) {
+      return BCHScript();
+    }
 
     var signatureSize = HEX.decode(signatures[0].toTxFormat()).length;
     var scriptString =

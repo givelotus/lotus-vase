@@ -48,10 +48,6 @@ import 'networks.dart';
 class HDPublicKey extends CKDSerializer {
   final _domainParams = ECDomainParameters('secp256k1');
 
-// TODO: FIX What is going on here. These are never used?
-  // String _publicVector;
-  // HDPrivateKey _hdPrivateKey;
-
   /// Private constructor. Internal use only.
   HDPublicKey._(NetworkType networkType, KeyType keyType) {
     this.networkType = networkType;
@@ -82,8 +78,6 @@ class HDPublicKey extends CKDSerializer {
     networkType = NetworkType.MAIN;
     keyType = KeyType.PUBLIC;
     deserialize(vector);
-    // TODO: FIX not used?
-    // _publicVector = vector;
   }
 
   /// Renders the public key in it's `xpub`-encoded form
