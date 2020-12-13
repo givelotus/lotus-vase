@@ -132,28 +132,33 @@ class WalletModel with ChangeNotifier {
 
   Future<void> writeKeysToDisk(List<KeyInfo> keys) async {
     // Write private keys
-    final keyWrites = keys.asMap().entries.map((entry) {
-      final index = entry.key;
-      final keyInfo = entry.value;
-      final storedKey = StoredKey.fromKeyInfo(keyInfo);
-      return storedKey.writeToDisk(index);
-    });
-    await Future.wait(keyWrites);
-    // Persist seed
-    await _storage.write(
-      key: STORAGE_SEED_KEY,
-      value: seed,
-    );
+    try {
+      final keyWrites = keys.asMap().entries.map((entry) {
+        final index = entry.key;
+        final keyInfo = entry.value;
+        final storedKey = StoredKey.fromKeyInfo(keyInfo);
+        return storedKey.writeToDisk(index);
+      });
+      await Future.wait(keyWrites);
+      // Persist seed
+      await _storage.write(
+        key: STORAGE_SEED_KEY,
+        value: seed,
+      );
 
-    // Persist XPub
-    await _storage.write(
-      key: STORAGE_XPUB_KEY,
-      value: wallet.keys.rootKey.toString(),
-    );
+      // Persist XPub
+      await _storage.write(
+        key: STORAGE_XPUB_KEY,
+        value: wallet.keys.rootKey.toString(),
+      );
 
-    // Write metadata
-    final metadata = KeyStorageMetadata(keys.length);
-    await metadata.writeToDisk();
+      // Write metadata
+      final metadata = KeyStorageMetadata(keys.length);
+      await metadata.writeToDisk();
+    } catch (err) {
+      print(err);
+      rethrow;
+    }
   }
 
   Future<Keys> readKeysFromDisk() async {
@@ -167,7 +172,7 @@ class WalletModel with ChangeNotifier {
     final storedKeys = await Future.wait(storedKeyFutures);
 
     // Read seed
-    final seed = await _storage.read(key: STORAGE_SEED_KEY);
+    _seed = await _storage.read(key: STORAGE_SEED_KEY);
 
     // Read root key to avoid regenerating from seed
     final xpubHex = await _storage.read(key: STORAGE_XPUB_KEY);

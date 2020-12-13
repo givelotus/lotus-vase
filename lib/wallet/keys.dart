@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
+import 'package:collection/collection.dart';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:pointycastle/digests/sha256.dart';
 
 Uint8List calculateScriptHash(Address address) {
-  final scriptPubkey = P2PKHLockBuilder(address).getScriptPubkey();
-  final rawScriptPubkey = scriptPubkey.buffer;
-  final digest = SHA256Digest().process(rawScriptPubkey);
-  final reversedDigest = Uint8List.fromList(digest.reversed.toList());
-  return reversedDigest;
+  final p2pkhBuilder = P2PKHLockBuilder(address);
+  final script = p2pkhBuilder.getScriptPubkey();
+  final scriptHash = SHA256Digest().process(script.buffer).toList();
+  return Uint8List.fromList(scriptHash.reversed.toList());
 }
 
 class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.sendPort,
       {this.network = NetworkType.TEST,
-      this.changeKeyCount = 1,
-      this.externalKeyCount = 1});
+      this.changeKeyCount = 10,
+      this.externalKeyCount = 10});
   String seed;
   SendPort sendPort;
   NetworkType network;
@@ -30,10 +30,12 @@ class KeyInfo {
   Address address;
   Uint8List scriptHash;
   bool isChange;
+  int keyIndex;
 
   KeyInfo(
       {this.key,
       this.isChange = false,
+      this.keyIndex,
       NetworkType network = NetworkType.TEST}) {
     address = key.toAddress(networkType: network);
     scriptHash = calculateScriptHash(address);
@@ -54,6 +56,7 @@ void _constructKeys(KeyIsolateInput input) {
   final externalKeys = List<KeyInfo>.generate(
       input.externalKeyCount,
       (index) => KeyInfo(
+          keyIndex: index,
           key: parentExternalKey.deriveChildNumber(index).privateKey,
           network: input.network));
 
@@ -61,6 +64,10 @@ void _constructKeys(KeyIsolateInput input) {
   final changeKeys = List<KeyInfo>.generate(
       input.externalKeyCount,
       (index) => KeyInfo(
+            // TODO: Remove this keyIndex crap. it makes it very hard to handle
+            // finding various other values because we have this unnecessary
+            // surrogate key
+            keyIndex: index + input.externalKeyCount,
             key: parentChangeKey.deriveChildNumber(index).privateKey,
             isChange: true,
             network: input.network,
@@ -81,8 +88,8 @@ class Keys {
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
-    final keyInfo =
-        keys.firstWhere((keyInfo) => scriptHash == keyInfo.scriptHash);
+    final keyInfo = keys.firstWhere(
+        (keyInfo) => ListEquality().equals(scriptHash, keyInfo.scriptHash));
     return keyInfo;
   }
 
