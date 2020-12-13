@@ -86,23 +86,18 @@ Uint8List varIntWriter(int length) {
   }
 
   if (length < 0xFFFF) {
-//            return HEX.decode("FD" + length.toRadixString(16));
     writer.writeUint8(253);
     writer.writeUint16(length, Endian.little);
     return writer.toBytes();
   }
 
   if (length < 0xFFFFFFFF) {
-//            return HEX.decode("FE" + length.toRadixString(16));
-
     writer.writeUint8(254);
     writer.writeUint32(length, Endian.little);
     return writer.toBytes();
   }
 
   if (length < 0xFFFFFFFFFFFFFFFF) {
-//            return HEX.decode("FF" + length.toRadixString(16));
-
     writer.writeUint8(255);
     writer.writeInt32(length & -1, Endian.little);
     writer.writeUint32((length / 0x100000000).floor(), Endian.little);
@@ -113,13 +108,21 @@ Uint8List varIntWriter(int length) {
 }
 
 List<int> calcVarInt(int length) {
-  if (length == null) return Uint8List(0);
+  if (length == null) {
+    return Uint8List(0);
+  }
 
-  if (length < 0xFD) return HEX.decode(length.toRadixString(16));
+  if (length < 0xFD) {
+    return HEX.decode(length.toRadixString(16));
+  }
 
-  if (length < 0xFFFF) return HEX.decode('FD' + length.toRadixString(16));
+  if (length < 0xFFFF) {
+    return HEX.decode('FD' + length.toRadixString(16));
+  }
 
-  if (length < 0xFFFFFFFF) return HEX.decode('FE' + length.toRadixString(16));
+  if (length < 0xFFFFFFFF) {
+    return HEX.decode('FE' + length.toRadixString(16));
+  }
 
   if (length < 0xFFFFFFFFFFFFFFFF) {
     return HEX.decode('FF' + length.toRadixString(16));
@@ -321,12 +324,10 @@ List<int> toBuffer(BigInt value, {int size = 0, Endian endian = Endian.big}) {
       // buf = buf
     } else if (natlen > size) {
       buf = buf.sublist(natlen - buf.length, buf.length);
-//            buf = BN.trim(buf, natlen);
     } else if (natlen < size) {
       var padding = <int>[size];
       padding.fillRange(0, size, 0);
       buf.insertAll(0, padding);
-//            buf = BN.pad(buf, natlen, opts.size)
     }
   } else {
     hex = value.toRadixString(16);

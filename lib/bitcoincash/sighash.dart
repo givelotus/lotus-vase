@@ -67,9 +67,6 @@ class SighashType {
 /// 3) Calculate the double-sha256 of the serialized [Transaction]
 ///
 class Sighash {
-  // TODO: FIX Unused var?
-  // String _rawHex;
-
   static const _SIGHASH_SINGLE_BUG =
       '0000000000000000000000000000000000000000000000000000000000000001';
   static const _BITS_64_ON = 'ffffffffffffffff';
@@ -117,32 +114,23 @@ class Sighash {
           txnCopy, sighashType, inputNumber, subscriptCopy, satoshis));
     }
 
-//        if ((sighashType & SighashType.SIGHASH_FORKID == SighashType.SIGHASH_FORKID) &&
-//            (flags & ScriptFlags.SCRIPT_ENABLE_SIGHASH_FORKID == ScriptFlags.SCRIPT_ENABLE_SIGHASH_FORKID)) {
-//            return HEX.encode(this.sigHashForForkid(txnCopy, sighashType, inputNumber, subscriptCopy, satoshis));
-//        }
-
     _sighashType = sighashType;
 
     // For no ForkId sighash, separators need to be removed.
-    _subScript = subscript
-        .removeCodeseparators(); // TODO: FIX This was removed in my implementation. How did I break things ?
+    // TODO: FIX This was removed in my implementation. How did I break things ?
+    _subScript = subscript.removeCodeseparators();
 
     // blank out the txn input scripts
     txnCopy.inputs.forEach((input) {
       input.script = BCHScript.fromString('');
     });
 
-//        this._subScript = _prepareSubScript(subscriptCopy);
-
     // setup the input we wish to sign
-//        txcopy.inputs[inputNumber] = new Input(txcopy.inputs[inputNumber]).setScript(subscript)
     var tmpInput = txnCopy.inputs[inputNumber];
     tmpInput = TransactionInput(tmpInput.prevTxnId, tmpInput.prevTxnOutputIndex,
         tmpInput.script, tmpInput.satoshis, tmpInput.sequenceNumber);
     tmpInput.script = _subScript;
     txnCopy.inputs[inputNumber] = tmpInput;
-//        txnCopy.inputs[inputNumber].script = this._subScript;
 
     txnCopy.serialize(performChecks: false);
 
@@ -169,22 +157,20 @@ class Sighash {
       }
 
       var txout = TransactionOutput();
-      txout.script = txnCopy.outputs[inputNumber]
-          .script; // TODO: FIX What happens if there are not outputs !?
+      // TODO: FIX What happens if there are not outputs !?
+      txout.script = txnCopy.outputs[inputNumber].script;
       txout.satoshis = txnCopy.outputs[inputNumber].satoshis;
       txout.outputIndex = txnCopy.outputs[inputNumber].outputIndex;
       txout.transactionId = txnCopy.outputs[inputNumber].transactionId;
 
       // resize outputs to current size of inputIndex + 1
 
-// TODO: FIX Unused variable commented?
-      // var outputCount = inputNumber + 1;
       txnCopy.outputs.removeWhere((elem) => true); // remove all the outputs
       // create new outputs up to inputnumer + 1
       for (var ndx = 0; ndx < inputNumber + 1; ndx++) {
         var tx = TransactionOutput();
-        tx.script = BCHScript.fromString(
-            ''); // TODO: FIX What happens if there are no outputs !?
+        // TODO: FIX What happens if there are no outputs !?
+        tx.script = BCHScript.fromString('');
         tx.satoshis = BigInt.parse(_BITS_64_ON, radix: 16);
         txnCopy.outputs.add(tx);
       }
@@ -204,15 +190,6 @@ class Sighash {
     return toString();
   }
 
-// TODO: FIX Is this needed?
-  // // NOTE: This is broken. It will arbitrarily remove any bytes that match OP_CODESEPARATOR from *any* hex string
-  // BCHScript _prepareSubScript(BCHScript script) {
-  //   // keep everything after last OP_CODESEPARATOR
-  //   var sub = HEX.decode(script.toHex());
-  //   sub = sub.where((byte) => byte != OpCodes.OP_CODESEPARATOR).toList();
-  //   return BCHScript.fromByteArray(Uint8List.fromList(sub));
-  // }
-
   // by the time this function is called, all _prepare* scripts should have been run
   List<int> getHash() {
     var txnHex = _txn.serialize(performChecks: false);
@@ -223,10 +200,6 @@ class Sighash {
 
     return sha256Twice(writer.toBytes().toList()).reversed.toList();
   }
-
-//    Transaction _prepareTransaction(Transaction tx) {
-//        return tx;
-//    }
 
   /// Returns the hexadecimal String of the signature hash
   @override

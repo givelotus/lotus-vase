@@ -79,11 +79,10 @@ class TransactionOutput {
     var buffer = <int>[];
 
     // add value in satoshis - 8 bytes BigInt
-    var satArr = sprintf('%016s', [
-      _satoshis.abs().toRadixString(16)
-    ]); // lazy way to get to 8 byte padding
-    satArr =
-        satArr.replaceAll(' ', '0'); // hack around sprintf not padding zeros
+    // lazy way to get to 8 byte padding
+    var satArr = sprintf('%016s', [_satoshis.abs().toRadixString(16)]);
+    // hack around sprintf not padding zeros
+    satArr = satArr.replaceAll(' ', '0');
     buffer.addAll(HEX.decode(satArr).reversed.toList());
 
     // add scriptPubKey size - varInt
@@ -175,19 +174,4 @@ class TransactionOutput {
 
   /// Returns the current instance of LockingScriptBuilder in use by this instance
   LockingScriptBuilder get scriptBuilder => _scriptBuilder;
-
-// TODO: FIX Swing back to this leaner implementation based on ByteDataWriter()
-//    List<int> serialize2(){
-//        var writer = ByteDataWriter();
-//
-//        writer.writeUint64(this._satoshis.toInt(), Endian.little);
-//
-//        var scriptHex = HEX.decode(this.script.toHex());
-//        writer.write(varIntWriter(scriptHex.length).toList(), copy: true);
-//
-//        writer.write(this.script.buffer);
-//
-//        return writer.toBytes().toList();
-//    }
-
 }

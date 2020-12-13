@@ -21,11 +21,7 @@ import 'networks.dart';
 class BCHPublicKey {
   // We only deal with secp256k1
   final _domainParams = ECDomainParameters('secp256k1');
-//    var _curve =  ECCurve_secp256k1();
-
   ECPoint _point;
-
-//    ECPublicKey _publicKey;
 
   /// Creates a  public key from it's corresponding ECDSA private key.
   ///
@@ -51,7 +47,6 @@ class BCHPublicKey {
     _checkIfOnCurve(finalPoint); // a bit paranoid
 
     _point = finalPoint;
-//        _publicKey = ECPublicKey((_point), _domainParams);
   }
 
   /// Creates a public key instance from the ECDSA public key's `x-coordinate`
@@ -66,7 +61,6 @@ class BCHPublicKey {
   /// [oddYValue] - *true* if the corresponding `y-coordinate` is even, *false* otherwise
   BCHPublicKey.fromX(String xValue, bool oddYValue) {
     _point = _getPointFromX(xValue, oddYValue);
-//        _publicKey = ECPublicKey((_point), _domainParams);
   }
 
   /// Creates a  public key from it's known *(x,y)* coordinates.
@@ -85,8 +79,6 @@ class BCHPublicKey {
     _checkIfOnCurve(point);
 
     _point = point;
-
-//        _publicKey = ECPublicKey(_point, _domainParams);
   }
 
   /// Reconstructs a public key from a DER-encoding.
@@ -111,8 +103,6 @@ class BCHPublicKey {
     }
 
     _checkIfOnCurve(_point);
-
-//        _publicKey = ECPublicKey(_point, _domainParams);
   }
 
   /// Reconstruct a public key from the hexadecimal format of it's DER-encoding.
@@ -124,8 +114,6 @@ class BCHPublicKey {
     if (pubkey.trim() == '') {
       throw BadParameterException('Empty compressed public key string');
     }
-
-//        _parseHexString(pubkey);
     _point = _transformDER(HEX.decode(pubkey), strict);
 
     if (_point.isInfinity) {
@@ -138,8 +126,6 @@ class BCHPublicKey {
     }
 
     _checkIfOnCurve(_point);
-
-//        _publicKey = ECPublicKey(_point, _domainParams);
   }
 
   /// Validates that the DER-encoded hexadecimal string contains a valid

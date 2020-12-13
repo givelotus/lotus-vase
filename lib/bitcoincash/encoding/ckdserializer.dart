@@ -42,12 +42,6 @@ abstract class CKDSerializer {
   String serialize() {
     var versionBytes = getVersionBytes();
 
-// TODO: FIX These were apparently unused in dartsv commented out for now to make linter happy.
-    // var depth = _nodeDepth;
-    // var fingerprint = _parentFingerprint;
-    // var chainCode = _chainCode;
-    // var pubkeyHex = _keyHex;
-
     var serializedKey = List<int>(78);
     serializedKey.setRange(0, 4, versionBytes);
     serializedKey.setRange(4, 5, [_nodeDepth]);

@@ -14,7 +14,9 @@ mixin P2SHLockMixin on _P2SHLockBuilder implements LockingScriptBuilder {
   @override
   BCHScript getScriptPubkey() {
     // OP_HASH160 <the script hash> OP_EQUAL
-    if (scriptHash == null || scriptHash.isEmpty) return BCHScript();
+    if (scriptHash == null || scriptHash.isEmpty) {
+      return BCHScript();
+    }
 
     var hashHex = HEX.decode(scriptHash);
     var script =

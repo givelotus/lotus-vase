@@ -407,7 +407,8 @@ class BCHSignature {
     }
 
     // Compute -e from e
-    var eNeg = -e % n; // TODO: FIX ? unsigned mod ?
+    // TODO: FIX ? unsigned mod ?
+    var eNeg = -e % n;
 
     // 1.6.1 Compute Q = r^-1 (sR - eG)
     // Q = r^-1 (sR + -eG)
@@ -421,8 +422,9 @@ class BCHSignature {
   }
 
   void _toLowS() {
-    if (_s == null) return;
-
+    if (_s == null) {
+      return;
+    }
     // enforce low s
     // see BIP 62, 'low S values in signatures'
     if (_s >

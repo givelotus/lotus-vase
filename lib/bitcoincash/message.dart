@@ -20,9 +20,6 @@ import 'address.dart';
 /// Reference (section 4.1.6) : http:// www.secg.org/sec1-v2.pdf
 class Message {
   List<int> _message;
-  // TODO: FIX unused?
-  // BCHPrivateKey _privateKey;
-
   final MAGIC_BYTES = 'Bitcoin Signed Message:\n';
 
   /// A double-sha256 digest unique to Bitcoin Signed Messages
@@ -58,9 +55,6 @@ class Message {
   ///
   String sign(BCHPrivateKey privateKey) {
     var signature = BCHSignature.fromPrivateKey(privateKey);
-    // TODO: FIX What is going on here with this class member?
-    // _privateKey = privateKey;
-    //  signature.signWithCalcI(HEX.encode(this.magicHash()));
     signature.sign(HEX.encode(magicHash()), forCompact: true);
 
     var compactSig = signature.toCompact();
