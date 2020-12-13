@@ -1,6 +1,8 @@
-import '.././bitcoincash.dart';
-
 import 'signed_unlock_builder.dart';
+import 'locking_script_builder.dart';
+import 'unlocking_script_builder.dart';
+import '../script/bchscript.dart';
+import '../signature.dart';
 
 mixin DefaultLockMixin on _DefaultLockBuilder implements LockingScriptBuilder {
   @override

@@ -1,9 +1,11 @@
-import './bitcoincash.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/pointycastle.dart';
 
 import 'encoding/utils.dart';
 import 'exceptions.dart';
+import 'privatekey.dart';
+import 'address.dart';
+import 'networks.dart';
 
 /// Manages an ECDSA public key.
 ///

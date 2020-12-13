@@ -1,8 +1,5 @@
 import 'dart:typed_data';
 
-import './bitcoincash.dart';
-import 'privatekey.dart';
-import 'publickey.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/export.dart';
@@ -11,9 +8,12 @@ import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:hex/hex.dart';
-import './encoding/asn1.dart' as asn1;
 
+import './encoding/asn1.dart' as asn1;
 import 'exceptions.dart';
+import 'privatekey.dart';
+import 'publickey.dart';
+import 'sighash.dart';
 
 /// Sign bitcoin transactions and verify signatures.
 ///
