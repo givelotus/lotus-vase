@@ -32,3 +32,4 @@ export 'transaction/data_builder.dart';
 export 'encoding/utils.dart';
 export 'exceptions.dart';
 export 'crypto/ecies.dart';
+export 'constants.dart';

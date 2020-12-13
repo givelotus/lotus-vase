@@ -8,6 +8,7 @@ import 'transaction.dart';
 
 import './signed_unlock_builder.dart';
 import './unlocking_script_builder.dart';
+import './default_builder.dart';
 import '../script/bchscript.dart';
 import '../encoding/utils.dart';
 

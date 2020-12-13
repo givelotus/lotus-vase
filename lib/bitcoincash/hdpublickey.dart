@@ -1,13 +1,15 @@
-import './bitcoincash.dart';
-import 'encoding/ckdserializer.dart';
 import 'package:hex/hex.dart';
-import 'crypto/hdutils.dart';
-import 'crypto/childnumber.dart';
-import 'encoding/utils.dart';
 import 'dart:typed_data';
+import 'package:pointycastle/pointycastle.dart';
+
 import 'exceptions.dart';
 import 'privatekey.dart';
-import 'package:pointycastle/pointycastle.dart';
+import 'encoding/utils.dart';
+import 'encoding/ckdserializer.dart';
+import 'crypto/hdutils.dart';
+import 'crypto/childnumber.dart';
+import 'publickey.dart';
+import 'networks.dart';
 
 /// Provides support for Extended Public keys (__Hierarchical Deterministic__ keys)
 /// as described in the [BIP32 spec](https:// github.com/bitcoin/bips/blob/master/bip-0032.mediawiki).

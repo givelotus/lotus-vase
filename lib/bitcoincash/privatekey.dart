@@ -1,4 +1,3 @@
-import './bitcoincash.dart';
 import 'address.dart';
 import 'exceptions.dart';
 import 'networks.dart';

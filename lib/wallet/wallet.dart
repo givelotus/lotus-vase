@@ -210,8 +210,7 @@ class Wallet {
       output.satoshis = utxo.outpoint.amount;
       output.transactionId = utxo.outpoint.transactionId;
       output.outputIndex = utxo.outpoint.vout;
-      transaction = transaction.spendFromOutput(
-          output, Transaction.NLOCKTIME_MAX_VALUE,
+      transaction = transaction.spendFromOutput(output, NLOCKTIME_MAX_VALUE,
           scriptBuilder: unlockBuilder);
       satoshis += utxo.outpoint.amount;
     }

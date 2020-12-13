@@ -6,10 +6,11 @@ import 'package:sprintf/sprintf.dart';
 
 import '../encoding/utils.dart';
 import '../script/bchscript.dart';
-import '.././bitcoincash.dart';
+import '../script/opcodes.dart';
+import '../constants.dart';
 
+import 'locking_script_builder.dart';
 import 'default_builder.dart';
-import 'transaction.dart';
 
 /// Class that represents the output (UTXO) of a transaction.
 ///
@@ -60,13 +61,13 @@ class TransactionOutput {
 
   /// Returns true is satoshi amount if outside of valid range
   ///
-  /// See [Transaction.MAX_MONEY]
+  /// See [MAX_MONEY]
   bool invalidSatoshis() {
     if (_satoshis < BigInt.zero) {
       return true;
     }
 
-    if (_satoshis > Transaction.MAX_MONEY) {
+    if (_satoshis > MAX_MONEY) {
       return true;
     }
 

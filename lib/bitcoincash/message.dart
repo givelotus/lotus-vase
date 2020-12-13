@@ -1,9 +1,12 @@
 import 'dart:convert';
 
-import './bitcoincash.dart';
 import 'package:hex/hex.dart';
 
 import 'encoding/utils.dart';
+import 'privatekey.dart';
+import 'publickey.dart';
+import 'signature.dart';
+import 'address.dart';
 
 /// ## Bitcoin Signed Messages
 ///

@@ -2,9 +2,12 @@ import 'package:hex/hex.dart';
 import 'package:sprintf/sprintf.dart';
 
 import '../exceptions.dart';
+import '../publickey.dart';
+import '../signature.dart';
 import '../script/opcodes.dart';
-import '.././bitcoincash.dart';
-
+import '../script/bchscript.dart';
+import 'locking_script_builder.dart';
+import 'unlocking_script_builder.dart';
 import 'signed_unlock_builder.dart';
 
 /// ** P2PMS (multisig) locking Script (output script / scriptPubkey) ***

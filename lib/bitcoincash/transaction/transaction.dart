@@ -9,17 +9,26 @@ import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:buffer/buffer.dart';
 
-import '.././bitcoincash.dart';
 import '../encoding/utils.dart';
 import '../signature.dart';
-import './data_builder.dart';
-import './default_builder.dart';
-import './signed_unlock_builder.dart';
-import './transaction_input.dart';
-import './transaction_output.dart';
 import '../exceptions.dart';
 import '../sighash.dart';
+import '../address.dart';
+import '../privatekey.dart';
+import '../publickey.dart';
+import '../script/bchscript.dart';
+import '../transaction/transaction_output.dart';
+import '../transaction/locking_script_builder.dart';
+import '../transaction/unlocking_script_builder.dart';
+import '../transaction/p2pkh_builder.dart';
+import '../transaction/data_builder.dart';
+import '../constants.dart';
 
+import 'data_builder.dart';
+import 'default_builder.dart';
+import 'signed_unlock_builder.dart';
+import 'transaction_input.dart';
+import 'transaction_output.dart';
 import 'locking_script_builder.dart';
 import 'p2pkh_builder.dart';
 import 'unlocking_script_builder.dart';
@@ -91,34 +100,6 @@ class Transaction {
   bool _changeScriptFlag = false;
 
   var CURRENT_VERSION = 1;
-  var DEFAULT_NLOCKTIME = 0;
-  var MAX_BLOCK_SIZE = 1000000;
-
-  /// Minimum amount for an output for it not to be considered a dust output
-  static final DUST_AMOUNT = BigInt.from(546);
-
-  /// Margin of error to allow fees in the vecinity of the expected value but doesn't allow a big difference
-  static final FEE_SECURITY_MARGIN = BigInt.from(150);
-
-  /// max amount of satoshis in circulation
-  static final MAX_MONEY = BigInt.from(21000000 * 1e8);
-
-  /// nlocktime limit to be considered block height rather than a timestamp
-  static final NLOCKTIME_BLOCKHEIGHT_LIMIT = 5e8;
-
-  static final DEFAULT_SEQNUMBER = 0xFFFFFFFF;
-  static final DEFAULT_LOCKTIME_SEQNUMBER = DEFAULT_SEQNUMBER - 1;
-
-  /// Max value for an unsigned 32 bit value
-  static final NLOCKTIME_MAX_VALUE = 4294967295;
-
-  /// Value used for fee estimation (satoshis per kilobyte)
-  static const FEE_PER_KB = 1000;
-
-  /// Safe upper bound for change address script size in bytes
-  static final CHANGE_OUTPUT_MAX_SIZE = 20 + 4 + 34 + 4;
-  static final MAXIMUM_EXTRA_SIZE = 4 + 9 + 9 + 4;
-  static final SCRIPT_MAX_SIZE = 149;
 
   // LockingScriptBuilder _lockingScriptBuilder;
   // UnlockingScriptBuilder _unlockingScriptBuilder;
@@ -625,11 +606,11 @@ class Transaction {
       if (txout.invalidSatoshis()) {
         return 'transaction txout $ndx satoshis is invalid';
       }
-      if (txout.satoshis > Transaction.MAX_MONEY) {
+      if (txout.satoshis > MAX_MONEY) {
         return 'transaction txout ${ndx} greater than MAX_MONEY';
       }
       valueoutbn = valueoutbn + txout.satoshis;
-      if (valueoutbn > Transaction.MAX_MONEY) {
+      if (valueoutbn > MAX_MONEY) {
         return 'transaction txout ${ndx} total output greater than MAX_MONEY';
       }
     }
@@ -751,7 +732,7 @@ class Transaction {
     }
 
     for (var output in _txnOutputs) {
-      if (output.satoshis < Transaction.DUST_AMOUNT && !(output.isDataOut)) {
+      if (output.satoshis < DUST_AMOUNT && !(output.isDataOut)) {
         throw TransactionAmountException(
             'You have outputs with spending values below the dust limit');
       }
@@ -778,7 +759,7 @@ class Transaction {
     }
 
     if (!transactionOptions.contains(TransactionOption.DISABLE_LARGE_FEES)) {
-      var maximumFee = (Transaction.FEE_SECURITY_MARGIN * _estimateFee());
+      var maximumFee = (FEE_SECURITY_MARGIN * _estimateFee());
       if (unspent > maximumFee) {
         if (!_hasChangeScript()) {
           throw TransactionFeeException(

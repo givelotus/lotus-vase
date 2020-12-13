@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 
-import './bitcoincash.dart';
-
 import 'encoding/base58check.dart' as bs58check;
 import 'package:hex/hex.dart';
 import 'encoding/utils.dart';
+import 'publickey.dart';
+import 'script/bchscript.dart';
 import 'dart:convert';
 import 'networks.dart';
 import 'exceptions.dart';
