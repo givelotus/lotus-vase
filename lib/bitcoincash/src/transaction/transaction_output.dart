@@ -62,8 +62,9 @@ class TransactionOutput {
   ///
   /// See [Transaction.MAX_MONEY]
   bool invalidSatoshis() {
-    //    if (this._satoshis > MAX_SAFE_INTEGER) {
-    if (_satoshis < BigInt.zero) return true;
+    if (_satoshis < BigInt.zero) {
+      return true;
+    }
 
     if (_satoshis > Transaction.MAX_MONEY) {
       return true;
