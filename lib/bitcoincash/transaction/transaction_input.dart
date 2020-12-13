@@ -83,9 +83,8 @@ class TransactionInput {
     _scriptBuilder.fromScript(scriptSig);
 
     _sequenceNumber = reader.readUint32(Endian.little);
-
-    _isSignedInput = scriptBuilder
-        is SignedUnlockBuilder; // TODO: FIX do this elsewhere (also other constructor)
+    // TODO: FIX do this elsewhere (also other constructor)
+    _isSignedInput = scriptBuilder is SignedUnlockBuilder;
   }
 
   /// Returns a buffer containing the serialized bytearray for this TransactionInput

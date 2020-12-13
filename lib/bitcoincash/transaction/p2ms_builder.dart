@@ -14,7 +14,9 @@ import 'signed_unlock_builder.dart';
 mixin P2MSLockMixin on _P2MSLockBuilder implements LockingScriptBuilder {
   @override
   BCHScript getScriptPubkey() {
-    if (publicKeys == null || requiredSigs == 0) return BCHScript();
+    if (publicKeys == null || requiredSigs == 0) {
+      return BCHScript();
+    }
 
     if (publicKeys.length > 15) {
       throw ScriptException(

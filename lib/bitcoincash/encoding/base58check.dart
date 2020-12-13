@@ -89,8 +89,6 @@ Uint8List encode(List<int> encodedInput) {
   var uintAlphabet = utf8.encode(ALPHABET);
   var ENCODED_ZERO = uintAlphabet[0];
 
-//    var encodedInput = utf8.encode(input);
-
   if (encodedInput.isEmpty) {
     return Uint8List(0);
   }
@@ -109,7 +107,8 @@ Uint8List encode(List<int> encodedInput) {
     encoded[--outputStart] =
         uintAlphabet[divmod(encodedInput, inputStart, 256, 58)];
     if (encodedInput[inputStart] == 0) {
-      ++inputStart; // optimization - skip leading zeros
+      // optimization - skip leading zeros
+      ++inputStart;
     }
   }
   // Preserve exactly as many leading encoded zeros in output as there were leading zeros in input.
@@ -125,14 +124,16 @@ Uint8List encode(List<int> encodedInput) {
 
 List<int> decodeChecked(String input) {
   var decoded = decode(input);
-  if (decoded.length < 4) throw AddressFormatException('Input too short');
+  if (decoded.length < 4) {
+    throw AddressFormatException('Input too short');
+  }
 
   var data = decoded.sublist(0, decoded.length - 4);
   var checksum = decoded.sublist(decoded.length - 4, decoded.length);
   var actualChecksum = sha256Twice(data).sublist(0, 4);
 
-  var byteConverted = actualChecksum
-      .map((elem) => elem.toSigned(8)); // convert unsigned list back to signed
+  // convert unsigned list back to signed
+  var byteConverted = actualChecksum.map((elem) => elem.toSigned(8));
   if (!IterableEquality().equals(checksum, byteConverted)) {
     throw BadChecksumException('Checksum does not validate');
   }

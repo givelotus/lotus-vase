@@ -2,7 +2,7 @@ class WIFCodec {
   bool compressed;
 
   WIFCodec.fromBase58(params, base58) {
-//        return new WIFCodec(params, base58);
+    throw Exception('unimplemented');
   }
 
 // Used by ECKey.getPrivateKeyEncoded()

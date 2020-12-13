@@ -76,9 +76,13 @@ class HDUtils {
 
     for (var n in parsedNodes) {
       n = n.replaceAll(' ', '');
-      if (n.isEmpty) continue;
+      if (n.isEmpty) {
+        continue;
+      }
       var isHard = n.endsWith('H');
-      if (isHard) n = n.substring(0, n.length - 1);
+      if (isHard) {
+        n = n.substring(0, n.length - 1);
+      }
       var nodeNumber = int.parse(n);
       nodes.add(ChildNumber(nodeNumber, isHard));
     }

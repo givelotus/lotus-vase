@@ -297,10 +297,6 @@ class BCHScript with ScriptBuilder {
     // encode tokens, leaving non-token elements intact
     for (var index = 0; index < tokenList.length;) {
       var token = tokenList[index];
-
-      // TODO: FIX What is this for?
-      // var opcode = token;
-
       var opcodenum = OpCodes.opcodeMap[token];
 
       if (opcodenum == null) {
@@ -489,7 +485,9 @@ class BCHScript with ScriptBuilder {
     var asm = (type == 'asm');
     var str = '';
     if (chunk.buf.isEmpty) {
-      if (chunk.opcodenum == null) return '';
+      if (chunk.opcodenum == null) {
+        return '';
+      }
 
       // no data chunk
       if (OpCodes.opcodeMap.containsValue(opcodenum)) {
@@ -550,13 +548,7 @@ class BCHScript with ScriptBuilder {
       _addOpcode(obj, prepend);
     } else if (obj is List<int>) {
       _addBuffer(obj, prepend);
-    }
-    /*else if (obj instanceof Script) {
-            chunks = chunks.concat(obj.chunks)
-        } else if (typeof obj === 'object') {
-            _insertAtPosition(obj, prepend)
-        }*/
-    else {
+    } else {
       throw ScriptException('Invalid script chunk');
     }
   }

@@ -83,8 +83,6 @@ class Transaction {
   int _nLockTime = 0;
   final List<TransactionInput> _txnInputs = []; // this transaction's inputs
   final List<TransactionOutput> _txnOutputs = []; // this transaction's outputs
-  // TODO: FIX Unused?
-  // final List<TransactionOutput> _utxos = []; // the UTXOs from spent Transaction
   Address _changeAddress;
   LockingScriptBuilder _changeScriptBuilder;
   final Set<TransactionOption> _transactionOptions = <TransactionOption>{};
@@ -218,7 +216,8 @@ class Transaction {
   /// The transaction ID is the double-sha256 of the raw (hexadecimal) transaction.
   String get id => _getId();
 
-  // transaction Hash - TODO: FIX I thought 'id' should be equal to 'hash' ? VALIDATE !
+  // transaction Hash
+  // TODO: FIX I thought 'id' should be equal to 'hash' ? VALIDATE !
   /// Returns the double-sha256 of the raw (hexadecimal) transaction
   List<int> get hash => _getHash();
 
@@ -332,25 +331,14 @@ class Transaction {
     scriptBuilder ??= DataLockBuilder(data);
 
     var dataOut = TransactionOutput(scriptBuilder: scriptBuilder);
-    dataOut.script = scriptBuilder
-        .getScriptPubkey(); // TODO: FIX This needs to move into new ScriptBuilder interface
+    // TODO: FIX This needs to move into new ScriptBuilder interface
+    dataOut.script = scriptBuilder.getScriptPubkey();
     dataOut.satoshis = BigInt.zero;
 
     _txnOutputs.add(dataOut);
 
     return this;
   }
-
-  // TODO: FIX What do we do with mixed output types? Do we continue with one-by-one spending ?
-  /*
-    Transaction spendFromOutputs(List<TransactionOutput> outputs, int sequenceNumber){
-        outputs.forEach((utxo) {
-            var input = TransactionInput(utxo.transactionId, utxo.outputIndex, utxo.script, utxo.satoshis, sequenceNumber);
-            _txnInputs.add(input);
-        });
-        _updateChangeOutput();
-        return this;
-    }*/
 
   Transaction spendFromOutput(TransactionOutput utxo, int sequenceNumber,
       {UnlockingScriptBuilder scriptBuilder}) {
@@ -411,9 +399,7 @@ class Transaction {
 
     scriptBuilder ??= DefaultUnlockBuilder();
 
-    // sometimes scriptPubKey from the test harness is HEX encoded
-    // TODO: FIX Unused?
-    // Uint8List scriptBuffer;
+    // Sometimes scriptPubKey from the test harness is HEX encoded
     BCHScript script;
     if (BigInt.tryParse(scriptPubKey, radix: 16) != null) {
       script = BCHScript.fromHex(scriptPubKey);
@@ -421,7 +407,9 @@ class Transaction {
       script = BCHScript.fromString(scriptPubKey);
     }
 
-    if (_inputExists(transactionId, outputIndex)) return this;
+    if (_inputExists(transactionId, outputIndex)) {
+      return this;
+    }
 
     var txnInput = TransactionInput(transactionId, outputIndex, script,
         amountToSpend, TransactionInput.UINT_MAX,
@@ -452,8 +440,9 @@ class Transaction {
 
     // TODO: FIX This should account for ANYONECANPAY mask that limits outputs to sign over
     ///      NOTE: Stripping Subscript should be done inside SIGHASH class
-    var subscript = input
-        .subScript; // scriptSig TODO: FIX WTF !? Sighash should fail on this
+    ///
+    /// scriptSig TODO: FIX WTF !? Sighash should fail on this
+    var subscript = input.subScript;
     var inputIndex = inputs.indexOf(input);
     var sigHash = Sighash();
     var hash =
@@ -489,8 +478,8 @@ class Transaction {
 
     _dsaSigner.init(false, PublicKeyParameter(publicKey));
 
-    var decodedMessage = Uint8List.fromList(
-        HEX.decode(hash).reversed.toList()); // TODO: FIX More reversi !
+    // TODO: FIX More reversi !
+    var decodedMessage = Uint8List.fromList(HEX.decode(hash).reversed.toList());
     return _dsaSigner.verifySignature(
         decodedMessage, ECSignature(sig.r, sig.s));
   }
@@ -644,7 +633,8 @@ class Transaction {
         }
       }
     }
-    return ''; // TODO: FIX Return a boolean value like a real programmer FFS !
+    // TODO: FIX Return a boolean value like a real programmer FFS !
+    return '';
   }
 
   TransactionOutput getChangeOutput(LockingScriptBuilder changeBuilder) {
@@ -819,13 +809,19 @@ class Transaction {
   }
 
   void _updateChangeOutput() {
-    if (_changeAddress == null) return;
+    if (_changeAddress == null) {
+      return;
+    }
 
-    if (_changeScriptBuilder == null) return;
+    if (_changeScriptBuilder == null) {
+      return;
+    }
 
     _removeChangeOutputs();
 
-    if (_nonChangeRecipientTotals() == _inputTotals()) return;
+    if (_nonChangeRecipientTotals() == _inputTotals()) {
+      return;
+    }
 
     var txnOutput = getChangeOutput(_changeScriptBuilder);
 
@@ -887,7 +883,8 @@ class Transaction {
   int _estimateSize() {
     var result = MAXIMUM_EXTRA_SIZE;
     _txnInputs.forEach((input) {
-      result += SCRIPT_MAX_SIZE; // TODO: we're only spending P2PKH atm.
+      // TODO: we're only spending P2PKH atm.
+      result += SCRIPT_MAX_SIZE;
     });
 
     _txnOutputs.forEach((output) {
@@ -972,18 +969,3 @@ class Transaction {
   /// when serializing to raw hex format.
   Set<TransactionOption> get transactionOptions => _transactionOptions;
 }
-
-// mixin SignatureMixin on _SignedTransaction{
-//
-//
-//}
-//
-// abstract class _SignedTransaction extends Transaction{
-//    BCHSignature signature;
-//    _SignedTransaction(this.signature);
-//
-//}
-//
-// class SignedTransaction extends _SignedTransaction with SignatureMixin {
-//    SignedTransaction(BCHSignature signature) : super(signature);
-//}
