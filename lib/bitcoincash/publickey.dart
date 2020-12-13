@@ -1,4 +1,4 @@
-import '../bitcoincash.dart';
+import './bitcoincash.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/pointycastle.dart';
 

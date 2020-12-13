@@ -1,4 +1,4 @@
-import '../bitcoincash.dart';
+import './bitcoincash.dart';
 import 'encoding/ckdserializer.dart';
 import 'package:hex/hex.dart';
 import 'crypto/hdutils.dart';

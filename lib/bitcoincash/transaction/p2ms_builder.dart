@@ -3,7 +3,7 @@ import 'package:sprintf/sprintf.dart';
 
 import '../exceptions.dart';
 import '../script/opcodes.dart';
-import '../../bitcoincash.dart';
+import '.././bitcoincash.dart';
 
 import 'signed_unlock_builder.dart';
 

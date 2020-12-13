@@ -6,7 +6,7 @@ import 'package:sprintf/sprintf.dart';
 
 import '../encoding/utils.dart';
 import '../script/bchscript.dart';
-import '../../bitcoincash.dart';
+import '.././bitcoincash.dart';
 
 import 'default_builder.dart';
 import 'transaction.dart';

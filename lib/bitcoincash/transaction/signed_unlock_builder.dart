@@ -1,4 +1,4 @@
-import '../transaction/unlocking_script_builder.dart';
+import './unlocking_script_builder.dart';
 import '../signature.dart';
 
 /// All unlocking scripts that will use OP_CHECKSIG or OP_CHECKMULTISIG operations

@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../exceptions.dart';
 import '../script/opcodes.dart';
 import '../script/bchscript.dart';
-import '../transaction/locking_script_builder.dart';
+import './locking_script_builder.dart';
 import 'dart:math';
 import 'package:hex/hex.dart';
 import 'package:sprintf/sprintf.dart';
