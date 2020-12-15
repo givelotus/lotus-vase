@@ -248,7 +248,7 @@ class Wallet {
     } finally {
       refreshBalanceLocal();
     }
-
+    print(txnMetadata.transaction);
     return txnMetadata.transaction;
   }
 

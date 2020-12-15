@@ -26,6 +26,15 @@ String _validateAddress(String address) {
   // Address(address);
 }
 
+String _validateSendAmount(int amount) {
+  if (amount == 0) {
+    return 'Amount cannot be 0';
+  }
+  // if (amount > wallet.balanceSatoshis()) {
+  //   return 'Amount cannot be more than wallet balance';
+  // }
+}
+
 // TODO: Add check amount is > 0 and < amount of sats in wallet.
 
 Future showReceipt(BuildContext context, Transaction transaction) {
@@ -74,15 +83,6 @@ class SendInfo extends StatelessWidget {
         version: QrVersions.auto,
       ),
     ));
-
-    String _validateSendAmount(int amount) {
-      if (amount == 0) {
-        return 'Amount cannot be 0';
-      }
-      if (amount > wallet.balanceSatoshis()) {
-        return 'Amount cannot be more than wallet balance';
-      }
-    }
 
     return Scaffold(
       appBar: CupertinoNavigationBar(
@@ -504,10 +504,21 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                           return ElevatedButton(
                             autofocus: true,
                             onPressed: () {
-                              ;
+                              // sendButtonSwiped(context, viewModel.sendToAddress,
+                              //     viewModel.sendAmount);
+                              print(viewModel.sendToAddress);
+
+                              print(viewModel.sendAmount);
+                              wallet.sendTransaction(
+                                  Address(viewModel.sendToAddress),
+                                  BigInt.from(viewModel.sendAmount));
+                              // .then((transaction) =>
+                              //     showReceipt(context, transaction))
+                              // .catchError((error) =>
+                              //     showError(context, error.toString()));
                             },
                             child: Text(
-                                'Send ${viewModel.sendAmount} to ${viewModel.sendToAddress} !'),
+                                'Send ${viewModel.sendAmount} sats to ${viewModel.sendToAddress} !'),
                           );
                         }
                         ;
