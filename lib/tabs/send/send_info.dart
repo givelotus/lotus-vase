@@ -504,18 +504,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                           return ElevatedButton(
                             autofocus: true,
                             onPressed: () {
-                              // sendButtonSwiped(context, viewModel.sendToAddress,
-                              //     viewModel.sendAmount);
-                              print(viewModel.sendToAddress);
-
-                              print(viewModel.sendAmount);
-                              wallet.sendTransaction(
-                                  Address(viewModel.sendToAddress),
-                                  BigInt.from(viewModel.sendAmount));
-                              // .then((transaction) =>
-                              //     showReceipt(context, transaction))
-                              // .catchError((error) =>
-                              //     showError(context, error.toString()));
+                              sendButtonSwiped(context, viewModel.sendToAddress,
+                                  viewModel.sendAmount);
                             },
                             child: Text(
                                 'Send ${viewModel.sendAmount} sats to ${viewModel.sendToAddress} !'),
