@@ -235,7 +235,7 @@ class SettingsTab extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(6, 6, 6, 24),
+                  padding: EdgeInsets.fromLTRB(12, 12, 12, 24),
                   child: RaisedButton(
                     color: Colors.blue,
                     elevation: stdElevation,

@@ -16,7 +16,7 @@ import 'custom_keyboard/custom_keyboard.dart';
 ValueNotifier<String> _paymentAmount = ValueNotifier('0');
 ValueNotifier<bool> _showKeyboard = ValueNotifier<bool>(true);
 
-void _validateAddress(String address) {
+String _validateAddress(String address) {
 // TODO: if present, try checking scheme is 'bitcoincash' or throw error
 // (scheme should be optional)
 // check address conforms to Address class or throw error
@@ -27,12 +27,6 @@ void _validateAddress(String address) {
 }
 
 // TODO: Add check amount is > 0 and < amount of sats in wallet.
-
-void _validateSendAmount(int amount) {
-  if (amount == 0) {
-    return;
-  }
-}
 
 Future showReceipt(BuildContext context, Transaction transaction) {
   // TODO: Create nice looking receipt dialog.
@@ -80,6 +74,15 @@ class SendInfo extends StatelessWidget {
         version: QrVersions.auto,
       ),
     ));
+
+    String _validateSendAmount(int amount) {
+      if (amount == 0) {
+        return 'Amount cannot be 0';
+      }
+      if (amount > wallet.balanceSatoshis()) {
+        return 'Amount cannot be more than wallet balance';
+      }
+    }
 
     return Scaffold(
       appBar: CupertinoNavigationBar(
@@ -164,20 +167,10 @@ class SendInfo extends StatelessWidget {
                                     width: screenDimension.width - 30,
                                     child: RichText(
                                       text: TextSpan(
-                                        text: 'bch:',
+                                        text: viewModel.sendToAddress,
                                         style: TextStyle(
                                             color: Colors.black.withOpacity(.8),
                                             fontSize: 15),
-                                        children: <TextSpan>[
-                                          // TODO: Add regex for address jere
-                                          TextSpan(
-                                            text: viewModel.sendToAddress,
-                                            style: TextStyle(
-                                                color: Colors.black
-                                                    .withOpacity(.8),
-                                                fontSize: 15),
-                                          ),
-                                        ],
                                       ),
                                     )),
                               ],
@@ -412,47 +405,50 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
         child: Column(
       children: [
         PaymentAmountDisplay(),
-        Card(
-          child: Row(
-            children: [
-              Expanded(
-                child: ListTile(
-                  title: const Text('Balance'),
-                  subtitle: const Text('in satoshis'),
-                ),
-              ),
-              Expanded(
-                child: ValueListenableBuilder(
-                    valueListenable: balanceNotifier,
-                    builder: (context, balance, child) {
-                      if (balance == null) {
-                        return Text(
-                          'Loading...',
-                          style: TextStyle(
-                              color: Colors.red.withOpacity(.8),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13),
-                        );
-                      }
-                      return Text.rich(TextSpan(
-                        text: '${balance}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: ' sats',
+        // Balance Display widget
+        Padding(
+          padding: const EdgeInsets.fromLTRB(60.0, 0, 60.0, 30.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+              color: Colors.grey[400].withOpacity(0.6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ValueListenableBuilder(
+                      valueListenable: balanceNotifier,
+                      builder: (context, balance, child) {
+                        if (balance == null) {
+                          return Text(
+                            'Loading...',
                             style: TextStyle(
-                                color: Colors.white.withOpacity(.8),
-                                fontSize: 15),
+                                color: Colors.red.withOpacity(.8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          );
+                        }
+                        return Text.rich(TextSpan(
+                          text: 'Balance: ${balance}',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
                           ),
-                        ],
-                      ));
-                    }),
+                          children: [
+                            TextSpan(
+                              text: ' sats',
+                              style: TextStyle(
+                                  color: Colors.black.withOpacity(.8),
+                                  fontSize: 15),
+                            ),
+                          ],
+                        ));
+                      }),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         // Confirm Amount button widget writes to global SendModel:
@@ -486,9 +482,10 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                                     break;
                                   default:
                                     _validateAddress(viewModel.sendToAddress);
-
                                     _validateSendAmount(updatedAmount);
+
                                     viewModel.sendAmount = updatedAmount;
+
                                     print(updatedAmount);
                                     print(viewModel.sendAmount);
 
@@ -509,7 +506,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                             onPressed: () {
                               ;
                             },
-                            child: Text('Send ${viewModel.sendAmount}!'),
+                            child: Text(
+                                'Send ${viewModel.sendAmount} to ${viewModel.sendToAddress} !'),
                           );
                         }
                         ;
