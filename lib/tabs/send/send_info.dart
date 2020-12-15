@@ -123,15 +123,17 @@ class SendInfo extends StatelessWidget {
                           var parseObject = Uri.parse(data.text.toString());
                           var map = {
                             'address': parseObject.path,
-                            'amount': (double.parse(
-                                        parseObject.queryParameters['amount']) *
-                                    100000000)
-                                .round(),
+                            // TODO / FIX : add amount parser back
+                            // 'amount': (double.parse(
+                            //             parseObject.queryParameters['amount']) *
+                            //         100000000)
+                            //     .round(),
                             'scheme': parseObject.scheme
                           };
 
                           _validateAddress(viewModel.sendToAddress);
-                          _validateSendAmount(viewModel.sendAmount);
+                          // TODO / FIX : add amount parser back
+                          // _validateSendAmount(viewModel.sendAmount);
 
                           // Dev purposes only:
                           print(map);
@@ -139,8 +141,9 @@ class SendInfo extends StatelessWidget {
                         }
 
                         viewModel.sendToAddress = tryParse(data)['address'];
-                        _paymentAmount.value =
-                            tryParse(data)['amount'].toString();
+                        // TODO / FIX : when amount is present, display on screen:
+                        // _paymentAmount.value =
+                        //     tryParse(data)['amount'].toString();
 
                         print(viewModel.sendToAddress);
                         print(viewModel.sendAmount);
@@ -167,7 +170,8 @@ class SendInfo extends StatelessWidget {
                                     width: screenDimension.width - 30,
                                     child: RichText(
                                       text: TextSpan(
-                                        text: viewModel.sendToAddress,
+                                        text:
+                                            'bitcoincash:${viewModel.sendToAddress}',
                                         style: TextStyle(
                                             color: Colors.black.withOpacity(.8),
                                             fontSize: 15),
@@ -221,8 +225,6 @@ class CalculatorKeyboard extends StatefulWidget {
 }
 
 class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
-  Wallet wallet;
-
   // TODO/FIX: Need to figure out what to do with these two variables
   // in conjuction with the setState just before the evaluateRefresh()
   // in _onPressed().
@@ -244,6 +246,11 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
   @override
   Widget build(BuildContext context) {
+    Wallet wallet;
+    final viewModel = Provider.of<SendModel>(context, listen: true);
+    final walletModel = Provider.of<WalletModel>(context, listen: false);
+    final balanceNotifier = walletModel.balance;
+
     // On every press of any button, checks for conditions and then executes
     void _onPressed({String buttonLabel}) {
       // Checks before adding any operation or any digit
@@ -380,26 +387,19 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       }
     }
 
-    Future<void> sendButtonSwiped(
-        BuildContext context, String address, int amount) async {
+    void sendButtonSwiped(BuildContext context, String address, int amount) {
       // This is at the 'swipe to send' level, after confirming the amount.
       // The address and amount should have been pre-validated at the form and corrected
       // by user before even being able to swipe send; we are thus sending direct to Electrum library.
 
-      await {
-        wallet
-            .sendTransaction(Address(address), BigInt.from(amount))
-            .then((transaction) => showReceipt(context, transaction))
-            .catchError((error) => showError(context, error.toString()))
-      };
+      wallet
+          .sendTransaction(Address(address), BigInt.from(amount))
+          .then((transaction) => showReceipt(context, transaction))
+          .catchError((error) => showError(context, error.toString()));
 
       // only close SendInfo screen in case transaction is successful
       // visible.value = false
     }
-
-    final viewModel = Provider.of<SendModel>(context, listen: true);
-    final walletModel = Provider.of<WalletModel>(context, listen: false);
-    final balanceNotifier = walletModel.balance;
 
     return Container(
         child: Column(
@@ -486,12 +486,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
                                     viewModel.sendAmount = updatedAmount;
 
-                                    print(updatedAmount);
-                                    print(viewModel.sendAmount);
-
                                     _showKeyboard.value = false;
-
-                                  // TODO: Change the button to slide to send widget :)
                                 }
                               });
                             },
@@ -501,11 +496,21 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                         break;
                       default:
                         {
+                          // TODO: Change the button to slide to send widget :)
                           return ElevatedButton(
                             autofocus: true,
                             onPressed: () {
-                              sendButtonSwiped(context, viewModel.sendToAddress,
-                                  viewModel.sendAmount);
+                              // sendButtonSwiped(context, viewModel.sendToAddress,
+                              //     viewModel.sendAmount);
+
+                              wallet
+                                  .sendTransaction(
+                                      Address(viewModel.sendToAddress),
+                                      BigInt.from(viewModel.sendAmount))
+                                  .then((transaction) =>
+                                      showReceipt(context, transaction))
+                                  .catchError((error) =>
+                                      showError(context, error.toString()));
                             },
                             child: Text(
                                 'Send ${viewModel.sendAmount} sats to ${viewModel.sendToAddress} !'),

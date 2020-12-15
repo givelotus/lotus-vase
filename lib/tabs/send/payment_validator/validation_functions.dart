@@ -1,5 +1,7 @@
 import '../../../wallet/wallet.dart';
 
+// IGNORE ALL THIS FOR NOW -- NEED TO WORK IT OUT FOR LATER PR
+
 String _validateAddress(String address) {
 // TODO: if present, try checking scheme is 'bitcoincash' or throw error
 // (scheme should be optional)
