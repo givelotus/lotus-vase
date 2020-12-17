@@ -16,6 +16,8 @@ import 'custom_keyboard/custom_keyboard.dart';
 ValueNotifier<String> _paymentAmount = ValueNotifier('0');
 ValueNotifier<bool> _showKeyboard = ValueNotifier<bool>(true);
 
+// TODO: This needs to be done. I've replicated in a seperate folder
+// depending on how complex I think it might get, just ignore for now.
 String _validateAddress(String address) {
 // TODO: if present, try checking scheme is 'bitcoincash' or throw error
 // (scheme should be optional)
@@ -26,6 +28,8 @@ String _validateAddress(String address) {
   // Address(address);
 }
 
+// TODO: This needs to be done. I've replicated in a seperate folder
+// depending on how complex I think it might get, just ignore for now.
 String _validateSendAmount(int amount) {
   if (amount == 0) {
     return 'Amount cannot be 0';
@@ -53,6 +57,7 @@ Future showReceipt(BuildContext context, Transaction transaction) {
 
 Future showError(BuildContext context, String errMessage) {
   // TODO: Create nice looking receipt dialog.
+  // Test for all other errors that could be thrown.
   return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -74,7 +79,7 @@ class SendInfo extends StatelessWidget {
     var screenDimension = MediaQuery.of(context).size;
     // final viewModel = Provider.of<SendModel>(context, listen: false);
 
-// TODO: rework this so that the filler is checked properly before putting up QR
+// TODO: rework this so that the address is checked properly before putting up QR?
     final qrSendToAddress = ClipOval(
         child: Consumer<SendModel>(
       builder: (context, viewModel, child) => QrImage(
@@ -171,6 +176,7 @@ class SendInfo extends StatelessWidget {
                                     child: RichText(
                                       text: TextSpan(
                                         text:
+                                            // TODO: Check if hardcoding the schema outside of the sendToAddress is ok.
                                             'bitcoincash:${viewModel.sendToAddress}',
                                         style: TextStyle(
                                             color: Colors.black.withOpacity(.8),
@@ -364,7 +370,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // function returns int from String
       int amount;
 
-      // rework rest of code for paymentmount .value
+      // TODO? rework rest of code for paymentmount .value
       // Check and delete operators at end of string.
       if (Calculations.OPERATIONS
           .contains(_paymentAmount[_paymentAmount.length - 1])) {
@@ -391,6 +397,11 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
       // This is at the 'swipe to send' level, after confirming the amount.
       // The address and amount should have been pre-validated at the form and corrected
       // by user before even being able to swipe send; we are thus sending direct to Electrum library.
+
+      // FIX: remove this when bug is fixed
+      print(address);
+      print(amount);
+      print(wallet); //currently this is printing as null
 
       wallet
           .sendTransaction(Address(address), BigInt.from(amount))
@@ -451,7 +462,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
             ),
           ),
         ),
-        // Confirm Amount button widget writes to global SendModel:
+        // Confirm Amount button widget writes to global SendModel
+        // and then switches to Slide to send button:
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
@@ -486,6 +498,7 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
 
                                     viewModel.sendAmount = updatedAmount;
 
+                                    // TODO: VALIDATE Address is ok before doing below:
                                     _showKeyboard.value = false;
                                 }
                               });
@@ -500,17 +513,8 @@ class _CalculatorKeyboardState extends State<CalculatorKeyboard> {
                           return ElevatedButton(
                             autofocus: true,
                             onPressed: () {
-                              // sendButtonSwiped(context, viewModel.sendToAddress,
-                              //     viewModel.sendAmount);
-
-                              wallet
-                                  .sendTransaction(
-                                      Address(viewModel.sendToAddress),
-                                      BigInt.from(viewModel.sendAmount))
-                                  .then((transaction) =>
-                                      showReceipt(context, transaction))
-                                  .catchError((error) =>
-                                      showError(context, error.toString()));
+                              sendButtonSwiped(context, viewModel.sendToAddress,
+                                  viewModel.sendAmount);
                             },
                             child: Text(
                                 'Send ${viewModel.sendAmount} sats to ${viewModel.sendToAddress} !'),
