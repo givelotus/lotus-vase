@@ -189,7 +189,7 @@ class BCHPrivateKey {
   /// Returns this Private Key in WIF format. See [toWIF()].
   String toWIF() {
     // convert private key _d to a hex string
-    var wifKey = _d.toRadixString(16);
+    var wifKey = _d.toRadixString(16).padLeft(64, '0');
 
     if (_networkType == NetworkType.MAIN) {
       wifKey = HEX.encode([0x80]) + wifKey;
@@ -214,15 +214,14 @@ class BCHPrivateKey {
 
   /// Returns the *naked* private key Big Integer value as a hexadecimal string
   String toHex() {
-    return _d.toRadixString(16);
+    return _d.toRadixString(16).padLeft(64, '0');
   }
 
   // convenience method to retrieve an address
   /// Convenience method that jumps through the hoops of generating and [Address] from this
   /// Private Key's corresponding [BCHPublicKey].
   Address toAddress({NetworkType networkType = NetworkType.MAIN}) {
-    // TODO: FIX set network type to default parameter unless explicitly specified ?
-    return _BCHPublicKey.toAddress(_networkType);
+    return _BCHPublicKey.toAddress(networkType ?? _networkType);
   }
 
   Uint8List _seed() {
