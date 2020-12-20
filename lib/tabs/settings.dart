@@ -23,7 +23,6 @@ class SettingsTab extends StatelessWidget {
         children: [
           ListTile(
             title: const Text('Balance'),
-            subtitle: Text('in satoshis'),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -189,68 +188,49 @@ class SettingsTab extends StatelessWidget {
       );
     }
 
-    final historyCard = Card(
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('History'),
-          )
-        ],
-      ),
-      elevation: stdElevation,
-    );
-
-    return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            child: balanceCard,
-            padding: stdPadding,
-          ),
-          Expanded(
-            child: Padding(
-              child: historyCard,
-              padding: stdPadding,
+    return Column(
+      children: [
+        Padding(
+          child: balanceCard,
+          padding: MediaQuery.of(context).padding,
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: stdPadding,
+                child: RaisedButton(
+                  color: Colors.blue,
+                  elevation: stdElevation,
+                  onPressed: () => showSeedDialog(),
+                  child: Text(
+                    'Show Seed',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
             ),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: stdPadding,
-                  child: RaisedButton(
-                    color: Colors.blue,
-                    elevation: stdElevation,
-                    onPressed: () => showSeedDialog(),
-                    child: Text(
-                      'Show Seed',
-                      style: TextStyle(color: Colors.white),
-                    ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(6, 6, 6, 24),
+                child: RaisedButton(
+                  color: Colors.blue,
+                  elevation: stdElevation,
+                  onPressed: () => showEnterSeedDialog(),
+                  child: Text(
+                    'Import Seed',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(6, 6, 6, 24),
-                  child: RaisedButton(
-                    color: Colors.blue,
-                    elevation: stdElevation,
-                    onPressed: () => showEnterSeedDialog(),
-                    child: Text(
-                      'Import Seed',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
+            ),
+          ],
+        )
+      ],
     );
   }
 }
