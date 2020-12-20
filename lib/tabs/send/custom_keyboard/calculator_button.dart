@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'calculator.dart';
+import 'button_definitions.dart';
 
 typedef CalculatorButtonTapCallback = void Function({String buttonLabel});
 
 class CalculatorButton extends StatelessWidget {
-  CalculatorButton({this.text, @required this.onTap});
+  final CalculatorItem button;
+  final List<String> stack;
+  final void Function() onPressed;
 
-  final String text;
-  final CalculatorButtonTapCallback onTap;
+  CalculatorButton({this.button, this.stack, @required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -22,16 +23,26 @@ class CalculatorButton extends StatelessWidget {
                 width: 0.5,
               ),
             ),
-            child: TextButton(
-              onPressed: () => onTap(buttonLabel: text),
-              child: Text(
-                text,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-              style: ButtonStyle(),
-              // padding: EdgeInsets.all(10),
-              // highlightColor: Colors.blueGrey[100],
-              // splashColor: Colors.blueAccent[100],
-            )));
+            child: ButtonDefinitions[button].text == null
+                ? FlatButton(
+                    onPressed: () {
+                      ButtonDefinitions[button].action(stack);
+                      onPressed();
+                    },
+                    child: Icon(
+                      ButtonDefinitions[button].icon,
+                    ))
+                : TextButton(
+                    onPressed: () {
+                      ButtonDefinitions[button].action(stack);
+                      onPressed();
+                    },
+                    child: Text(
+                      ButtonDefinitions[button].text,
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    ),
+                    style: ButtonStyle(),
+                  )));
   }
 }

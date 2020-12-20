@@ -1,73 +1,116 @@
-import 'number_formatter.dart';
+const operators = [
+  '✖️',
+  '*',
+  '-',
+  '➕',
+  '+',
+  '➗',
+  '/',
+];
 
-class Calculations {
-  static const PERIOD = '.';
-  static const MULTIPLY = '×';
-  static const SUBTRACT = '−';
-  static const ADD = '+';
-  static const DIVIDE = '÷';
-  static const BACKSPACE = '↩';
-  static const EQUAL = '=';
-  static const OPERATIONS = [
-    Calculations.ADD,
-    Calculations.MULTIPLY,
-    Calculations.SUBTRACT,
-    Calculations.DIVIDE,
-  ];
-  static const NONINTEGERS = [
-    Calculations.BACKSPACE,
-    Calculations.ADD,
-    Calculations.MULTIPLY,
-    Calculations.SUBTRACT,
-    Calculations.DIVIDE,
-    '00'
-  ];
+const numbers = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '.',
+];
 
-  static double add(double val1, val2) {
-    return val1 + val2;
+double takeNumbers(List<String> stack) {
+  final number = StringBuffer(); // Always add a leasing zero. Prevents
+  // invalid doubles when only a period is entered.
+  while (stack.isNotEmpty) {
+    final maybeNumber = stack.removeLast();
+    final isNumber = numbers.indexOf(maybeNumber);
+    if (isNumber == -1) {
+      stack.add(maybeNumber);
+      break;
+    }
+    number.write(maybeNumber);
   }
-
-  static double subtract(double val1, val2) {
-    return val1 - val2;
+  if (number.length == 0) {
+    return double.nan;
   }
-
-  static double multiply(double val1, double val2) {
-    return val1 * val2;
-  }
-
-  static double divide(double val1, double val2) {
-    return val1 / val2;
-  }
+  return double.parse(number.toString(), (value) {
+    stack.addAll(value.split(''));
+    return double.nan;
+  });
 }
 
-class Calculator {
-  static String parseString(String text) {
-    List<String> numbersToAdd;
-    double a, b, result;
-    if (text.contains(Calculations.ADD)) {
-      numbersToAdd = text.split(Calculations.ADD);
-      a = double.parse(numbersToAdd[0]);
-      b = double.parse(numbersToAdd[1]);
-      result = Calculations.add(a, b);
-    } else if (text.contains(Calculations.MULTIPLY)) {
-      numbersToAdd = text.split(Calculations.MULTIPLY);
-      a = double.parse(numbersToAdd[0]);
-      b = double.parse(numbersToAdd[1]);
-      result = Calculations.multiply(a, b);
-    } else if (text.contains(Calculations.DIVIDE)) {
-      numbersToAdd = text.split(Calculations.DIVIDE);
-      a = double.parse(numbersToAdd[0]);
-      b = double.parse(numbersToAdd[1]);
-      result = Calculations.divide(a, b);
-    } else if (text.contains(Calculations.SUBTRACT)) {
-      numbersToAdd = text.split(Calculations.SUBTRACT);
-      a = double.parse(numbersToAdd[0]);
-      b = double.parse(numbersToAdd[1]);
-      result = Calculations.subtract(a, b);
-    } else {
-      return text;
-    }
+typedef BinaryDoubleFunction = double Function(double left, double right);
 
-    return NumberFormatter.format(result.toString());
+void evaluateExpression(List<String> stack) {
+  final reversedStack = stack.reversed.toList();
+  final validSymbols =
+      [numbers, operators].expand((element) => element).toList();
+  final output = <double>[];
+
+  final operate = (BinaryDoubleFunction operator) => (String peek) {
+        reversedStack.removeLast();
+        final right = takeNumbers(reversedStack);
+        if (right.isNaN) {
+          reversedStack.add(peek);
+          throw Exception('Failed parsing');
+        }
+        final left = output.removeLast();
+        output.add(operator(left, right));
+      };
+
+  try {
+    OUTER:
+    while (reversedStack.isNotEmpty) {
+      final peek = reversedStack[reversedStack.length - 1];
+      if (!validSymbols.contains(peek)) {
+        throw Exception('Invalid math symbol `${peek}`');
+      }
+
+      switch (peek) {
+        case '✖️':
+          operate((l, r) => l * r)(peek);
+          break;
+        case '*':
+          operate((l, r) => l * r)(peek);
+          break;
+        case '-':
+          operate((l, r) => l - r)(peek);
+          break;
+        case '➕':
+          operate((l, r) => l + r)(peek);
+          break;
+        case '+':
+          operate((l, r) => l + r)(peek);
+          break;
+        case '➗':
+          operate((l, r) => l / r)(peek);
+          break;
+        case '/':
+          operate((l, r) => l / r)(peek);
+          break;
+        default:
+          final number = takeNumbers(reversedStack);
+          if (number.isNaN) {
+            break OUTER;
+          }
+          output.add(number);
+      }
+    }
+  } catch (err) {
+    // Something happened, we are able to just continue though
+    // due to the way the list collapsing happens below.
+  }
+  stack.clear();
+  assert(output.length < 2, 'Invalid output length');
+  if (output.length == 1) {
+    stack.addAll(output.removeLast().truncate().toString().split(''));
+  }
+  stack.addAll(reversedStack.reversed);
+  if (stack.isEmpty) {
+    stack.add('0');
   }
 }
