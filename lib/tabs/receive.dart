@@ -76,20 +76,18 @@ class ReceiveTab extends StatelessWidget {
       elevation: stdElevation,
     );
 
-    return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          children: [
-            Padding(
-              padding: stdPadding,
-              child: qrCard,
-            ),
-            Padding(
-              padding: stdPadding,
-              child: manualCard,
-            ),
-          ],
-        ),
+    return SafeArea(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Your Bitcoin Cash Address',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+          qrCard,
+          manualCard,
+        ],
       ),
     );
   }
