@@ -188,49 +188,43 @@ class SettingsTab extends StatelessWidget {
       );
     }
 
-    return Column(
-      children: [
-        Padding(
-          child: balanceCard,
-          padding: MediaQuery.of(context).padding,
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: stdPadding,
-                child: RaisedButton(
-                  color: Colors.blue,
-                  elevation: stdElevation,
-                  onPressed: () => showSeedDialog(),
-                  child: Text(
-                    'Show Seed',
-                    style: TextStyle(color: Colors.white),
-                  ),
+    return SafeArea(
+        child: Padding(
+            padding: stdPadding,
+            child: Column(
+              children: [
+                balanceCard,
+                Row(
+                  children: [
+                    Expanded(
+                      child: RaisedButton(
+                        color: Colors.blue,
+                        elevation: stdElevation,
+                        onPressed: () => showSeedDialog(),
+                        child: Text(
+                          'Show Seed',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(6, 6, 6, 24),
-                child: RaisedButton(
-                  color: Colors.blue,
-                  elevation: stdElevation,
-                  onPressed: () => showEnterSeedDialog(),
-                  child: Text(
-                    'Import Seed',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        )
-      ],
-    );
+                Row(
+                  children: [
+                    Expanded(
+                      child: RaisedButton(
+                        color: Colors.blue,
+                        elevation: stdElevation,
+                        onPressed: () => showEnterSeedDialog(),
+                        child: Text(
+                          'Import Seed',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            )));
   }
 }
