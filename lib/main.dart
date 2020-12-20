@@ -9,7 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(CashewApp());
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) => WalletModel()),
+    ChangeNotifierProvider(create: (_) => SendModel()),
+  ], child: CashewApp()));
 }
 
 class CashewApp extends StatelessWidget {
@@ -46,30 +49,22 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(create: (BuildContext context) {
-      return WalletModel();
-    }, builder: (context, child) {
-      final viewModel = Provider.of<WalletModel>(context);
-      if (viewModel.initialized) {
-        viewModel.writeToDisk();
-      }
-      final pageView = PageView(
-        controller: pagerController,
-        children: [
-          SettingsTab(),
-          ChangeNotifierProvider(create: (BuildContext context) {
-            return SendModel();
-          }, builder: (context, child) {
-            return SendTab(controller: pagerController);
-          }),
-          ReceiveTab(),
-        ],
-      );
+    final viewModel = Provider.of<WalletModel>(context);
+    if (viewModel.initialized) {
+      viewModel.writeToDisk();
+    }
+    final pageView = PageView(
+      controller: pagerController,
+      children: [
+        SettingsTab(),
+        SendTab(controller: pagerController),
+        ReceiveTab(),
+      ],
+    );
 
-      return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: pageView,
-      );
-    });
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: pageView,
+    );
   }
 }
