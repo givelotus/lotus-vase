@@ -7,8 +7,16 @@ import 'package:cashew/tabs/send/sendModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
+import 'package:logging/logging.dart';
 
 void main() {
+  Logger.root.level = Level.FINE; // Default is Level.INFO.
+  // TODO: Add handler for error reporting service?
+  Logger.root.onRecord.listen((record) {
+    print('[${record.level.name}] ${record.loggerName} '
+        '-- ${record.time} -- ${record.message}');
+  });
+
   runApp(CashewApp());
 }
 

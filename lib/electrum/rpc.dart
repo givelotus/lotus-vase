@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:math';
 import 'dart:developer' as dev;
+import 'package:logging/logging.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -90,6 +91,8 @@ class GetBalanceResponse {
 typedef DisconnectHandler = void Function(dynamic err);
 
 class JSONRPCWebsocket {
+  static final _log = Logger('JSONRPCWebsocket');
+
   WebSocket rpcSocket;
   Map<int, ResponseHandler> outstandingRequests = {};
   Map<String, SubscriptionHandler> subscriptions = {};
@@ -102,6 +105,7 @@ class JSONRPCWebsocket {
     final handler = outstandingRequests[response.id] ??
         (RPCResponse _response) {
           // TODO: Log error here - electrum misbehaving.
+          _log.warning('handle response error w/ ${_response.error}');
         };
     handler(response);
   }
@@ -110,12 +114,13 @@ class JSONRPCWebsocket {
     final handler = subscriptions[notification.method] ??
         (List<Object> params) {
           // TODO: Log error here - electrum misbehaving.
+          _log.warning('handle notification error w/ $params');
         };
     handler(notification.params);
   }
 
   Future<void> connect(Uri address) async {
-    print(address);
+    _log.fine('starting to connect to $address');
     final r = Random();
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 
@@ -131,23 +136,26 @@ class JSONRPCWebsocket {
 
     final response = await request.close();
 
-    print('response $response');
+    _log.fine('connected w status code ${response.statusCode} ');
     // todo check the status code, key etc
     final socket = await response.detachSocket();
 
-    print('socket $socket');
+    _log.fine(
+        'connecting to websocket ${socket.address} at ${socket.remotePort}');
 
     rpcSocket = WebSocket.fromUpgradedSocket(
       socket,
       serverSide: false,
     );
 
+    _log.fine('connected to websocket, current state ${rpcSocket.readyState}');
+
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      print(jsonResult);
+      _log.fine(jsonResult);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
-      print('listen response $response');
+      _log.fine('listen response $response');
       if (response.id == null) {
         final notification = RPCRequest.fromJson(jsonResult);
         return _handleNotification(notification);
@@ -173,14 +181,14 @@ class JSONRPCWebsocket {
   Future<dynamic> call(String method, Object params) {
     final requestId = currentRequestId++;
     final completer = Completer();
-    print(requestId);
+    _log.fine(requestId);
 
     outstandingRequests[requestId] = (RPCResponse response) {
       if (response.result != null) {
         completer.complete(response.result);
-        print('call response.result ${response.result}');
+        _log.fine('call response.result ${response.result}');
       } else {
-        print(response.error);
+        _log.fine(response.error);
         completer.completeError(response.error);
       }
 
@@ -189,7 +197,7 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    print(payload);
+    _log.fine(payload);
     rpcSocket.add(payload);
 
     return completer.future;
@@ -205,13 +213,13 @@ class JSONRPCWebsocket {
     outstandingRequests[requestId] = (RPCResponse response) {
       completer.complete(response.result);
       outstandingRequests.remove(requestId);
-      print('subscribe response.result ${response.result}');
+      _log.fine('subscribe response.result ${response.result}');
     };
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
     rpcSocket.add(payload);
-    print('payload $payload');
+    _log.fine('payload $payload');
 
     return completer.future;
   }
