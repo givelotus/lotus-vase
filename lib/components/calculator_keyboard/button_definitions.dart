@@ -89,6 +89,18 @@ CalculatorButtonAction pushOperation(String operator) {
   };
 }
 
+void pushDecimal(List<String> stack) {
+  for (var i = stack.length - 1; i > 0; i--) {
+    if (stack[i] == '.') {
+      return;
+    }
+    if (operators.contains(stack[i])) {
+      break;
+    }
+  }
+  stack.add('.');
+}
+
 final ButtonDefinitions = {
   CalculatorItem.ZEROZERO: CalculatorButtonDefinition(
     text: '00',
@@ -138,7 +150,7 @@ final ButtonDefinitions = {
   ),
   CalculatorItem.PERIOD: CalculatorButtonDefinition(
     text: '.',
-    action: pushNumber('.'),
+    action: pushDecimal,
     style: operationButtonStyle,
   ),
   CalculatorItem.MULTIPLY: CalculatorButtonDefinition(
