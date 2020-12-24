@@ -152,10 +152,11 @@ class JSONRPCWebsocket {
 
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
-      _log.fine(jsonResult);
+      _log.fine('listen and result: $jsonResult');
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
-      _log.fine('listen response $response');
+      _log.fine('listen and RPCResponse from json result: $response');
+
       if (response.id == null) {
         final notification = RPCRequest.fromJson(jsonResult);
         return _handleNotification(notification);
@@ -180,8 +181,9 @@ class JSONRPCWebsocket {
 
   Future<dynamic> call(String method, Object params) {
     final requestId = currentRequestId++;
+    _log.fine('call with current requestId = $requestId');
+
     final completer = Completer();
-    _log.fine(requestId);
 
     outstandingRequests[requestId] = (RPCResponse response) {
       if (response.result != null) {
@@ -200,6 +202,9 @@ class JSONRPCWebsocket {
     _log.fine(payload);
     rpcSocket.add(payload);
 
+    _log.fine('adding call payload $payload to rpcSocket');
+
+    _log.fine('returning ${completer.future} to function call ');
     return completer.future;
   }
 
@@ -213,18 +218,22 @@ class JSONRPCWebsocket {
     outstandingRequests[requestId] = (RPCResponse response) {
       completer.complete(response.result);
       outstandingRequests.remove(requestId);
-      _log.fine('subscribe response.result ${response.result}');
+      _log.fine(
+          'removing outstanding requests with $requestId and completing ${response.result}');
     };
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
     rpcSocket.add(payload);
-    _log.fine('payload $payload');
+    _log.fine('adding subscribe payload $payload to rpcSocket');
 
+    _log.fine('returning ${completer.future} to function subscribe ');
     return completer.future;
   }
 
   void dispose() {
     rpcSocket.close();
+    _log.fine(
+        'closing rpcSocket at ${rpcSocket.closeCode} and current state ${rpcSocket.readyState}');
   }
 }
