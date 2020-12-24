@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'dart:math';
+import 'dart:developer' as dev;
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -127,9 +128,15 @@ class JSONRPCWebsocket {
         .add('sec-websocket-version', '13'); // insert the correct version here
     request.headers.add('sec-websocket-key', key);
 
+    dev.debugger();
+
     final response = await request.close();
+    print(response);
     // todo check the status code, key etc
     final socket = await response.detachSocket();
+    print(socket);
+
+    dev.debugger();
 
     rpcSocket = WebSocket.fromUpgradedSocket(
       socket,
@@ -140,10 +147,13 @@ class JSONRPCWebsocket {
       Map<String, dynamic> jsonResult = jsonDecode(data);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
+      print(response);
       if (response.id == null) {
         final notification = RPCRequest.fromJson(jsonResult);
+        print(notification);
         return _handleNotification(notification);
       }
+
       return _handleResponse(response);
     }, onError: (Object error) {
       if (disconnectHandler != null) {
@@ -169,8 +179,10 @@ class JSONRPCWebsocket {
     outstandingRequests[requestId] = (RPCResponse response) {
       if (response.result != null) {
         completer.complete(response.result);
+        print(response.result);
       } else {
         completer.completeError(response.error);
+        print(response.error);
       }
 
       outstandingRequests.remove(requestId);
@@ -178,6 +190,7 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
+    print(payload);
     rpcSocket.add(payload);
 
     return completer.future;
@@ -193,11 +206,13 @@ class JSONRPCWebsocket {
     outstandingRequests[requestId] = (RPCResponse response) {
       completer.complete(response.result);
       outstandingRequests.remove(requestId);
+      print(response.result);
     };
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
     rpcSocket.add(payload);
+    print(payload);
 
     return completer.future;
   }
