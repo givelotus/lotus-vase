@@ -24,6 +24,11 @@ void main() {
     expect(takeNumbers(numberStack).isNaN, true);
   });
 
+  test('takeNumbers should NaN on multiple decimals', () async {
+    final numberStack = <String>['0', '.', '.', '2'].reversed.toList();
+    expect(takeNumbers(numberStack).isNaN, true);
+  });
+
   test('computes multiplication', () async {
     final numberStack = <String>['2', '✖️', '7'];
     evaluateExpression(numberStack);
