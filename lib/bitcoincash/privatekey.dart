@@ -96,6 +96,8 @@ class BCHPrivateKey {
   /// [wifKey] - The private key in WIF-encoded format. See [this bitcoin wiki entry](https:// en.bitcoin.it/wiki/Wallet_import_format)
   ///
   BCHPrivateKey.fromWIF(String wifKey) {
+    print(wifKey);
+
     if (wifKey.length != 51 && wifKey.length != 52) {
       throw InvalidKeyException(
           'Valid keys are either 51 or 52 bytes in length');

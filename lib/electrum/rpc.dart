@@ -115,6 +115,7 @@ class JSONRPCWebsocket {
   }
 
   Future<void> connect(Uri address) async {
+    print(address);
     final r = Random();
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 
@@ -128,15 +129,13 @@ class JSONRPCWebsocket {
         .add('sec-websocket-version', '13'); // insert the correct version here
     request.headers.add('sec-websocket-key', key);
 
-    // dev.debugger();
-
     final response = await request.close();
-    print(response);
+
+    print('response $response');
     // todo check the status code, key etc
     final socket = await response.detachSocket();
-    print(socket);
 
-    // dev.debugger();
+    print('socket $socket');
 
     rpcSocket = WebSocket.fromUpgradedSocket(
       socket,
@@ -145,15 +144,14 @@ class JSONRPCWebsocket {
 
     rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
+      print(jsonResult);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
-      print(response);
+      print('listen response $response');
       if (response.id == null) {
         final notification = RPCRequest.fromJson(jsonResult);
-        print(notification);
         return _handleNotification(notification);
       }
-
       return _handleResponse(response);
     }, onError: (Object error) {
       if (disconnectHandler != null) {
@@ -175,14 +173,15 @@ class JSONRPCWebsocket {
   Future<dynamic> call(String method, Object params) {
     final requestId = currentRequestId++;
     final completer = Completer();
+    print(requestId);
 
     outstandingRequests[requestId] = (RPCResponse response) {
       if (response.result != null) {
         completer.complete(response.result);
-        print(response.result);
+        print('call response.result ${response.result}');
       } else {
-        completer.completeError(response.error);
         print(response.error);
+        completer.completeError(response.error);
       }
 
       outstandingRequests.remove(requestId);
@@ -206,13 +205,13 @@ class JSONRPCWebsocket {
     outstandingRequests[requestId] = (RPCResponse response) {
       completer.complete(response.result);
       outstandingRequests.remove(requestId);
-      print(response.result);
+      print('subscribe response.result ${response.result}');
     };
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
     rpcSocket.add(payload);
-    print(payload);
+    print('payload $payload');
 
     return completer.future;
   }
