@@ -128,7 +128,7 @@ class JSONRPCWebsocket {
         .add('sec-websocket-version', '13'); // insert the correct version here
     request.headers.add('sec-websocket-key', key);
 
-    dev.debugger();
+    // dev.debugger();
 
     final response = await request.close();
     print(response);
@@ -136,7 +136,7 @@ class JSONRPCWebsocket {
     final socket = await response.detachSocket();
     print(socket);
 
-    dev.debugger();
+    // dev.debugger();
 
     rpcSocket = WebSocket.fromUpgradedSocket(
       socket,
