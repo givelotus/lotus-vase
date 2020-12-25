@@ -12,6 +12,7 @@ const electrumUrls = [
 const inputSize = 148;
 const outputSize = 34;
 const defaultFeePerByte = 10;
+const defaultNumberOfChildKeys = 20;
 
 // UI constants
 const stdElevation =
