@@ -54,22 +54,11 @@ Future showError(BuildContext context, String errMessage) {
 }
 
 class SendInfo extends StatelessWidget {
-  final ValueNotifier<bool> visible;
-  final Wallet wallet;
   final ValueNotifier<CalculatorData> keyboardNotifier;
 
-  SendInfo({this.visible, @required this.wallet})
+  SendInfo({Key key})
       : keyboardNotifier = ValueNotifier<CalculatorData>(
             CalculatorData(amount: 0, function: ''));
-
-  void sendTransaction(BuildContext context, String address, int amount) {
-    wallet
-        .sendTransaction(Address(address), BigInt.from(amount))
-        .then((transaction) => showReceipt(context, transaction))
-        .catchError((error) => showError(context, error.toString()));
-
-    visible.value = false;
-  }
 
   @override
   Widget build(context) {
@@ -80,6 +69,15 @@ class SendInfo extends StatelessWidget {
     keyboardNotifier.addListener(() {
       sendModel.sendAmount = keyboardNotifier.value.amount;
     });
+
+    void sendTransaction(BuildContext context, String address, int amount) {
+      walletModel.wallet
+          .sendTransaction(Address(address), BigInt.from(amount))
+          .then((transaction) => showReceipt(context, transaction))
+          .catchError((error) => showError(context, error.toString()));
+
+      Navigator.pop(context);
+    }
 
     final pasteAddress = () async {
       // TODO: Dedupe this with QR Scanning.
@@ -116,9 +114,9 @@ class SendInfo extends StatelessWidget {
         leading: Consumer<SendModel>(
           builder: (context, viewModel, child) => TextButton(
             onPressed: () {
-              visible.value = false;
               viewModel.sendAmount = null;
               viewModel.sendToAddress = null;
+              Navigator.pop(context);
             },
             child: Text('Cancel'),
           ),

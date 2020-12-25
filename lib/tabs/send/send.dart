@@ -23,13 +23,10 @@ class SendTab extends StatefulWidget {
 class _SendTabState extends State<SendTab> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  ValueNotifier<bool> showSendInfoScreen;
-
   _SendTabState() : super();
 
   @override
   void initState() {
-    showSendInfoScreen = ValueNotifier<bool>(false);
     super.initState();
   }
 
@@ -67,6 +64,12 @@ class _SendTabState extends State<SendTab> {
             viewModel.sendAmount = amount.isNaN
                 ? viewModel.sendAmount
                 : (amount * 100000000).truncate();
+
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SendInfo(),
+                ));
           } catch (err) {
             showError(context, 'Unable to parse QR code');
             // Invalid address
@@ -76,105 +79,102 @@ class _SendTabState extends State<SendTab> {
       overlay: overlay,
     );
 
-    return ValueListenableBuilder(
-        valueListenable: showSendInfoScreen,
-        builder: (context, shouldShowSendInfoScreen, child) => Scaffold(
-            body: shouldShowSendInfoScreen
-                ? SendInfo(
-                    visible: showSendInfoScreen, wallet: walletModel.wallet)
-                : Scaffold(
-                    body: Stack(alignment: Alignment.center, children: [
-                      Container(
-                          child: qrWidget,
-                          width: screenDimension.width,
-                          height: screenDimension.height),
-                      Positioned(
-                        bottom: 5,
-                        child: IconButton(
-                          icon: Icon(Icons.send),
-                          iconSize: 95.00,
-                          color: Colors.white,
-                          onPressed: () => showSendInfoScreen.value = true,
-                        ),
-                      ),
-                      Positioned(
-                        top: screenDimension.height * .1,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15.0, vertical: 5.0),
-                            color: Colors.grey[400].withOpacity(0.6),
-                            child: Row(
-                              children: [
-                                ValueListenableBuilder(
-                                    valueListenable: balanceNotifier,
-                                    builder: (context, balance, child) {
-                                      if (balance == null) {
-                                        return Text(
-                                          'Loading...',
-                                          style: TextStyle(
-                                              color: Colors.red.withOpacity(.8),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13),
-                                        );
-                                      }
-                                      return Text.rich(TextSpan(
-                                        text: '${balance}',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 17,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: ' sats',
-                                            style: TextStyle(
-                                                color: Colors.white
-                                                    .withOpacity(.8),
-                                                fontSize: 15),
-                                          ),
-                                        ],
-                                      ));
-                                    }),
-                              ],
-                            ),
+    return Scaffold(
+      body: Stack(alignment: Alignment.center, children: [
+        Container(
+            child: qrWidget,
+            width: screenDimension.width,
+            height: screenDimension.height),
+        Positioned(
+          bottom: 5,
+          child: IconButton(
+              icon: Icon(Icons.send),
+              iconSize: 95.00,
+              color: Colors.white,
+              onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SendInfo(),
+                    ),
+                  )),
+        ),
+        Positioned(
+          top: screenDimension.height * .1,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+              color: Colors.grey[400].withOpacity(0.6),
+              child: Row(
+                children: [
+                  ValueListenableBuilder(
+                      valueListenable: balanceNotifier,
+                      builder: (context, balance, child) {
+                        if (balance == null) {
+                          return Text(
+                            'Loading...',
+                            style: TextStyle(
+                                color: Colors.red.withOpacity(.8),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          );
+                        }
+                        return Text.rich(TextSpan(
+                          text: '${balance}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 35.0,
-                        left: 20.0,
-                        child: IconButton(
-                          icon: Icon(Icons.settings),
-                          color: Colors.white,
-                          iconSize: 50.00,
-                          onPressed: () {
-                            widget.controller.animateToPage(
-                              0,
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 35.0,
-                        right: 20.0,
-                        child: IconButton(
-                          icon: Icon(Icons.save_alt),
-                          color: Colors.white,
-                          iconSize: 50.00,
-                          onPressed: () {
-                            widget.controller.animateToPage(
-                              2,
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
-                      ),
-                    ]),
-                  )));
+                          children: [
+                            TextSpan(
+                              text: ' sats',
+                              style: TextStyle(
+                                  color: Colors.white.withOpacity(.8),
+                                  fontSize: 15),
+                            ),
+                          ],
+                        ));
+                      }),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 35.0,
+          left: 20.0,
+          child: IconButton(
+            icon: Icon(Icons.settings),
+            color: Colors.white,
+            iconSize: 50.00,
+            onPressed: () {
+              widget.controller.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+              );
+            },
+          ),
+        ),
+        Positioned(
+          bottom: 35.0,
+          right: 20.0,
+          child: IconButton(
+            icon: Icon(Icons.save_alt),
+            color: Colors.white,
+            iconSize: 50.00,
+            onPressed: () {
+              widget.controller.animateToPage(
+                2,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOut,
+              );
+            },
+          ),
+        ),
+      ]),
+    );
   }
 }
