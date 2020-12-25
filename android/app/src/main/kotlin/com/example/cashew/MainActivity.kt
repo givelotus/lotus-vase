@@ -1,4 +1,4 @@
-package com.example.cashew
+package org.cashweb.cashew
 
 import io.flutter.embedding.android.FlutterActivity
 
