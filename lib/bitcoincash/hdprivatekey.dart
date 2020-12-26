@@ -165,13 +165,7 @@ class HDPrivateKey extends CKDSerializer {
   }
 
   List<int> _calculateFingerprint() {
-    var normalisedKey = keyBuffer.map((elem) => elem.toUnsigned(8));
-    var privKey =
-        BCHPrivateKey.fromHex(HEX.encode(normalisedKey.toList()), networkType);
-    var pubKey = BCHPublicKey.fromPrivateKey(privKey);
-    var encoded = pubKey.getEncoded(true);
-
-    return hash160(HEX.decode(encoded).toList()).sublist(0, 4);
+    return hash160(privateKey.publicKey.point.getEncoded(true)).sublist(0, 4);
   }
 
   HDPrivateKey _deriveChildPrivateKey(
