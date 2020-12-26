@@ -114,8 +114,8 @@ class HDPrivateKey extends CKDSerializer {
   }
 
   /// Derives a child private key specified by the index
-  HDPrivateKey deriveChildNumber(int index) {
-    var elem = ChildNumber(index, false);
+  HDPrivateKey deriveChildNumber(int index, {bool hardened = false}) {
+    var elem = ChildNumber(index, hardened);
     var fingerprint = _calculateFingerprint();
     return _deriveChildPrivateKey(nodeDepth + 1, Uint8List.fromList(keyBuffer),
         elem, fingerprint, chainCode, publicKey);
