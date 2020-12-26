@@ -49,6 +49,22 @@ class BCHPublicKey {
     _point = finalPoint;
   }
 
+  /// Creates a  public key from it's corresponding ECDSA private key bigint.
+  ///
+  /// NOTE: public key *Q* is computed as `Q = d * G` where *d* is the private key
+  /// and *G* is the elliptic curve Generator.
+  ///
+  /// [privkey] - The private key who's *d*-value we will use.
+  BCHPublicKey.fromPoint(ECPoint pubkeyPoint) {
+    // create a  point taking into account compression request/indicator of parent private key
+    var finalPoint = _domainParams.curve.createPoint(
+        pubkeyPoint.x.toBigInteger(), pubkeyPoint.y.toBigInteger(), true);
+
+    _checkIfOnCurve(finalPoint); // a bit paranoid
+
+    _point = finalPoint;
+  }
+
   /// Creates a public key instance from the ECDSA public key's `x-coordinate`
   ///
   /// ECDSA has some cool properties. Because we are dealing with an elliptic curve in a plane,
@@ -178,14 +194,14 @@ class BCHPublicKey {
 
   /// Convenience method that constructs an [Address] instance from this
   /// public key.
-  Address toAddress(NetworkType nat) {
+  Address toAddress({NetworkType networkType = NetworkType.MAIN}) {
     // generate compressed addresses by default
     List<int> buffer = _point.getEncoded(_point.isCompressed);
 
     if (_point.isCompressed) {
-      return Address.fromCompressedPubKey(buffer, nat);
+      return Address.fromCompressedPubKey(buffer, networkType);
     } else {
-      return Address.fromHex(HEX.encode(buffer), nat);
+      return Address.fromHex(HEX.encode(buffer), networkType);
     }
   }
 
