@@ -53,7 +53,7 @@ abstract class _P2PKHLockBuilder implements LockingScriptBuilder {
 
   _P2PKHLockBuilder.fromPublicKey(BCHPublicKey publicKey,
       {NetworkType networkType = NetworkType.MAIN}) {
-    address = publicKey.toAddress(networkType);
+    address = publicKey.toAddress(networkType: networkType);
     pubkeyHash = HEX.decode(address.pubkeyHash160);
   }
 
