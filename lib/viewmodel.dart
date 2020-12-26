@@ -31,13 +31,13 @@ class WalletModel with ChangeNotifier {
   // Internally use a ValueNotifier here, as we don't want the entire wallet
   // to refresh when this field is updated.
   // We should probably introduce a secondary model of some sort.
-  final ValueNotifier<int> balance;
+  final ValueNotifier<WalletBalance> balance;
   final FlutterSecureStorage _storage;
 
   // TODO: Storage should be injected
   WalletModel()
       : _storage = FlutterSecureStorage(),
-        balance = ValueNotifier<int>(null) {
+        balance = ValueNotifier<WalletBalance>(WalletBalance()) {
     initializeModel(); // Run in background.
   }
 

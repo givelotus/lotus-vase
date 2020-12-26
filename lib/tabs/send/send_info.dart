@@ -130,8 +130,10 @@ class SendInfo extends StatelessWidget {
             children: [
               Expanded(child:
                   Consumer<SendModel>(builder: (context, viewModel, child) {
-                final errors = canSend(viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress, walletModel.balance.value ?? 0);
+                final errors = canSend(
+                    viewModel.sendAmount ?? 0,
+                    viewModel.sendToAddress,
+                    walletModel.balance.value.balance ?? 0);
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -176,8 +178,10 @@ class SendInfo extends StatelessWidget {
                                     keyboardNotifier.value.function ?? '')))
               ]),
               Consumer<SendModel>(builder: (context, viewModel, child) {
-                final errors = canSend(viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress, walletModel.balance.value ?? 0);
+                final errors = canSend(
+                    viewModel.sendAmount ?? 0,
+                    viewModel.sendToAddress,
+                    walletModel.balance.value.balance ?? 0);
                 return Row(children: [
                   Expanded(
                       child: ElevatedButton(
@@ -245,7 +249,7 @@ class AddressDisplay extends StatelessWidget {
 }
 
 class BalanceDisplay extends StatelessWidget {
-  final ValueNotifier<int> balanceNotifier;
+  final ValueNotifier<WalletBalance> balanceNotifier;
   BalanceDisplay({@required this.balanceNotifier});
 
   @override
@@ -261,20 +265,30 @@ class BalanceDisplay extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // TODO: Dedupe this widget.
               ValueListenableBuilder(
                   valueListenable: balanceNotifier,
                   builder: (context, balance, child) {
-                    if (balance == null) {
+                    if (balance.error != null) {
+                      return Text(
+                        balance.error.message,
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13),
+                      );
+                    }
+                    if (balance.balance == null) {
                       return Text(
                         'Loading...',
                         style: TextStyle(
-                            color: Colors.red.withOpacity(.8),
+                            color: Colors.grey,
                             fontWeight: FontWeight.bold,
                             fontSize: 13),
                       );
                     }
                     return Text.rich(TextSpan(
-                      text: 'Balance: ${balance}',
+                      text: '${balance.balance}',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
