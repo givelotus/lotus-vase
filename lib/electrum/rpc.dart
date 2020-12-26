@@ -89,7 +89,7 @@ class GetBalanceResponse {
 typedef DisconnectHandler = void Function(dynamic err);
 
 class JSONRPCWebsocket {
-  WebSocket rpcSocket;
+  WebSocket _rpcSocket;
   Map<int, ResponseHandler> outstandingRequests = {};
   Map<String, SubscriptionHandler> subscriptions = {};
   var currentRequestId = 0;
@@ -113,11 +113,12 @@ class JSONRPCWebsocket {
     handler(notification.params);
   }
 
-  Future<void> connect(Uri address) async {
+  void connect(Uri address) async {
     final r = Random();
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 
     final client = HttpClient();
+    client.connectionTimeout = const Duration(milliseconds: 1000);
     client.badCertificateCallback =
         (X509Certificate cert, String host, int port) => true;
     final request = await client.getUrl(address);
@@ -131,12 +132,12 @@ class JSONRPCWebsocket {
     // todo check the status code, key etc
     final socket = await response.detachSocket();
 
-    rpcSocket = WebSocket.fromUpgradedSocket(
+    _rpcSocket = WebSocket.fromUpgradedSocket(
       socket,
       serverSide: false,
     );
 
-    rpcSocket.listen((dynamic data) {
+    _rpcSocket.listen((dynamic data) {
       Map<String, dynamic> jsonResult = jsonDecode(data);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
@@ -149,6 +150,11 @@ class JSONRPCWebsocket {
       if (disconnectHandler != null) {
         disconnectHandler(error);
       }
+      for (final requestHandler in outstandingRequests.entries) {
+        requestHandler.value(RPCResponse(null,
+            error: Error(
+                0, 'Disconnected from electrum while awaiting response')));
+      }
     }, onDone: () {
       if (disconnectHandler != null) {
         disconnectHandler(null);
@@ -159,7 +165,14 @@ class JSONRPCWebsocket {
                 0, 'Disconnected from electrum while awaiting response')));
       }
       // Nothing to do?
-    }, cancelOnError: false);
+    }, cancelOnError: true);
+  }
+
+  WebSocket get rpcSocket {
+    if (_rpcSocket == null) {
+      throw Exception('Socket disconnected prematurely');
+    }
+    return _rpcSocket;
   }
 
   Future<dynamic> call(String method, Object params) {
@@ -203,6 +216,6 @@ class JSONRPCWebsocket {
   }
 
   void dispose() {
-    rpcSocket.close();
+    _rpcSocket.close();
   }
 }
