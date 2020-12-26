@@ -246,19 +246,12 @@ class HDPrivateKey extends CKDSerializer {
   /// The generic APIs require [BCHPrivateKey]s, with [HDPrivateKey]
   /// only being used as a means to expose BIP32 wallet functionality
   BCHPrivateKey get privateKey {
-    var pk = keyBuffer;
-
-    var normalisedPK = pk.map((elem) => elem.toUnsigned(8)).toList();
-    return BCHPrivateKey.fromHex(HEX.encode(normalisedPK), networkType);
+    return BCHPrivateKey.fromBigInt(decodeBigInt(keyBuffer),
+        networkType: networkType);
   }
 
   /// Returns the public key associated with this private key as a [BCHPublicKey]
   BCHPublicKey get publicKey {
-    var buffer = keyBuffer;
-
-    var privateKey = BCHPrivateKey.fromHex(
-        HEX.encode(Uint8List.fromList(buffer)), networkType);
-
     return privateKey.publicKey;
   }
 }
