@@ -11,6 +11,7 @@ import '../../wallet/wallet.dart';
 import '../../viewmodel.dart';
 import '../../bitcoincash/address.dart';
 import '../../bitcoincash/transaction/transaction.dart';
+import '../component/payment_amount_display.dart';
 
 List<String> canSend(int amount, String address, int balance) {
   final errors = <String>[];
@@ -239,36 +240,6 @@ class AddressDisplay extends StatelessWidget {
                       )),
                 ],
               )))
-    ]);
-  }
-}
-
-class PaymentAmountDisplay extends StatelessWidget {
-  final String amount;
-  final String function;
-  PaymentAmountDisplay({Key key, this.amount, this.function})
-      : super(
-          key: key,
-        );
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      Row(children: [
-        Expanded(
-            child: Text(
-          '${function}',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ))
-      ]),
-      Row(children: [
-        Expanded(
-            child: Text(
-          '= ${amount} sats',
-          textAlign: TextAlign.right,
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ))
-      ]),
     ]);
   }
 }
