@@ -19,7 +19,8 @@ class ReceiveTab extends StatelessWidget {
     final keys = viewModel.wallet.keys.keys.sublist(0);
     keys.shuffle();
 
-    final keyInfo = keys.firstWhere((keyInfo) => keyInfo.isChange == false);
+    final keyInfo = keys.firstWhere((keyInfo) =>
+        keyInfo.isChange == false && keyInfo.isDeprecated == false);
     final strAddress = keyInfo.address.toCashAddress();
     final _controller = TextEditingController(text: strAddress);
 
