@@ -53,12 +53,28 @@ class _MainPageState extends State<MainPage> {
     if (viewModel.initialized) {
       viewModel.writeToDisk();
     }
+    final ScopePopper = (widget) => WillPopScope(
+        onWillPop: () async {
+          print(pagerController.page.toString());
+          if (pagerController.page == 1.0) {
+            return true;
+          }
+          return pagerController
+              .animateToPage(1,
+                  duration: Duration(milliseconds: 400),
+                  curve: Curves.easeInOut)
+              .then((_) async {
+            return false;
+          });
+        },
+        child: widget);
+
     final pageView = PageView(
       controller: pagerController,
       children: [
-        SettingsTab(),
-        SendTab(controller: pagerController),
-        ReceiveTab(),
+        ScopePopper(SettingsTab()),
+        ScopePopper(SendTab(controller: pagerController)),
+        ScopePopper(ReceiveTab()),
       ],
     );
 
