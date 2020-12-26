@@ -99,12 +99,6 @@ class HDPrivateKey extends CKDSerializer {
     versionBytes = getVersionBytes();
   }
 
-  /// Returns the public key associated with this private key
-  HDPublicKey get hdPublicKey {
-    var hdPublicKey = HDPublicKey.fromXpub(xpubkey);
-    return hdPublicKey;
-  }
-
   /// Returns the serialized `xpriv`-encoded private key as a string.
   ///
   /// This method is an alias for the [xprivkey] property
@@ -194,17 +188,14 @@ class HDPrivateKey extends CKDSerializer {
     return dk;
   }
 
-  HDPublicKey _generatePubKey() {
-    var hdPublicKey = HDPublicKey(publicKey, networkType, nodeDepth,
-        parentFingerprint, childNumber, chainCode, versionBytes);
-    return hdPublicKey;
+  HDPublicKey get hdPublicKey {
+    return HDPublicKey(publicKey, networkType, nodeDepth, parentFingerprint,
+        childNumber, chainCode, versionBytes);
   }
 
   /// Returns the serialized `xpub`-encoded public key associated with this private key as a string
   String get xpubkey {
-    var pubkey = _generatePubKey();
-
-    return pubkey.serialize();
+    return hdPublicKey.serialize();
   }
 
   /// Returns the serialized representation of the extended private key.
