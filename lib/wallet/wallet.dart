@@ -70,6 +70,11 @@ class Wallet {
   /// Start UTXO listeners.
   Future<void> startUtxoListeners(ElectrumClient client) async {
     for (final keyInfo in keys.keys) {
+      if (keyInfo.isDeprecated == true) {
+        // We don't care about deprecated keys being listened to. Only load them
+        // on startup. Listening to lots of keys is slow.
+        continue;
+      }
       final hexScriptHash = HEX.encode(keyInfo.scriptHash);
 
       await client.blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
@@ -141,8 +146,8 @@ class Wallet {
       {List<BCHPrivateKey> signingKeys}) {
     final shuffledKeys = keys.keys.sublist(0);
     shuffledKeys.shuffle();
-    final changeKeyInfo =
-        shuffledKeys.firstWhere((keyInfo) => keyInfo.isChange == true);
+    final changeKeyInfo = shuffledKeys.firstWhere(
+        (keyInfo) => keyInfo.isChange == true && keyInfo.isDeprecated == false);
 
     // NOTE: 35 is the number of bytes required for a standard output
     final changeAmount = transaction.inputAmount -
