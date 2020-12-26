@@ -76,28 +76,26 @@ class HDPrivateKey extends CKDSerializer {
     var I = HDUtils.hmacSha512WithKey(
         utf8.encode('Bitcoin seed'), HEX.decode(seed));
 
-    var masterKey = I.sublist(0, 32);
+    // Ensure the bytes are interpreted as positive by adding a padding.
+    var masterKey = [0];
+    masterKey.addAll(I.sublist(0, 32));
     var masterChainCode = I.sublist(32, 64);
 
-    if (decodeBigInt(masterKey) == BigInt.zero ||
-        decodeBigInt(masterKey) > _domainParams.n) {
+    final masterKeyBigInt = decodeBigInt(masterKey);
+    if (masterKeyBigInt == BigInt.zero || masterKeyBigInt > _domainParams.n) {
       throw DerivationException('Invalid master key was generated.');
     }
-
-    var paddedKey = Uint8List(33);
-    paddedKey[0] = 0;
-    paddedKey.setRange(1, 33, Uint8List.fromList(masterKey).toList());
 
     var dk = HDPrivateKey._(NetworkType.MAIN, KeyType.PRIVATE);
     dk = _copyParams(dk);
 
     nodeDepth = 0;
-    parentFingerprint = List<int>(4)..fillRange(0, 4, 0);
-    childNumber = List<int>(4)..fillRange(0, 4, 0);
+    parentFingerprint = [0, 0, 0, 0];
+    childNumber = [0, 0, 0, 0];
     chainCode = masterChainCode;
     this.networkType = networkType;
     keyType = KeyType.PRIVATE;
-    keyBuffer = paddedKey;
+    keyBuffer = masterKey;
     versionBytes = getVersionBytes();
   }
 
