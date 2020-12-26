@@ -45,6 +45,7 @@ dependencies:
   provider: ^4.0.0
   flutter_secure_storage: 3.3.5
   pool: ^1.4.0
+  sentry_flutter: ^4.0.1
 
 dev_dependencies:
   flutter_test:
