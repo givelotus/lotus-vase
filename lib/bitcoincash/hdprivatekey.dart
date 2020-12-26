@@ -158,8 +158,7 @@ class HDPrivateKey extends CKDSerializer {
     var seriList = Uint8List(4);
     seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
 
-    var paddedKey = Uint8List(33);
-    paddedKey.setRange(33 - keyBuffer.length, 33, keyBuffer);
+    var paddedKey = Uint8List.fromList(keyBuffer);
 
     var dataConcat = cn.isHardened()
         ? paddedKey + seriList
