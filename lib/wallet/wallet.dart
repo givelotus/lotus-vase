@@ -78,7 +78,6 @@ class Wallet {
 
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos(ElectrumClient client) async {
-    var keyIndex = 0;
     for (final keyInfo in keys.keys) {
       final hexScriptHash = HEX.encode(keyInfo.scriptHash);
 
@@ -90,11 +89,10 @@ class Wallet {
         final outpoint =
             Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
 
-        final spendable = Utxo(outpoint, keyIndex);
+        final spendable = Utxo(outpoint, keyInfo.keyIndex);
 
         _vault.addUtxo(spendable);
       }
-      keyIndex += 1;
     }
   }
 

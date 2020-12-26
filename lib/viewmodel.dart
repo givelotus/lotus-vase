@@ -5,10 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:cashew/wallet/wallet.dart';
 import 'package:cashew/wallet/keys.dart';
-import 'package:cashew/wallet/storage/keys.dart';
 import 'package:cashew/constants.dart';
-
-import 'package:cashew/bitcoincash/networks.dart';
 
 import 'electrum/client.dart';
 
@@ -20,8 +17,7 @@ const STORAGE_SEED_KEY = 'seed';
 const STORAGE_XPUB_KEY = 'rootKey';
 
 /// Generate a fresh wallet.
-Future<Wallet> generateNewWallet(String seed,
-    {network = NetworkType.TEST}) async {
+Future<Wallet> generateNewWallet(String seed, {network = network}) async {
   final keys = await Keys.construct(seed);
   final electrumFactory = ElectrumFactory(electrumUrls);
 
@@ -133,13 +129,6 @@ class WalletModel with ChangeNotifier {
   Future<void> writeKeysToDisk(List<KeyInfo> keys) async {
     // Write private keys
     try {
-      final keyWrites = keys.asMap().entries.map((entry) {
-        final index = entry.key;
-        final keyInfo = entry.value;
-        final storedKey = StoredKey.fromKeyInfo(keyInfo);
-        return storedKey.writeToDisk(index);
-      });
-      await Future.wait(keyWrites);
       // Persist seed
       await _storage.write(
         key: STORAGE_SEED_KEY,
@@ -152,9 +141,7 @@ class WalletModel with ChangeNotifier {
         value: wallet.keys.rootKey.toString(),
       );
 
-      // Write metadata
-      final metadata = KeyStorageMetadata(keys.length);
-      await metadata.writeToDisk();
+      // TODO: Write metadata
     } catch (err) {
       print(err);
       rethrow;
@@ -162,26 +149,25 @@ class WalletModel with ChangeNotifier {
   }
 
   Future<Keys> readKeysFromDisk() async {
-    // Read metadata
-    final metadata = await KeyStorageMetadata.readFromDisk();
-    final keyCount = metadata.keyCount;
-
-    // Read private keys
-    final storedKeyFutures = List<Future<StoredKey>>.generate(
-        keyCount, (index) => StoredKey.readFromDisk(index));
-    final storedKeys = await Future.wait(storedKeyFutures);
+    // TODO: Read metadata
 
     // Read seed
     _seed = await _storage.read(key: STORAGE_SEED_KEY);
 
     // Read root key to avoid regenerating from seed
-    final xpubHex = await _storage.read(key: STORAGE_XPUB_KEY);
-    final rootKey = HDPrivateKey.fromXpriv(xpubHex);
+    final xprivHex = await _storage.read(key: STORAGE_XPUB_KEY);
+    final rootKey = HDPrivateKey.fromXpriv(xprivHex);
 
     // Convert to key info
-    final keyInfo =
-        storedKeys.map((storedKey) => storedKey.toKeyInfo(network)).toList();
+    final childKeys = constructChildKeys(
+      rootKey: rootKey,
+      network: network,
+      // TODO: maybe this should be configurable and saved/restored
+      // However, it would be *nice* if we had a dynamic way to calculate
+      // more keys when loading the balance.
+      childKeyCount: defaultNumberOfChildKeys,
+    );
 
-    return Keys(seed, rootKey, keyInfo, network: network);
+    return Keys(seed, rootKey, childKeys, network: network);
   }
 }

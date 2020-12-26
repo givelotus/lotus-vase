@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:collection/collection.dart';
+import 'package:pointycastle/digests/sha256.dart';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
-import 'package:pointycastle/digests/sha256.dart';
+import 'package:cashew/constants.dart' as constants;
 
 Uint8List calculateScriptHash(Address address) {
   final p2pkhBuilder = P2PKHLockBuilder(address);
@@ -15,14 +16,12 @@ Uint8List calculateScriptHash(Address address) {
 
 class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.sendPort,
-      {this.network = NetworkType.TEST,
-      this.changeKeyCount = 10,
-      this.externalKeyCount = 10});
+      {this.network = constants.network,
+      this.childKeyCount = constants.defaultNumberOfChildKeys});
   String seed;
   SendPort sendPort;
   NetworkType network;
-  int changeKeyCount;
-  int externalKeyCount;
+  int childKeyCount;
 }
 
 class KeyInfo {
@@ -36,17 +35,16 @@ class KeyInfo {
       {this.key,
       this.isChange = false,
       this.keyIndex,
-      NetworkType network = NetworkType.TEST}) {
+      NetworkType network = constants.network}) {
     address = key.toAddress(networkType: network);
     scriptHash = calculateScriptHash(address);
   }
 }
 
-void _constructKeys(KeyIsolateInput input) {
-  final seedHex = Mnemonic().toSeedHex(input.seed);
-  //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
-  final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
-
+List<KeyInfo> constructChildKeys(
+    {HDPrivateKey rootKey,
+    int childKeyCount,
+    NetworkType network = constants.network}) {
   // TODO: Do this with child numbers
   final parentKey = rootKey.deriveChildKey("m/44'/145'");
 
@@ -54,28 +52,42 @@ void _constructKeys(KeyIsolateInput input) {
   final parentExternalKey = parentKey.deriveChildNumber(0);
 
   final externalKeys = List<KeyInfo>.generate(
-      input.externalKeyCount,
+      childKeyCount,
       (index) => KeyInfo(
           keyIndex: index,
           key: parentExternalKey.deriveChildNumber(index).privateKey,
-          network: input.network));
+          network: network));
 
   final parentChangeKey = parentKey.deriveChildNumber(1);
   final changeKeys = List<KeyInfo>.generate(
-      input.externalKeyCount,
+      childKeyCount,
       (index) => KeyInfo(
             // TODO: Remove this keyIndex crap. it makes it very hard to handle
             // finding various other values because we have this unnecessary
             // surrogate key
-            keyIndex: index + input.externalKeyCount,
+            keyIndex: index + childKeyCount,
             key: parentChangeKey.deriveChildNumber(index).privateKey,
             isChange: true,
-            network: input.network,
+            network: network,
           ));
 
-  input.sendPort.send(Keys(
-      input.seed, rootKey, externalKeys.followedBy(changeKeys).toList(),
-      network: input.network));
+  return externalKeys.followedBy(changeKeys).toList();
+}
+
+// Construct a brand new set of keys from a seed over a worker. Processing a
+// seed to an HDPrivateKey is fairly time consuming, thus it is done this way.cas
+void _constructKeys(KeyIsolateInput input) {
+  final seedHex = Mnemonic().toSeedHex(input.seed);
+  //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
+  final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
+
+  final childKeys = constructChildKeys(
+      rootKey: rootKey,
+      childKeyCount: input.childKeyCount,
+      network: input.network);
+
+  input.sendPort
+      .send(Keys(input.seed, rootKey, childKeys, network: input.network));
 }
 
 class Keys {
@@ -84,7 +96,7 @@ class Keys {
   String seed;
   List<KeyInfo> keys;
 
-  Keys(this.seed, this.rootKey, this.keys, {this.network = NetworkType.TEST});
+  Keys(this.seed, this.rootKey, this.keys, {this.network = constants.network});
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
