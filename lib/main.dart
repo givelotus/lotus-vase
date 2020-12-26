@@ -8,11 +8,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_) => WalletModel()),
-    ChangeNotifierProvider(create: (_) => SendModel()),
-  ], child: CashewApp()));
+import 'package:flutter/widgets.dart';
+import 'package:sentry_flutter/sentry_flutter.dart'; // initialize sentry
+import 'package:sentry/sentry.dart'; // contains test exception
+
+Future<void> main() async {
+  await SentryFlutter.init((options) {
+    options.dsn =
+        'https://7588026571644baaadd4a711f9bb8762@o496612.ingest.sentry.io/5571577';
+  },
+      appRunner: () => runApp(MultiProvider(providers: [
+            ChangeNotifierProvider(create: (_) => WalletModel()),
+            ChangeNotifierProvider(create: (_) => SendModel()),
+          ], child: CashewApp())));
 }
 
 class CashewApp extends StatelessWidget {
@@ -45,6 +53,16 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+
+    try {
+      throw Exception('whatever');
+    } catch (exception, stackTrace) {
+      // await
+      Sentry.captureException(
+        exception,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   @override
