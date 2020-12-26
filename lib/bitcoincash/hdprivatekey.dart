@@ -200,8 +200,8 @@ class HDPrivateKey extends CKDSerializer {
         _domainParams.n;
 
     var paddedKey = Uint8List(33);
-    paddedKey[0] = 0;
-    paddedKey.setRange(1, 33, encodeBigInt(childKey));
+    final encodedChildKey = encodeBigInt(childKey);
+    paddedKey.setRange(33 - encodedChildKey.length, 33, encodeBigInt(childKey));
 
     var dk = HDPrivateKey._(NetworkType.MAIN, KeyType.PRIVATE);
     dk = _copyParams(dk);
