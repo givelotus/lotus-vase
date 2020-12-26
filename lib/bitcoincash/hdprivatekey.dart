@@ -118,7 +118,7 @@ class HDPrivateKey extends CKDSerializer {
     var elem = ChildNumber(index, false);
     var fingerprint = _calculateFingerprint();
     return _deriveChildPrivateKey(nodeDepth + 1, Uint8List.fromList(keyBuffer),
-        elem, fingerprint, chainCode, publicKey.getEncoded(true));
+        elem, fingerprint, chainCode, publicKey);
   }
 
   /// Derives a child private key along the specified path
@@ -140,7 +140,7 @@ class HDPrivateKey extends CKDSerializer {
     var nd = 1;
     for (var elem in children) {
       lastChild = _deriveChildPrivateKey(nd, Uint8List.fromList(privkey), elem,
-          fingerprint, parentChainCode, pubkey.getEncoded(true));
+          fingerprint, parentChainCode, pubkey);
       fingerprint = lastChild._calculateFingerprint();
       parentChainCode = lastChild.chainCode;
       pubkey = lastChild.publicKey;
@@ -172,24 +172,22 @@ class HDPrivateKey extends CKDSerializer {
       ChildNumber cn,
       List<int> fingerprint,
       List<int> parentChainCode,
-      String pubkey) {
+      BCHPublicKey pubkey) {
     // TODO: This hoopjumping is irritating. What's the better way ?
-    var seriList = List<int>(4);
-    seriList.fillRange(0, 4, 0);
-    var seriHexVal = HEX.decode(cn.i.toRadixString(16).padLeft(8, '0'));
-    seriList.setRange(0, seriHexVal.length, seriHexVal);
+    var seriList = Uint8List(4);
+    seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
 
-    var dataConcat =
-        cn.isHardened() ? privateKey + seriList : HEX.decode(pubkey) + seriList;
+    var dataConcat = cn.isHardened()
+        ? privateKey + seriList
+        : pubkey.point.getEncoded(true) + seriList;
     var I = HDUtils.hmacSha512WithKey(
         Uint8List.fromList(parentChainCode), Uint8List.fromList(dataConcat));
 
     var lhs = I.sublist(0, 32);
     var chainCode = I.sublist(32, 64);
     var normalisedKey = Uint8List.fromList(privateKey);
-    var childKey = (BigInt.parse(HEX.encode(lhs), radix: 16) +
-            BigInt.parse(HEX.encode(normalisedKey), radix: 16)) %
-        _domainParams.n;
+    var childKey =
+        (decodeBigInt(lhs) + decodeBigInt(normalisedKey)) % _domainParams.n;
 
     var paddedKey = Uint8List(33);
     final encodedChildKey = encodeBigInt(childKey);
