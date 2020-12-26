@@ -223,7 +223,7 @@ class BCHPrivateKey {
   /// Convenience method that jumps through the hoops of generating and [Address] from this
   /// Private Key's corresponding [BCHPublicKey].
   Address toAddress({NetworkType networkType = NetworkType.MAIN}) {
-    return _BCHPublicKey.toAddress(networkType ?? _networkType);
+    return _BCHPublicKey.toAddress(networkType: networkType ?? _networkType);
   }
 
   Uint8List _seed() {

@@ -76,7 +76,8 @@ class Message {
 
     var recoveredPubKey = signature.publicKey;
 
-    var recoveredAddress = recoveredPubKey.toAddress(address.networkType);
+    var recoveredAddress =
+        recoveredPubKey.toAddress(networkType: address.networkType);
 
     // sanity check on address
     if (address.toBase58() != recoveredAddress.toBase58()) {
