@@ -11,7 +11,7 @@ import 'electrum/client.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 
-const CURRENT_SCHEMA_VERSION = '0.2.0';
+const CURRENT_SCHEMA_VERSION = '2';
 
 const STORAGE_SEED_KEY = 'seed';
 const STORAGE_XPUB_KEY = 'rootKey';
@@ -44,12 +44,14 @@ class WalletModel with ChangeNotifier {
   Future<void> initializeModel() async {
     final readSucceed = await readFromDisk();
     if (!readSucceed) {
-      // final testSeed =
-      //     'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal';
-      final mnemonicGenerator = Mnemonic();
-      final seed = mnemonicGenerator.generateMnemonic();
-      _seed = seed;
-
+      try {
+        // try to recover from read errors. Maybe seed is still valid.
+        _seed = await readSeedFromDisk();
+      } catch (err) {
+        final mnemonicGenerator = Mnemonic();
+        final seed = mnemonicGenerator.generateMnemonic();
+        _seed = seed;
+      }
       // Don't notify listeners. Initlaize will do that
       _wallet = await generateNewWallet(_seed);
     }
@@ -104,29 +106,34 @@ class WalletModel with ChangeNotifier {
 
     // Persist keys
     // TODO: keys.keys is silly naming
-    await writeKeysToDisk(wallet.keys.keys);
+    await writeKeysToDisk();
   }
 
   Future<bool> readFromDisk() async {
-    // Persist schema version
-    final schemaVersion = await readSchemaVersion();
-    if (schemaVersion != CURRENT_SCHEMA_VERSION) {
+    try {
+      // Persist schema version
+      final schemaVersion = await readSchemaVersion();
+      if (schemaVersion != CURRENT_SCHEMA_VERSION) {
+        return false;
+      }
+
+      // Persist keys
+      final keys = await readKeysFromDisk();
+
+      wallet = Wallet(
+        keys,
+        ElectrumFactory(electrumUrls),
+        network: network,
+      );
+    } catch (err) {
+      print(err);
       return false;
     }
-
-    // Persist keys
-    final keys = await readKeysFromDisk();
-
-    wallet = Wallet(
-      keys,
-      ElectrumFactory(electrumUrls),
-      network: network,
-    );
 
     return true;
   }
 
-  Future<void> writeKeysToDisk(List<KeyInfo> keys) async {
+  Future<void> writeKeysToDisk() async {
     // Write private keys
     try {
       // Persist seed
@@ -144,15 +151,21 @@ class WalletModel with ChangeNotifier {
       // TODO: Write metadata
     } catch (err) {
       print(err);
-      rethrow;
     }
+  }
+
+  Future<String> readSeedFromDisk() async {
+    // TODO: Read metadata
+
+    // Read seed
+    return _storage.read(key: STORAGE_SEED_KEY);
   }
 
   Future<Keys> readKeysFromDisk() async {
     // TODO: Read metadata
 
     // Read seed
-    _seed = await _storage.read(key: STORAGE_SEED_KEY);
+    _seed = await readSeedFromDisk();
 
     // Read root key to avoid regenerating from seed
     final xprivHex = await _storage.read(key: STORAGE_XPUB_KEY);
