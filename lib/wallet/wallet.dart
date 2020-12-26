@@ -1,4 +1,6 @@
 import 'dart:typed_data';
+import 'package:pool/pool.dart';
+import 'package:pedantic/pedantic.dart';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:cashew/wallet/vault.dart';
@@ -83,22 +85,25 @@ class Wallet {
 
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos(ElectrumClient client) async {
-    for (final keyInfo in keys.keys) {
+    final pool = Pool(5, timeout: Duration(seconds: 30));
+
+    final futures =
+        keys.keys.where((keyInfo) => !keyInfo.isDeprecated).map((keyInfo) {
       final hexScriptHash = HEX.encode(keyInfo.scriptHash);
+      return pool.withResource(() async {
+        final unspentUtxos =
+            await client.blockchainScripthashListunspent(hexScriptHash);
+        // TODO: Remove keyIndex concept. It is not particularly necessary;
+        for (final unspent in unspentUtxos) {
+          final outpoint =
+              Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+          final spendable = Utxo(outpoint, keyInfo.keyIndex);
 
-      final unspentUtxos =
-          await client.blockchainScripthashListunspent(hexScriptHash);
-
-      // TODO: Remove keyIndex concept. It is not particularly necessary;
-      for (final unspent in unspentUtxos) {
-        final outpoint =
-            Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
-
-        final spendable = Utxo(outpoint, keyInfo.keyIndex);
-
-        _vault.addUtxo(spendable);
-      }
-    }
+          _vault.addUtxo(spendable);
+        }
+      });
+    });
+    await Future.wait(futures);
   }
 
   /// Use locally stored UTXOs to refresh balance.
@@ -135,7 +140,9 @@ class Wallet {
     // TODO: we need a way to restart these when electrum connection dies
     // currently, we won't get any updates if we ever have to reconnect
     // again.
-    await startUtxoListeners(client);
+    unawaited(startUtxoListeners(client).then((_) {
+      print('Done watching addresses');
+    }));
   }
 
   int balanceSatoshis() {
