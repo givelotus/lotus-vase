@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/export.dart';
-import 'package:pointycastle/src/utils.dart' as utils;
 import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
 import 'package:pointycastle/pointycastle.dart';
@@ -119,8 +118,8 @@ class BCHSignature {
 
     _compressed = compressed;
     _i = i;
-    _r = utils.decodeBigInt(b2);
-    _s = utils.decodeBigInt(b3);
+    _r = asn1.ASN1Utils.decodeBigInt(b2);
+    _s = asn1.ASN1Utils.decodeBigInt(b3);
 
     _rHex = _r.toRadixString(16);
     _sHex = _s.toRadixString(16);
@@ -147,8 +146,8 @@ class BCHSignature {
     }
 
     var b1 = [val];
-    var b2 = utils.encodeBigInt(_r);
-    var b3 = utils.encodeBigInt(_s);
+    var b2 = asn1.ASN1Utils.encodeBigInt(_r);
+    var b3 = asn1.ASN1Utils.encodeBigInt(_s);
     return b1 + b2 + b3;
   }
 
@@ -383,7 +382,7 @@ class BCHSignature {
       throw SignatureException('i must be equal to 0, 1, 2, or 3');
     }
 
-    var e = utils.decodeBigInt(hashBuffer);
+    var e = asn1.ASN1Utils.decodeBigInt(hashBuffer);
     var r = this.r;
     var s = this.s;
 

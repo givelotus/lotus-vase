@@ -202,7 +202,7 @@ int getBufferOffset(int count) {
 }
 
 /// Decode a BigInt from bytes in big-endian encoding.
-BigInt decodeBigInt(List<int> bytes) {
+BigInt decodeUInt256(List<int> bytes) {
   var result = BigInt.from(0);
 
   for (var i = 0; i < bytes.length; i++) {
@@ -215,7 +215,7 @@ BigInt decodeBigInt(List<int> bytes) {
 var _byteMask = BigInt.from(0xff);
 
 /// Encode a BigInt into bytes using big-endian encoding.
-Uint8List encodeBigInt(BigInt number) {
+Uint8List encodeUInt256(BigInt number) {
   var size = (number.bitLength + 7) >> 3;
 
   var result = Uint8List(size);
@@ -293,7 +293,7 @@ BigInt fromSM(Uint8List buf, {Endian endian = Endian.big}) {
   BigInt ret;
   var localBuffer = buf.toList();
   if (localBuffer.isEmpty) {
-    return decodeBigInt([0]);
+    return decodeUInt256([0]);
   }
 
   if (endian == Endian.little) {
@@ -302,10 +302,10 @@ BigInt fromSM(Uint8List buf, {Endian endian = Endian.big}) {
 
   if (localBuffer[0] & 0x80 != 0) {
     localBuffer[0] = localBuffer[0] & 0x7f;
-    ret = decodeBigInt(localBuffer);
+    ret = decodeUInt256(localBuffer);
     ret = (-ret);
   } else {
-    ret = decodeBigInt(localBuffer);
+    ret = decodeUInt256(localBuffer);
   }
 
   return ret;
