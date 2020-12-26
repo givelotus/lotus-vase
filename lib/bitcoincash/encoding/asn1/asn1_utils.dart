@@ -6,17 +6,22 @@ import './asn1_tags.dart';
 /// Utils class holding different methods to ease the handling of ANS1Objects and their byte representation.
 ///
 class ASN1Utils {
+  static final _byteMask = BigInt.from(0xff);
+  static final negativeFlag = BigInt.from(0x80);
+
   /// Decode a BigInt from bytes in big-endian encoding.
   static BigInt decodeBigInt(List<int> bytes) {
     var result = BigInt.from(0);
+    final isNegative = bytes[0] & 0x80 == 0x80;
+    bytes[0] = ~0x80 & bytes[0];
     for (var i = 0; i < bytes.length; i++) {
       result += BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
     }
+    if (isNegative) {
+      result *= -BigInt.one;
+    }
     return result;
   }
-
-  static final _byteMask = BigInt.from(0xff);
-  static final negativeFlag = BigInt.from(0x80);
 
   /// Encode a BigInt into bytes using big-endian encoding.
   static Uint8List encodeBigInt(BigInt number) {
@@ -27,11 +32,15 @@ class ASN1Utils {
             ((number >> (rawSize - 1) * 8) & negativeFlag) == negativeFlag
         ? 1
         : 0;
+
     final size = rawSize + needsPaddingByte;
     var result = Uint8List(size);
     for (var i = 0; i < rawSize; i++) {
       result[size - i - 1] = (number & _byteMask).toInt();
       number = number >> 8;
+    }
+    if (number < BigInt.zero) {
+      result[0] |= 0x80;
     }
     return result;
   }
