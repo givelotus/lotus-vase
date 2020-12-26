@@ -11,7 +11,7 @@ import 'electrum/client.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 
-const CURRENT_SCHEMA_VERSION = '2';
+const CURRENT_SCHEMA_VERSION = '3';
 
 const STORAGE_SEED_KEY = 'seed';
 const STORAGE_XPUB_KEY = 'rootKey';
@@ -47,7 +47,9 @@ class WalletModel with ChangeNotifier {
       try {
         // try to recover from read errors. Maybe seed is still valid.
         _seed = await readSeedFromDisk();
-      } catch (err) {
+        // ignore: empty_catches
+      } catch (err) {}
+      if (_seed == null || _seed.isEmpty) {
         final mnemonicGenerator = Mnemonic();
         final seed = mnemonicGenerator.generateMnemonic();
         _seed = seed;
