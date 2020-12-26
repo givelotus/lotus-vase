@@ -77,11 +77,10 @@ class HDPrivateKey extends CKDSerializer {
         utf8.encode('Bitcoin seed'), HEX.decode(seed));
 
     // Ensure the bytes are interpreted as positive by adding a padding.
-    var masterKey = [0];
-    masterKey.addAll(I.sublist(0, 32));
+    var masterKey = I.sublist(0, 32);
     var masterChainCode = I.sublist(32, 64);
 
-    final masterKeyBigInt = decodeBigInt(masterKey);
+    final masterKeyBigInt = decodeUInt256(masterKey);
     if (masterKeyBigInt == BigInt.zero || masterKeyBigInt > _domainParams.n) {
       throw DerivationException('Invalid master key was generated.');
     }
@@ -159,10 +158,11 @@ class HDPrivateKey extends CKDSerializer {
     var seriList = Uint8List(4);
     seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
 
-    final privateKeyList = Uint8List.fromList(keyBuffer);
+    var paddedKey = Uint8List(33);
+    paddedKey.setRange(33 - keyBuffer.length, 33, keyBuffer);
 
     var dataConcat = cn.isHardened()
-        ? privateKeyList + seriList
+        ? paddedKey + seriList
         : publicKey.point.getEncoded(true) + seriList;
     var I = HDUtils.hmacSha512WithKey(
         Uint8List.fromList(chainCode), Uint8List.fromList(dataConcat));
@@ -170,11 +170,9 @@ class HDPrivateKey extends CKDSerializer {
     var lhs = I.sublist(0, 32);
     var childChainCode = I.sublist(32, 64);
     var childKey =
-        (decodeBigInt(lhs) + decodeBigInt(privateKeyList)) % _domainParams.n;
+        (decodeUInt256(lhs) + decodeUInt256(keyBuffer)) % _domainParams.n;
 
-    var paddedKey = Uint8List(33);
-    final encodedChildKey = encodeBigInt(childKey);
-    paddedKey.setRange(33 - encodedChildKey.length, 33, encodeBigInt(childKey));
+    final encodedChildKey = encodeUInt256(childKey);
 
     var dk = HDPrivateKey._(NetworkType.MAIN, KeyType.PRIVATE);
     dk = _copyParams(dk);
@@ -183,7 +181,8 @@ class HDPrivateKey extends CKDSerializer {
     dk.parentFingerprint = fingerprint;
     dk.childNumber = seriList;
     dk.chainCode = childChainCode;
-    dk.keyBuffer = paddedKey;
+    // Extra padding per BIP32 spec.
+    dk.keyBuffer = encodedChildKey;
 
     return dk;
   }
@@ -216,7 +215,7 @@ class HDPrivateKey extends CKDSerializer {
   /// The generic APIs require [BCHPrivateKey]s, with [HDPrivateKey]
   /// only being used as a means to expose BIP32 wallet functionality
   BCHPrivateKey get privateKey {
-    return BCHPrivateKey.fromBigInt(decodeBigInt(keyBuffer),
+    return BCHPrivateKey.fromBigInt(decodeUInt256(keyBuffer),
         networkType: networkType);
   }
 
