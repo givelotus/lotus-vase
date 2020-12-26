@@ -80,6 +80,12 @@ class HDPublicKey extends CKDSerializer {
     deserialize(vector);
   }
 
+  /// Constructs a new public key from it's `xpub`-encoded representation
+  BCHPublicKey get publicKey {
+    final point = _domainParams.curve.decodePoint(keyBuffer);
+    return BCHPublicKey.fromPoint(point);
+  }
+
   /// Renders the public key in it's `xpub`-encoded form
   @override
   String toString() {
