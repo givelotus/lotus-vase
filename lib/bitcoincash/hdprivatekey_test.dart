@@ -98,8 +98,11 @@ void main() {
     final masterAccountKey = key.deriveChildKey("m/44'/145'/0'");
     final masterReceiveKey = masterAccountKey.deriveChildNumber(1);
 
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 1000; i++) {
       expect(() => masterReceiveKey.deriveChildNumber(i), returnsNormally,
+          reason: 'Key ${i} failed to generate');
+      expect(
+          () => masterReceiveKey.deriveChildNumber(i).xprivkey, returnsNormally,
           reason: 'Key ${i} failed to generate');
     }
   });

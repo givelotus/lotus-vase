@@ -8,6 +8,7 @@ import '../networks.dart';
 import 'base58check.dart' as bs58check;
 import 'utils.dart' as utils;
 
+// TODO: This entire class should be using Uint8List entirely.
 abstract class CKDSerializer {
   static final List<int> MAINNET_PUBLIC = HEX.decode('0488B21E');
   static final List<int> MAINNET_PRIVATE = HEX.decode('0488ADE4');
@@ -97,12 +98,16 @@ abstract class CKDSerializer {
   ///
   /// `bytes` - Hexadecimal version of key encoded as a byte buffer
   set keyBuffer(List<int> bytes) {
-    _keyHex = bytes;
+    var paddedKey = List<int>.filled(33, 0);
+    paddedKey.setRange(33 - bytes.length, 33, bytes);
+    _keyHex = paddedKey;
   }
 
   /// Retrieves the key as a byte buffer
   ///
   List<int> get keyBuffer {
+    // TODO: Why does this need to be converted to a Uin8list and back?
+    // Simply duplicating the lists broke lots of the code.
     return Uint8List.fromList(_keyHex).toList();
   }
 
