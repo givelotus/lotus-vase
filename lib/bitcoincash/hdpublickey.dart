@@ -1,4 +1,3 @@
-import 'package:hex/hex.dart';
 import 'dart:typed_data';
 import 'package:pointycastle/pointycastle.dart';
 
@@ -70,7 +69,7 @@ class HDPublicKey extends CKDSerializer {
     this.versionBytes = versionBytes;
     keyType = KeyType.PUBLIC;
     this.networkType = networkType;
-    keyBuffer = HEX.decode(publicKey.getEncoded(true));
+    keyBuffer = publicKey.point.getEncoded(true);
   }
 
   /// Constructs a new public key from it's `xpub`-encoded representation
@@ -95,10 +94,7 @@ class HDPublicKey extends CKDSerializer {
   /// Derive a new child public key at `index`
   HDPublicKey deriveChildNumber(int index) {
     var elem = ChildNumber(index, false);
-    var fingerprint = _calculateFingerprint();
-    var pubkey = HEX.encode(Uint8List.fromList(keyBuffer).toList());
-    return _deriveChildPublicKey(
-        nodeDepth, elem, fingerprint, chainCode, pubkey);
+    return _deriveChildPublicKey(nodeDepth, elem);
   }
 
   /// Derive a new child public key using the indicated path
@@ -111,10 +107,7 @@ class HDPublicKey extends CKDSerializer {
     var children = HDUtils.parsePath(path);
 
     // some imperative madness to ensure children have their parents' fingerprint
-    var fingerprint = _calculateFingerprint();
-    var parentChainCode = chainCode;
-    var lastChild;
-    var pubkey = HEX.encode(Uint8List.fromList(keyBuffer).toList());
+    var lastChild = this;
     var nd = nodeDepth;
     for (var elem in children) {
       if (elem.isHardened()) {
@@ -122,45 +115,37 @@ class HDPublicKey extends CKDSerializer {
             "Can't derived hardened public keys without private keys");
       }
 
-      lastChild =
-          _deriveChildPublicKey(nd, elem, fingerprint, parentChainCode, pubkey);
-      fingerprint = lastChild._calculateFingerprint();
-      parentChainCode = lastChild.chainCode;
-      pubkey = HEX.encode(lastChild.keyBuffer);
+      lastChild = lastChild._deriveChildPublicKey(
+        nd,
+        elem,
+      );
       nd++;
     }
 
     return lastChild;
   }
 
-  List<int> _calculateFingerprint() {
-    var normalisedKey = keyBuffer.map((elem) => elem.toUnsigned(8));
-    var pubKey = BCHPublicKey.fromHex(HEX.encode(normalisedKey.toList()));
-    var encoded = pubKey.getEncoded(true);
-
-    return hash160(HEX.decode(encoded).toList()).sublist(0, 4);
+  List<int> get fingerprint {
+    return hash160(publicKey.point.getEncoded(true)).sublist(0, 4);
   }
 
-  HDPublicKey _deriveChildPublicKey(int nd, ChildNumber cn,
-      List<int> fingerprint, List<int> parentChainCode, String pubkey) {
-    // TODO: This hoopjumping is irritating. What's the better way ?
-    var seriList = List<int>(4);
-    seriList.fillRange(0, 4, 0);
-    var seriHexVal = HEX.decode(cn.i.toRadixString(16).padLeft(8, '0'));
-    seriList.setRange(0, seriHexVal.length, seriHexVal);
-
-    var dataConcat = HEX.decode(pubkey) + seriList;
-    var I = HDUtils.hmacSha512WithKey(
-        Uint8List.fromList(parentChainCode), Uint8List.fromList(dataConcat));
+  HDPublicKey _deriveChildPublicKey(
+    int nd,
+    ChildNumber cn,
+  ) {
+    var seriList = Uint8List(4);
+    seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
+    final publicKeyPoint = publicKey.point;
+    var dataConcat = publicKeyPoint.getEncoded(true) + seriList;
+    var I =
+        HDUtils.hmacSha512WithKey(chainCode, Uint8List.fromList(dataConcat));
 
     var lhs = I.sublist(0, 32);
-    var chainCode = I.sublist(32, 64);
+    var childChainCode = I.sublist(32, 64);
 
-    var parentPoint = _domainParams.curve.decodePoint(HEX.decode(pubkey));
-    var privateKey = BCHPrivateKey.fromHex(HEX.encode(lhs), networkType);
-    var pubKeyHex = HEX.decode(privateKey.publicKey.getEncoded(true));
-    var thisPoint = _domainParams.curve.decodePoint(pubKeyHex);
-    var derivedPoint = thisPoint + parentPoint;
+    var privateKey =
+        BCHPrivateKey.fromBigInt(decodeBigInt(lhs), networkType: networkType);
+    var derivedPoint = privateKey.publicKey.point + publicKeyPoint;
 
     // TODO: Validate that the point is on the curve !
 
@@ -170,7 +155,7 @@ class HDPublicKey extends CKDSerializer {
     dk.nodeDepth = nd + 1;
     dk.parentFingerprint = fingerprint;
     dk.childNumber = seriList;
-    dk.chainCode = chainCode;
+    dk.chainCode = childChainCode;
     dk.keyBuffer = derivedPoint.getEncoded(true);
 
     return dk;
