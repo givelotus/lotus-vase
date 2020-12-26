@@ -118,7 +118,7 @@ class JSONRPCWebsocket {
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 
     final client = HttpClient();
-    client.connectionTimeout = const Duration(milliseconds: 1000);
+    client.connectionTimeout = const Duration(milliseconds: 10);
     client.badCertificateCallback =
         (X509Certificate cert, String host, int port) => true;
     final request = await client.getUrl(address);
