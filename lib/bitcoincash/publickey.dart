@@ -30,7 +30,7 @@ class BCHPublicKey {
   ///
   /// [privkey] - The private key who's *d*-value we will use.
   BCHPublicKey.fromPrivateKey(BCHPrivateKey privkey) {
-    var decodedPrivKey = encodeBigInt(privkey.privateKey);
+    var decodedPrivKey = encodeUInt256(privkey.privateKey);
     var hexPrivKey = HEX.encode(decodedPrivKey);
 
     var actualKey = hexPrivKey;

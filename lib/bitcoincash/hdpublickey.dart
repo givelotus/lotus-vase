@@ -140,11 +140,12 @@ class HDPublicKey extends CKDSerializer {
     var I =
         HDUtils.hmacSha512WithKey(chainCode, Uint8List.fromList(dataConcat));
 
+// Ensure value is interpreted as positive by padding.
     var lhs = I.sublist(0, 32);
     var childChainCode = I.sublist(32, 64);
 
     var privateKey =
-        BCHPrivateKey.fromBigInt(decodeBigInt(lhs), networkType: networkType);
+        BCHPrivateKey.fromBigInt(decodeUInt256(lhs), networkType: networkType);
     var derivedPoint = privateKey.publicKey.point + publicKeyPoint;
 
     // TODO: Validate that the point is on the curve !
