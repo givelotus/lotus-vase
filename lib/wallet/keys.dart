@@ -29,11 +29,13 @@ class KeyInfo {
   Address address;
   Uint8List scriptHash;
   bool isChange;
+  bool isDeprecated;
   int keyIndex;
 
   KeyInfo(
       {this.key,
       this.isChange = false,
+      this.isDeprecated = false,
       this.keyIndex,
       NetworkType network = constants.network}) {
     address = key.toAddress(networkType: network);
@@ -45,33 +47,46 @@ List<KeyInfo> constructChildKeys(
     {HDPrivateKey rootKey,
     int childKeyCount,
     NetworkType network = constants.network}) {
-  // TODO: Do this with child numbers
+  // Default electron cash path
   final parentKey = rootKey.deriveChildKey("m/44'/145'");
 
-  // Generate external keys, addresses and script hashes
-  final parentExternalKey = parentKey.deriveChildNumber(0);
+  final generateKeys =
+      (priorList, generationRootKey, isChange, isDeprecated, number) =>
+          priorList.followedBy(List<KeyInfo>.generate(
+              childKeyCount,
+              (index) => KeyInfo(
+                    // TODO: Remove this keyIndex crap. it makes it very hard to handle
+                    // finding various other values because we have this unnecessary
+                    // surrogate key
+                    keyIndex: index + childKeyCount,
+                    key: generationRootKey.deriveChildNumber(index).privateKey,
+                    isChange: isChange,
+                    isDeprecated: isDeprecated,
+                    network: network,
+                  )));
 
-  final externalKeys = List<KeyInfo>.generate(
-      childKeyCount,
-      (index) => KeyInfo(
-          keyIndex: index,
-          key: parentExternalKey.deriveChildNumber(index).privateKey,
-          network: network));
+// Deprecated keys were incorrectly missing part of the deriviation path. We now
+// include them only so that they load up the balance, but won't be used by the
+// code elsewhere for change or receiving. We need to generally clean up this
+// keystore stuff, as all the state is a bit annoying to deal with elsewhere.
+  final withDeprecatedExternalKeys = generateKeys(
+      <KeyInfo>[], parentKey.deriveChildNumber(0), false, true, childKeyCount);
+  final withDeprecatedChangeKeys = generateKeys(withDeprecatedExternalKeys,
+      parentKey.deriveChildNumber(1), true, true, childKeyCount);
+  final withNewReceiveKeys = generateKeys(
+      withDeprecatedChangeKeys,
+      parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      false,
+      false,
+      childKeyCount);
+  final withNewChangeKeys = generateKeys(
+      withNewReceiveKeys,
+      parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+      true,
+      false,
+      childKeyCount);
 
-  final parentChangeKey = parentKey.deriveChildNumber(1);
-  final changeKeys = List<KeyInfo>.generate(
-      childKeyCount,
-      (index) => KeyInfo(
-            // TODO: Remove this keyIndex crap. it makes it very hard to handle
-            // finding various other values because we have this unnecessary
-            // surrogate key
-            keyIndex: index + childKeyCount,
-            key: parentChangeKey.deriveChildNumber(index).privateKey,
-            isChange: true,
-            network: network,
-          ));
-
-  return externalKeys.followedBy(changeKeys).toList();
+  return withNewChangeKeys.toList();
 }
 
 // Construct a brand new set of keys from a seed over a worker. Processing a
@@ -95,8 +110,11 @@ class Keys {
   HDPrivateKey rootKey;
   String seed;
   List<KeyInfo> keys;
+  int totalKeys;
 
-  Keys(this.seed, this.rootKey, this.keys, {this.network = constants.network});
+  Keys(this.seed, this.rootKey, this.keys,
+      {this.network = constants.network,
+      this.totalKeys = constants.defaultNumberOfChildKeys});
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
