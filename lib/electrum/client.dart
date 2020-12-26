@@ -12,6 +12,7 @@ class ListUnspentResponseItem {
 }
 
 class ElectrumClient extends JSONRPCWebsocket {
+  // ignore: unused_field
   Timer _pingTimer;
 
   ElectrumClient({DisconnectHandler disconnectHandler})
@@ -71,21 +72,26 @@ typedef ConnectHandler = Future<void> Function(ElectrumClient client);
 class ElectrumFactory {
   ElectrumFactory(this.urls, {this.onConnected});
 
-  Future<ElectrumClient> _client;
+  ElectrumClient _client;
   List<String> urls;
   ConnectHandler onConnected;
 
   /// Builds client if non-existent and attempts to connect before resolving.
-  Future<ElectrumClient> build() {
-    if (_client == null) {
-      final newClient =
-          ElectrumClient(disconnectHandler: (error) => {_client = null});
-      final urls = this.urls.sublist(0);
-      urls.shuffle();
-      _client = newClient
-          .connect(Uri.parse(urls[0]))
-          .then((_) => onConnected(newClient))
-          .then((_) => newClient);
+  Future<ElectrumClient> getInstance() async {
+    try {
+      if (_client == null) {
+        _client = ElectrumClient(disconnectHandler: (error) {
+          _client.dispose();
+          _client = null;
+        });
+        final urls = this.urls.sublist(0);
+        urls.shuffle();
+        await _client.connect(Uri.parse(urls[0]));
+        await onConnected(_client);
+      }
+    } catch (err) {
+      print(err);
+      return await getInstance();
     }
     return _client;
   }

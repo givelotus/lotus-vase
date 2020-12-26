@@ -18,6 +18,11 @@ class TransactionMetadata {
   TransactionMetadata({this.usedUtxos, this.transaction});
 }
 
+class BalanceWallet {
+  int balance;
+  Exception err;
+}
+
 class Wallet {
   BalanceUpdateHandler balanceUpdateHandler;
   Wallet(this.keys, this.electrumFactory,
@@ -43,8 +48,7 @@ class Wallet {
   void addressUpdated(result) async {
     // Extract script hash from result (of form [scripthash, status])
     final scriptHash = result[0];
-    final clientFuture = electrumFactory.build();
-    final client = await clientFuture;
+    final client = await electrumFactory.getInstance();
 
     final keyInfo =
         keys.findKeyByScriptHash(Uint8List.fromList(HEX.decode(scriptHash)));
@@ -85,7 +89,7 @@ class Wallet {
 
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos(ElectrumClient client) async {
-    final pool = Pool(5, timeout: Duration(seconds: 30));
+    final pool = Pool(5, timeout: Duration(seconds: 60));
 
     final futures =
         keys.keys.where((keyInfo) => !keyInfo.isDeprecated).map((keyInfo) {
@@ -116,9 +120,8 @@ class Wallet {
 
   /// Use electrum to refresh balance.
   Future<void> refreshBalanceRemote() async {
-    final clientFuture = electrumFactory.build();
+    final client = await electrumFactory.getInstance();
 
-    final client = await clientFuture;
     final responses = await Future.wait(keys.keys.map((keyInfo) {
       final scriptHashHex = HEX.encode(keyInfo.scriptHash);
       return client.blockchainScripthashGetBalance(scriptHashHex);
@@ -130,19 +133,20 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  Future<void> initialize() async {
-    final clientFuture = electrumFactory.build();
-    final client = await clientFuture;
+  void initialize({int retry = 3}) async {
+    if (retry == 0) {
+      throw Exception('Failed to initialize wallet');
+    }
+    final client = await electrumFactory.getInstance();
 
     // Wipe out the vault before refreshing UTXOs
-    await updateUtxos(client);
+    try {
+      await updateUtxos(client);
+    } catch (err) {
+      print(err);
+      return initialize(retry: retry - 1);
+    }
     refreshBalanceLocal();
-    // TODO: we need a way to restart these when electrum connection dies
-    // currently, we won't get any updates if we ever have to reconnect
-    // again.
-    unawaited(startUtxoListeners(client).then((_) {
-      print('Done watching addresses');
-    }));
   }
 
   int balanceSatoshis() {
@@ -239,7 +243,6 @@ class Wallet {
 
   Future<Transaction> sendTransaction(
       Address recipientAddress, BigInt amount) async {
-    final clientFuture = electrumFactory.build();
     final feePerByte = await fetchFeePerByte();
     final output =
         TransactionOutput(scriptBuilder: P2PKHLockBuilder(recipientAddress));
@@ -248,7 +251,7 @@ class Wallet {
     final transactionHex = txnMetadata.transaction.serialize();
 
     try {
-      final client = await clientFuture;
+      final client = await electrumFactory.getInstance();
 
       await client.blockchainTransactionBroadcast(transactionHex);
     } catch (err) {
