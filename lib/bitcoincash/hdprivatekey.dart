@@ -116,9 +116,10 @@ class HDPrivateKey extends CKDSerializer {
   /// Derives a child private key specified by the index
   HDPrivateKey deriveChildNumber(int index, {bool hardened = false}) {
     var elem = ChildNumber(index, hardened);
-    var fingerprint = _calculateFingerprint();
-    return _deriveChildPrivateKey(nodeDepth + 1, Uint8List.fromList(keyBuffer),
-        elem, fingerprint, chainCode, publicKey);
+    return _deriveChildPrivateKey(
+      nodeDepth + 1,
+      elem,
+    );
   }
 
   /// Derives a child private key along the specified path
@@ -132,19 +133,13 @@ class HDPrivateKey extends CKDSerializer {
     var children = HDUtils.parsePath(path);
 
     // some imperative madness to ensure children have their parents' fingerprint
-    var fingerprint = _calculateFingerprint();
-    var parentChainCode = chainCode;
-    var lastChild;
-    var pubkey = publicKey;
-    var privkey = keyBuffer;
+    var lastChild = this;
     var nd = 1;
     for (var elem in children) {
-      lastChild = _deriveChildPrivateKey(nd, Uint8List.fromList(privkey), elem,
-          fingerprint, parentChainCode, pubkey);
-      fingerprint = lastChild._calculateFingerprint();
-      parentChainCode = lastChild.chainCode;
-      pubkey = lastChild.publicKey;
-      privkey = lastChild.keyBuffer;
+      lastChild = lastChild._deriveChildPrivateKey(
+        nd,
+        elem,
+      );
       nd++;
     }
 
@@ -162,32 +157,26 @@ class HDPrivateKey extends CKDSerializer {
     return hdPrivateKey;
   }
 
-  List<int> _calculateFingerprint() {
+  List<int> get fingerprint {
     return hash160(privateKey.publicKey.point.getEncoded(true)).sublist(0, 4);
   }
 
-  HDPrivateKey _deriveChildPrivateKey(
-      int nd,
-      List<int> privateKey,
-      ChildNumber cn,
-      List<int> fingerprint,
-      List<int> parentChainCode,
-      BCHPublicKey pubkey) {
-    // TODO: This hoopjumping is irritating. What's the better way ?
+  HDPrivateKey _deriveChildPrivateKey(int nd, ChildNumber cn) {
     var seriList = Uint8List(4);
     seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
 
+    final privateKeyList = Uint8List.fromList(keyBuffer);
+
     var dataConcat = cn.isHardened()
-        ? privateKey + seriList
-        : pubkey.point.getEncoded(true) + seriList;
+        ? privateKeyList + seriList
+        : publicKey.point.getEncoded(true) + seriList;
     var I = HDUtils.hmacSha512WithKey(
-        Uint8List.fromList(parentChainCode), Uint8List.fromList(dataConcat));
+        Uint8List.fromList(chainCode), Uint8List.fromList(dataConcat));
 
     var lhs = I.sublist(0, 32);
-    var chainCode = I.sublist(32, 64);
-    var normalisedKey = Uint8List.fromList(privateKey);
+    var childChainCode = I.sublist(32, 64);
     var childKey =
-        (decodeBigInt(lhs) + decodeBigInt(normalisedKey)) % _domainParams.n;
+        (decodeBigInt(lhs) + decodeBigInt(privateKeyList)) % _domainParams.n;
 
     var paddedKey = Uint8List(33);
     final encodedChildKey = encodeBigInt(childKey);
@@ -199,7 +188,7 @@ class HDPrivateKey extends CKDSerializer {
     dk.nodeDepth = nd;
     dk.parentFingerprint = fingerprint;
     dk.childNumber = seriList;
-    dk.chainCode = chainCode;
+    dk.chainCode = childChainCode;
     dk.keyBuffer = paddedKey;
 
     return dk;
