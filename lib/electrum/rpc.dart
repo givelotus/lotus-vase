@@ -167,7 +167,7 @@ class JSONRPCWebsocket {
     final completer = Completer();
 
     outstandingRequests[requestId] = (RPCResponse response) {
-      if (response.result != null) {
+      if (response.error == null) {
         completer.complete(response.result);
       } else {
         completer.completeError(response.error);
