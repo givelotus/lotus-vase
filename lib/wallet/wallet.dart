@@ -10,18 +10,20 @@ import '../constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 
-typedef BalanceUpdateHandler = void Function(int result);
-
 class TransactionMetadata {
   List<Utxo> usedUtxos;
   Transaction transaction;
   TransactionMetadata({this.usedUtxos, this.transaction});
 }
 
-class BalanceWallet {
+class WalletBalance {
   int balance;
-  Exception err;
+  Exception error;
+
+  WalletBalance({this.balance, this.error});
 }
+
+typedef BalanceUpdateHandler = void Function(WalletBalance result);
 
 class Wallet {
   BalanceUpdateHandler balanceUpdateHandler;
@@ -110,12 +112,16 @@ class Wallet {
     await Future.wait(futures);
   }
 
+  void updateBalance(WalletBalance update) {
+    if (balanceUpdateHandler != null) {
+      balanceUpdateHandler(update);
+    }
+  }
+
   /// Use locally stored UTXOs to refresh balance.
   void refreshBalanceLocal() {
     _balance = _vault.calculateBalance().toInt();
-    if (balanceUpdateHandler != null) {
-      balanceUpdateHandler(_balance);
-    }
+    updateBalance(WalletBalance(balance: _balance));
   }
 
   /// Use electrum to refresh balance.
@@ -133,10 +139,7 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  void initialize({int retry = 3}) async {
-    if (retry == 0) {
-      throw Exception('Failed to initialize wallet');
-    }
+  void initialize({int retry = 2}) async {
     final client = await electrumFactory.getInstance();
 
     // Wipe out the vault before refreshing UTXOs
@@ -144,6 +147,10 @@ class Wallet {
       await updateUtxos(client);
     } catch (err) {
       print(err);
+      if (retry == 0) {
+        updateBalance(WalletBalance(balance: null, error: err));
+        return;
+      }
       return initialize(retry: retry - 1);
     }
     refreshBalanceLocal();

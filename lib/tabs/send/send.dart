@@ -108,20 +108,30 @@ class _SendTabState extends State<SendTab> {
               color: Colors.grey[400].withOpacity(0.6),
               child: Row(
                 children: [
+                  // TODO: Dedupe this widget.
                   ValueListenableBuilder(
                       valueListenable: balanceNotifier,
                       builder: (context, balance, child) {
-                        if (balance == null) {
+                        if (balance.error != null) {
+                          return Text(
+                            balance.error.message,
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
+                          );
+                        }
+                        if (balance.balance == null) {
                           return Text(
                             'Loading...',
                             style: TextStyle(
-                                color: Colors.red.withOpacity(.8),
+                                color: Colors.grey,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13),
                           );
                         }
                         return Text.rich(TextSpan(
-                          text: '${balance}',
+                          text: '${balance.balance}',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

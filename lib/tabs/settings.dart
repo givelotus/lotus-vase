@@ -26,20 +26,30 @@ class SettingsTab extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
+            // TODO: Dedupe this widget.
             child: ValueListenableBuilder(
                 valueListenable: balanceNotifier,
                 builder: (context, balance, child) {
-                  if (balance == null) {
+                  if (balance.error != null) {
+                    return Text(
+                      balance.error.message,
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13),
+                    );
+                  }
+                  if (balance.balance == null) {
                     return Text(
                       'Loading...',
                       style: TextStyle(
-                          color: Colors.red.withOpacity(.8),
+                          color: Colors.grey,
                           fontWeight: FontWeight.bold,
                           fontSize: 13),
                     );
                   }
                   return Text.rich(TextSpan(
-                    text: '${balance} sats',
+                    text: '${balance.balance}',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
