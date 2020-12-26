@@ -64,10 +64,12 @@ class BCHPrivateKey {
   ///
   /// [privateKey] - The private key as a Big Integer value. Remember that in
   /// ECDSA we compute the public key (Q) as `Q = d * G`
-  BCHPrivateKey.fromBigInt(BigInt privateKey) {
+  BCHPrivateKey.fromBigInt(BigInt privateKey,
+      {NetworkType networkType = NetworkType.MAIN}) {
     _ecPrivateKey = _privateKeyFromBigInt(privateKey);
     _d = privateKey;
     _hasCompressedPubKey = true;
+    _networkType = networkType;
     _BCHPublicKey = BCHPublicKey.fromPrivateKey(this);
   }
 
