@@ -47,58 +47,49 @@ class ReceiveTab extends StatelessWidget {
       _controller.text = createAddressUri(keyboardNotifier.value);
     });
 
-    final manualCard = Card(
-      child: ValueListenableBuilder(
-          valueListenable: keyboardNotifier,
-          builder: (context, CalculatorData balance, child) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: TextField(
-                        controller: _controller,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
+    final manualCard = ValueListenableBuilder(
+        valueListenable: keyboardNotifier,
+        builder: (context, CalculatorData balance, child) => Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16.0),
-                    child: Container(
-                      height: 60.0,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          Clipboard.setData(
-                            ClipboardData(
-                              text: createAddressUri(balance),
-                            ),
-                          );
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 6.0),
+                  child: Container(
+                    height: 60.0,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(
+                            text: createAddressUri(balance),
+                          ),
+                        );
 
-                          Scaffold.of(context).showSnackBar(
-                            copiedAd,
-                          );
-                        },
-                        child: Icon(Icons.copy),
-                      ),
+                        Scaffold.of(context).showSnackBar(
+                          copiedAd,
+                        );
+                      },
+                      child: Icon(Icons.copy),
                     ),
                   ),
-                ],
-              )),
-      elevation: stdElevation,
-    );
+                ),
+              ],
+            ));
 
-    final qrCard = Card(
-      child: ValueListenableBuilder(
-          valueListenable: keyboardNotifier,
-          builder: (context, CalculatorData balance, child) => QrImage(
-                data: createAddressUri(balance),
-                version: QrVersions.auto,
-              )),
-      elevation: stdElevation,
-    );
+    final qrCard = ValueListenableBuilder(
+        valueListenable: keyboardNotifier,
+        builder: (context, CalculatorData balance, child) => QrImage(
+              data: createAddressUri(balance),
+              version: QrVersions.auto,
+            ));
 
     final calculatorKeyboard =
         CalculatorKeyboard(dataNotifier: keyboardNotifier, initialValue: '');
@@ -106,6 +97,8 @@ class ReceiveTab extends StatelessWidget {
     // and then switches to Slide to send button:
 
     return SafeArea(
+        child: Padding(
+      padding: stdPadding,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -125,6 +118,6 @@ class ReceiveTab extends StatelessWidget {
           calculatorKeyboard,
         ],
       ),
-    );
+    ));
   }
 }
