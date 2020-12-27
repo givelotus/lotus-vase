@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart'; // initialize sentry
-import 'package:sentry/sentry.dart'; // contains exception handler
 
 Future<void> main() async {
   await SentryFlutter.init((options) {
@@ -54,17 +53,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-
-    // Sample code to capture exception in Sentry:
-    // try {
-    //   throw Exception('whatever');
-    // } catch (exception, stackTrace) {
-    //   // await
-    //   Sentry.captureException(
-    //     exception,
-    //     stackTrace: stackTrace,
-    //   );
-    // }
   }
 
   @override

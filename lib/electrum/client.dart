@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:cashew/electrum/rpc.dart';
 
+import 'package:sentry/sentry.dart'; // contains exception handler
+
 class ListUnspentResponseItem {
   ListUnspentResponseItem(this.height, this.tx_pos, this.tx_hash, this.value);
 
@@ -89,12 +91,18 @@ class ElectrumFactory {
         await _client.connect(Uri.parse(urls[0]));
         await onConnected(_client);
       }
-    } catch (err) {
+    } catch (err, stackTrace) {
       print(err);
       _client = null;
       if (retry == 0) {
         rethrow;
       }
+
+      await Sentry.captureException(
+        err,
+        stackTrace: stackTrace,
+      );
+
       return await getInstance(retry: retry - 1);
     }
     return _client;

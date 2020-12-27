@@ -5,6 +5,8 @@ import 'dart:math';
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'package:sentry/sentry.dart'; // contains exception handler
+
 part 'rpc.g.dart';
 
 class UnhandledElectrumMessage implements Exception {
@@ -101,6 +103,7 @@ class JSONRPCWebsocket {
     final handler = outstandingRequests[response.id] ??
         (RPCResponse _response) {
           // TODO: Log error here - electrum misbehaving.
+          // }
         };
     handler(response);
   }
