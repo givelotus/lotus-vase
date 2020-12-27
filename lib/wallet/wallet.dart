@@ -139,19 +139,16 @@ class Wallet {
     _balance = totalBalance;
   }
 
-  void initialize({int retry = 2}) async {
-    final client = await electrumFactory.getInstance();
-
+  void initialize() async {
     // Wipe out the vault before refreshing UTXOs
     try {
+      final client = await electrumFactory.getInstance();
+
       await updateUtxos(client);
     } catch (err) {
       print(err);
-      if (retry == 0) {
-        updateBalance(WalletBalance(balance: null, error: err));
-        return;
-      }
-      return initialize(retry: retry - 1);
+      updateBalance(WalletBalance(balance: null, error: err));
+      return;
     }
     refreshBalanceLocal();
   }

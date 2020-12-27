@@ -125,8 +125,8 @@ class JSONRPCWebsocket {
     request.headers.add('Connection', 'upgrade');
     request.headers.add('Upgrade', 'websocket');
     request.headers
-        .add('sec-websocket-version', '13'); // insert the correct version here
-    request.headers.add('sec-websocket-key', key);
+        .add('Sec-WebSocket-Version', '13'); // insert the correct version here
+    request.headers.add('Sec-WebSocket-Key', key);
 
     final response = await request.close();
     // todo check the status code, key etc
