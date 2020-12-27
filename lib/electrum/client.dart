@@ -77,7 +77,7 @@ class ElectrumFactory {
   ConnectHandler onConnected;
 
   /// Builds client if non-existent and attempts to connect before resolving.
-  Future<ElectrumClient> getInstance() async {
+  Future<ElectrumClient> getInstance({int retry = 2}) async {
     try {
       if (_client == null) {
         _client = ElectrumClient(disconnectHandler: (error) {
@@ -91,7 +91,11 @@ class ElectrumFactory {
       }
     } catch (err) {
       print(err);
-      return await getInstance();
+      _client = null;
+      if (retry == 0) {
+        rethrow;
+      }
+      return await getInstance(retry: retry - 1);
     }
     return _client;
   }
