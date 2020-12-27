@@ -10,10 +10,11 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:sentry_flutter/sentry_flutter.dart'; // initialize sentry
-import 'package:sentry/sentry.dart'; // contains test exception
+import 'package:sentry/sentry.dart'; // contains exception handler
 
 Future<void> main() async {
   await SentryFlutter.init((options) {
+    // Options docs here: https://docs.sentry.io/platforms/flutter/configuration/options/
     options.dsn =
         'https://7588026571644baaadd4a711f9bb8762@o496612.ingest.sentry.io/5571577';
   },
@@ -54,15 +55,16 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
 
-    try {
-      throw Exception('whatever');
-    } catch (exception, stackTrace) {
-      // await
-      Sentry.captureException(
-        exception,
-        stackTrace: stackTrace,
-      );
-    }
+    // Sample code to capture exception in Sentry:
+    // try {
+    //   throw Exception('whatever');
+    // } catch (exception, stackTrace) {
+    //   // await
+    //   Sentry.captureException(
+    //     exception,
+    //     stackTrace: stackTrace,
+    //   );
+    // }
   }
 
   @override
