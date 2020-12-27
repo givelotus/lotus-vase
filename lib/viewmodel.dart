@@ -8,6 +8,7 @@ import 'package:cashew/wallet/keys.dart';
 import 'package:cashew/constants.dart';
 
 import 'electrum/client.dart';
+import 'package:sentry/sentry.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 
@@ -48,7 +49,12 @@ class WalletModel with ChangeNotifier {
         // try to recover from read errors. Maybe seed is still valid.
         _seed = await readSeedFromDisk();
         // ignore: empty_catches
-      } catch (err) {}
+      } catch (err, stackTrace) {
+        await Sentry.captureException(
+          err,
+          stackTrace: stackTrace,
+        );
+      }
       if (_seed == null || _seed.isEmpty) {
         final mnemonicGenerator = Mnemonic();
         final seed = mnemonicGenerator.generateMnemonic();
@@ -127,8 +133,12 @@ class WalletModel with ChangeNotifier {
         ElectrumFactory(electrumUrls),
         network: network,
       );
-    } catch (err) {
+    } catch (err, stackTrace) {
       print(err);
+      await Sentry.captureException(
+        err,
+        stackTrace: stackTrace,
+      );
       return false;
     }
 
@@ -151,8 +161,12 @@ class WalletModel with ChangeNotifier {
       );
 
       // TODO: Write metadata
-    } catch (err) {
+    } catch (err, stackTrace) {
       print(err);
+      await Sentry.captureException(
+        err,
+        stackTrace: stackTrace,
+      );
     }
   }
 

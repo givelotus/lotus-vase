@@ -19,9 +19,10 @@ class ElectrumClient extends JSONRPCWebsocket {
 
   ElectrumClient({DisconnectHandler disconnectHandler})
       : super(disconnectHandler: disconnectHandler) {
-    _pingTimer = Timer(Duration(seconds: 30), () {
+    _pingTimer = Timer(Duration(seconds: 30), () async {
       if (rpcSocket != null) {
         print('ping');
+        await Sentry.captureMessage('ping');
         serverPing();
       }
     });

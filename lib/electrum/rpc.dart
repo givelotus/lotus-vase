@@ -101,7 +101,9 @@ class JSONRPCWebsocket {
 
   void _handleResponse(RPCResponse response) {
     final handler = outstandingRequests[response.id] ??
-        (RPCResponse _response) {
+        (RPCResponse _response) async {
+          // Not sure if this is the way to get - aj
+          await Sentry.captureMessage('electrum error ${_response.error}');
           // TODO: Log error here - electrum misbehaving.
           // }
         };
@@ -110,13 +112,14 @@ class JSONRPCWebsocket {
 
   void _handleNotification(RPCRequest notification) {
     final handler = subscriptions[notification.method] ??
-        (List<Object> params) {
+        (List<Object> params) async {
           // TODO: Log error here - electrum misbehaving.
         };
     handler(notification.params);
   }
 
   void connect(Uri address) async {
+    await Sentry.captureMessage('connecting to $address');
     final r = Random();
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 
