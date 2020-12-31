@@ -1,9 +1,11 @@
-import 'package:cashew/constants.dart';
-import 'package:cashew/viewmodel.dart';
-import 'package:cashew/bitcoincash/bip39/bip39.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
+import 'package:cashew/constants.dart';
+import 'package:cashew/viewmodel.dart';
+import 'package:cashew/bitcoincash/bip39/bip39.dart';
+import 'component/balance_display.dart';
 
 class SettingsTab extends StatelessWidget {
   SettingsTab({Key key}) : super(key: key);
@@ -17,58 +19,6 @@ class SettingsTab extends StatelessWidget {
     final balanceNotifier = walletModel.balance;
 
     final newSeedController = TextEditingController();
-
-    final balanceCard = Card(
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('Balance'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            // TODO: Dedupe this widget.
-            child: ValueListenableBuilder(
-                valueListenable: balanceNotifier,
-                builder: (context, balance, child) {
-                  if (balance != null && balance.error != null) {
-                    return Text(
-                      balance.error.message,
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
-                    );
-                  }
-                  if (balance == null || balance.balance == null) {
-                    return Text(
-                      'Loading...',
-                      style: TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13),
-                    );
-                  }
-                  return Text.rich(TextSpan(
-                    text: '${balance.balance}',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: ' sats',
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(.8), fontSize: 15),
-                      ),
-                    ],
-                  ));
-                }),
-          ),
-        ],
-      ),
-      elevation: stdElevation,
-    );
 
     void showSeedDialog() {
       showDialog(
@@ -205,7 +155,7 @@ class SettingsTab extends StatelessWidget {
             padding: stdPadding,
             child: Column(
               children: [
-                balanceCard,
+                BalanceDisplay(balanceNotifier: balanceNotifier),
                 Row(
                   children: [
                     Expanded(

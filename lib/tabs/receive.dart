@@ -7,6 +7,7 @@ import 'package:cashew/constants.dart';
 import 'package:cashew/components/calculator_keyboard/keyboard.dart';
 import '../viewmodel.dart';
 import 'component/payment_amount_display.dart';
+import 'component/balance_display.dart';
 
 class ReceiveTab extends StatelessWidget {
   final ValueNotifier<CalculatorData> keyboardNotifier;
@@ -22,6 +23,7 @@ class ReceiveTab extends StatelessWidget {
     if (viewModel.wallet == null) {
       return Container();
     }
+    final balanceNotifier = viewModel.balance;
 
     final keys = viewModel.wallet.keys.keys.sublist(0);
     keys.shuffle();
@@ -103,6 +105,7 @@ class ReceiveTab extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          BalanceDisplay(balanceNotifier: balanceNotifier),
           Text(
             'Receive Funds',
             style: Theme.of(context).textTheme.headline6,
