@@ -58,7 +58,7 @@ List<KeyInfo> constructChildKeys(
                     // TODO: Remove this keyIndex crap. it makes it very hard to handle
                     // finding various other values because we have this unnecessary
                     // surrogate key
-                    keyIndex: index + childKeyCount,
+                    keyIndex: index + priorList.length,
                     key: generationRootKey.deriveChildNumber(index).privateKey,
                     isChange: isChange,
                     isDeprecated: isDeprecated,
