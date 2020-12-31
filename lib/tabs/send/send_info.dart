@@ -1,4 +1,5 @@
 import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:cashew/bitcoincash/utils/parse_uri.dart';
 import 'package:cashew/components/calculator_keyboard/keyboard.dart';
 import 'package:cashew/constants.dart';
 import 'package:flutter/cupertino.dart';
@@ -83,24 +84,12 @@ class SendInfo extends StatelessWidget {
       // TODO: Dedupe this with QR Scanning.
       try {
         final data = await Clipboard.getData('text/plain');
-        final parseObject =
-            Uri.parse(data.text.toString().trim().toLowerCase());
-        final unparsedAmount = parseObject.queryParameters['amount'];
-        final amount = unparsedAmount == null
-            ? double.nan
-            : double.parse(unparsedAmount, (value) => double.nan);
+        final parseResult =
+            parseSendURI(data.text.toString().trim().toLowerCase());
 
-        Address(parseObject.path);
         // Use the unparsed version, so that it appears as it was originally copied
-        sendModel.sendToAddress = parseObject.path ?? '';
-        if (amount.isNaN) {
-          return;
-        }
-        if (amount.truncateToDouble() != amount) {
-          sendModel.sendAmount = (amount * 100000000).truncate();
-        } else {
-          sendModel.sendAmount = amount.truncate();
-        }
+        sendModel.sendToAddress = parseResult.address ?? '';
+        sendModel.sendAmount = parseResult.amount;
 
         keyboardNotifier.value = CalculatorData(
             amount: sendModel.sendAmount,

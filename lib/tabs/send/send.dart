@@ -1,8 +1,8 @@
+import 'package:cashew/bitcoincash/utils/parse_uri.dart';
 import 'package:cashew/viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:cashew/bitcoincash/address.dart';
 import 'dart:math';
 import 'dart:core';
 
@@ -11,6 +11,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import './send_info.dart';
 import './sendModel.dart';
 import '../component/balance_display.dart';
+import '../../bitcoincash/utils/parse_uri.dart';
 
 class SendTab extends StatefulWidget {
   final PageController controller;
@@ -53,18 +54,16 @@ class _SendTabState extends State<SendTab> {
       onQRViewCreated: (QRViewController controller) {
         controller.scannedDataStream.listen((scanData) {
           try {
-            final parseObject = Uri.parse(scanData);
-            final unparsedAmount = parseObject.queryParameters['amount'];
-            final amount = unparsedAmount == null
-                ? double.nan
-                : double.parse(unparsedAmount, (value) => double.nan);
+            final parseResult = parseSendURI(scanData);
+            // Don't keep pushing send info pages if the viewModel has already been updated.
+            // TODO: Seems like there should be a better way to handle this.
+            if (viewModel.sendToAddress == parseResult.address ?? '') {
+              return;
+            }
 
-            Address(parseObject.path);
             // Use the unparsed version, so that it appears as it was originally copied
-            viewModel.sendToAddress = parseObject.path ?? '';
-            viewModel.sendAmount = amount.isNaN
-                ? viewModel.sendAmount
-                : (amount * 100000000).truncate();
+            viewModel.sendToAddress = parseResult.address ?? '';
+            viewModel.sendAmount = parseResult.amount;
 
             Navigator.push(
                 context,
