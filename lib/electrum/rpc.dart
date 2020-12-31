@@ -46,7 +46,7 @@ class RequestConverter extends Converter<Map<String, dynamic>, RPCRequest> {
 }
 
 @JsonSerializable()
-class Error {
+class Error implements Exception {
   @JsonKey(disallowNullValue: true)
   final int code;
   @JsonKey(disallowNullValue: true)
@@ -57,6 +57,11 @@ class Error {
   Error(this.code, this.message, {this.data});
   factory Error.fromJson(Map<String, dynamic> json) => _$ErrorFromJson(json);
   Map<String, dynamic> toJson() => _$ErrorToJson(this);
+
+  @override
+  String toString() {
+    return message;
+  }
 }
 
 @JsonSerializable()
