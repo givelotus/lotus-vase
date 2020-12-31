@@ -269,7 +269,7 @@ class BalanceDisplay extends StatelessWidget {
               ValueListenableBuilder(
                   valueListenable: balanceNotifier,
                   builder: (context, balance, child) {
-                    if (balance.error != null) {
+                    if (balance != null && balance.error != null) {
                       return Text(
                         balance.error.message,
                         style: TextStyle(
@@ -278,7 +278,7 @@ class BalanceDisplay extends StatelessWidget {
                             fontSize: 13),
                       );
                     }
-                    if (balance.balance == null) {
+                    if (balance == null || balance.balance == null) {
                       return Text(
                         'Loading...',
                         style: TextStyle(
