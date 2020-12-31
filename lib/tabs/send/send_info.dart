@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'sendModel.dart';
-import '../../wallet/wallet.dart';
 import '../../viewmodel.dart';
 import '../../bitcoincash/address.dart';
 import '../../bitcoincash/transaction/transaction.dart';
 import '../component/payment_amount_display.dart';
+import '../component/balance_display.dart';
 
 List<String> canSend(int amount, String address, int balance) {
   final errors = <String>[];
@@ -249,69 +249,5 @@ class AddressDisplay extends StatelessWidget {
                 ],
               )))
     ]);
-  }
-}
-
-class BalanceDisplay extends StatelessWidget {
-  final ValueNotifier<WalletBalance> balanceNotifier;
-  BalanceDisplay({@required this.balanceNotifier});
-
-  @override
-  Widget build(BuildContext context) {
-    // Balance Display widget
-    return Padding(
-      padding: stdPadding,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-          color: Colors.grey[400].withOpacity(0.6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // TODO: Dedupe this widget.
-              ValueListenableBuilder(
-                  valueListenable: balanceNotifier,
-                  builder: (context, balance, child) {
-                    if (balance != null && balance.error != null) {
-                      return Text(
-                        balance.error.message,
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
-                      );
-                    }
-                    if (balance == null || balance.balance == null) {
-                      return Text(
-                        'Loading...',
-                        style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13),
-                      );
-                    }
-                    return Text.rich(TextSpan(
-                      text: '${balance.balance}',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 17,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: ' sats',
-                          style: TextStyle(
-                              color: Colors.black.withOpacity(.8),
-                              fontSize: 15),
-                        ),
-                      ],
-                    ));
-                  }),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

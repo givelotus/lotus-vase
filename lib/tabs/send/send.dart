@@ -10,6 +10,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import './send_info.dart';
 import './sendModel.dart';
+import '../component/balance_display.dart';
 
 class SendTab extends StatefulWidget {
   final PageController controller;
@@ -100,57 +101,7 @@ class _SendTabState extends State<SendTab> {
         ),
         Positioned(
           top: screenDimension.height * .1,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-              color: Colors.grey[400].withOpacity(0.6),
-              child: Row(
-                children: [
-                  // TODO: Dedupe this widget.
-                  ValueListenableBuilder(
-                      valueListenable: balanceNotifier,
-                      builder: (context, balance, child) {
-                        if (balance != null && balance.error != null) {
-                          return Text(
-                            balance.error.message,
-                            style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
-                          );
-                        }
-                        if (balance == null || balance.balance == null) {
-                          return Text(
-                            'Loading...',
-                            style: TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
-                          );
-                        }
-                        return Text.rich(TextSpan(
-                          text: '${balance.balance}',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: ' sats',
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(.8),
-                                  fontSize: 15),
-                            ),
-                          ],
-                        ));
-                      }),
-                ],
-              ),
-            ),
-          ),
+          child: BalanceDisplay(balanceNotifier: balanceNotifier),
         ),
         Positioned(
           bottom: 35.0,
