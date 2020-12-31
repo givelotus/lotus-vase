@@ -83,7 +83,8 @@ class SendInfo extends StatelessWidget {
       // TODO: Dedupe this with QR Scanning.
       try {
         final data = await Clipboard.getData('text/plain');
-        final parseObject = Uri.parse(data.text.toString());
+        final parseObject =
+            Uri.parse(data.text.toString().trim().toLowerCase());
         final unparsedAmount = parseObject.queryParameters['amount'];
         final amount = unparsedAmount == null
             ? double.nan
