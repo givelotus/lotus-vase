@@ -75,9 +75,8 @@ class SendInfo extends StatelessWidget {
       walletModel.wallet
           .sendTransaction(Address(address), BigInt.from(amount))
           .then((transaction) => showReceipt(context, transaction))
-          .catchError((error) => showError(context, error.toString()));
-
-      Navigator.pop(context);
+          .catchError((error) => showError(context, error.toString()))
+          .then((_) => Navigator.pop(context));
     }
 
     final pasteAddress = () async {
