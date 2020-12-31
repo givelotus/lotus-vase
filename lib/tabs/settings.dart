@@ -171,8 +171,10 @@ class SettingsTab extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () {
                             final mnemonicGenerator = Mnemonic();
+                            final enteredSeed =
+                                newSeedController.text.trim().toLowerCase();
                             if (!mnemonicGenerator
-                                .validateMnemonic(newSeedController.text)) {
+                                .validateMnemonic(enteredSeed)) {
                               Scaffold.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Invalid Seed Phrase'),
@@ -182,7 +184,7 @@ class SettingsTab extends StatelessWidget {
                               return;
                             }
                             // This will regenerate everything
-                            walletModel.seed = newSeedController.text;
+                            walletModel.seed = enteredSeed;
                             Navigator.of(context).pop();
                           },
                           child: Text('Save'),
