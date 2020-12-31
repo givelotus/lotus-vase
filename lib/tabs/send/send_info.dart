@@ -95,8 +95,12 @@ class SendInfo extends StatelessWidget {
         if (amount.isNaN) {
           return;
         }
+        if (amount.truncateToDouble() != amount) {
+          sendModel.sendAmount = (amount * 100000000).truncate();
+        } else {
+          sendModel.sendAmount = amount.truncate();
+        }
 
-        sendModel.sendAmount = (amount * 100000000).truncate();
         keyboardNotifier.value = CalculatorData(
             amount: sendModel.sendAmount,
             function: sendModel.sendAmount == 0
