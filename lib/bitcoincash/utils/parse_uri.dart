@@ -17,8 +17,9 @@ ParseURIResult parseSendURI(String uri) {
   Address(parseObject.path);
 
   if (amount.isNaN) {
-    ParseURIResult(address: parseObject.path ?? '', amount: null);
+    return ParseURIResult(address: parseObject.path ?? '', amount: null);
   }
+
   int intAmount;
   if (amount.truncateToDouble() != amount) {
     intAmount = (amount * 100000000).truncate();
