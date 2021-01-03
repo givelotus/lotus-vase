@@ -17,7 +17,9 @@ class PaymentAmountDisplay extends StatelessWidget {
         Expanded(
             child: Text(
           '${function}',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: Theme.of(context).textTheme.headline5.fontSize,
+              fontWeight: FontWeight.bold),
         ))
       ]),
       Row(children: [
@@ -25,7 +27,9 @@ class PaymentAmountDisplay extends StatelessWidget {
             child: Text(
           '= ${amount} sats',
           textAlign: TextAlign.right,
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: Theme.of(context).textTheme.headline5.fontSize,
+              fontWeight: FontWeight.bold),
         ))
       ]),
     ]);
