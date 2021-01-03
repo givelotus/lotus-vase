@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:pool/pool.dart';
-import 'package:pedantic/pedantic.dart';
 
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:cashew/wallet/vault.dart';
