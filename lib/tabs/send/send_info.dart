@@ -233,7 +233,7 @@ class AddressDisplay extends StatelessWidget {
                             : 'Tap to Paste Address',
                         // TODO: This is waaay too small. We need to split the
                         // address up over multiple lines.
-                        style: Theme.of(context).textTheme.headline5,
+                        style: Theme.of(context).textTheme.headline6,
                       )),
                 ],
               )))
