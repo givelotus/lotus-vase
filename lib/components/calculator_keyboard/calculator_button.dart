@@ -34,12 +34,11 @@ class CalculatorButton extends StatelessWidget {
                   ? Icon(
                       ButtonDefinitions[button].icon,
                     )
-                  : Text(
-                      ButtonDefinitions[button].text,
+                  : Text(ButtonDefinitions[button].text,
                       style: TextStyle(
                           fontSize:
-                              32 * MediaQuery.of(context).textScaleFactor),
-                    ))),
+                              Theme.of(context).textTheme.headline5.fontSize,
+                          fontWeight: FontWeight.bold)))),
     ));
   }
 }
