@@ -3,7 +3,6 @@ import 'package:cashew/viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'dart:math';
 import 'dart:core';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
