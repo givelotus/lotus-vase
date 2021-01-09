@@ -37,6 +37,16 @@ void main() {
         equals(expected[i]),
       );
     }
+
+    expect(
+      () => varintBufNum(-1),
+      throwsA(
+        predicate((e) =>
+            e is BadParameterException &&
+            e.message ==
+                'varintBufNum:The provided length can not be a negative value:\t-1'),
+      ),
+    );
   });
 
   test('varIntWriter method', () {
@@ -73,5 +83,15 @@ void main() {
         equals(expected[i]),
       );
     }
+
+    expect(
+      () => varIntWriter(-1),
+      throwsA(
+        predicate((e) =>
+            e is BadParameterException &&
+            e.message ==
+                'varIntWriter:The provided length can not be a negative value:\t-1'),
+      ),
+    );
   });
 }
