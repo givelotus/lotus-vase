@@ -1,14 +1,23 @@
+import 'dart:typed_data';
+
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('varintBufNum method', () {
-    final toEncode = ['01', 'ab12', 'ab12cd34', '100000001'];
+    final toEncode = [
+      '01',
+      'ab12',
+      'ab12cd34',
+      '100000001',
+      '7fffffffffffffff'
+    ];
     final expected = <List<int>>[
       [1],
       [0xfd, 18, 171],
       [0xfe, 52, 205, 18, 171],
       [0xff, 1, 0, 0, 0, 1, 0, 0, 0],
+      [0xff, 255, 255, 255, 255, 255, 255, 255, 127],
     ];
 
     for (var i = 0; i < toEncode.length; i++) {
