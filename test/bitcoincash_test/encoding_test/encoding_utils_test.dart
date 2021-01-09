@@ -10,14 +10,19 @@ void main() {
       'ab12',
       'ab12cd34',
       '100000001',
-      '7fffffffffffffff'
+      '7fffffffffffffff',
+      'ffff',
+      'ffffffff',
     ];
+
     final expected = <List<int>>[
       [1],
       [0xfd, 18, 171],
       [0xfe, 52, 205, 18, 171],
       [0xff, 1, 0, 0, 0, 1, 0, 0, 0],
       [0xff, 255, 255, 255, 255, 255, 255, 255, 127],
+      [0xfd, 255, 255],
+      [0xfe, 255, 255, 255, 255],
     ];
 
     for (var i = 0; i < toEncode.length; i++) {
@@ -41,6 +46,8 @@ void main() {
       'ab12cd34',
       '100000001',
       '7fffffffffffffff',
+      'ffff',
+      'ffffffff',
     ];
     final expected = <Uint8List>[
       Uint8List.fromList([1]),
@@ -49,7 +56,9 @@ void main() {
       Uint8List.fromList([0xff, 1, 0, 0, 0, 1, 0, 0, 0]),
       Uint8List.fromList(
         [0xff, 255, 255, 255, 255, 255, 255, 255, 127],
-      )
+      ),
+      Uint8List.fromList([0xfd, 255, 255]),
+      Uint8List.fromList([0xfe, 255, 255, 255, 255]),
     ];
 
     for (var i = 0; i < toEncode.length; i++) {
