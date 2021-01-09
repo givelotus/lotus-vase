@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:buffer/buffer.dart';
 import 'dart:math';
 
-// import 'package:pointycastle/src/utils.dart';
 import 'package:pointycastle/export.dart';
 
 List<int> sha256Twice(List<int> bytes) {
@@ -54,54 +53,60 @@ BigInt hexToUint64(List<int> hexBuffer) {
   return BigInt.parse(HEX.encode(hexBuffer), radix: 16).toUnsigned(64);
 }
 
-List<int> varintBufNum(n) {
-//    List<int> buf ;
+List<int> varintBufNum(int n) {
   var writer = ByteDataWriter();
-  if (n < 253) {
-    writer.writeUint8(n);
-  } else if (n < 0x10000) {
-    writer.writeUint8(253);
-    writer.writeUint16(n, Endian.little);
-  } else if (n < 0x100000000) {
-    writer.writeUint8(254);
-    writer.writeUint32(n, Endian.little);
-  } else {
-    writer.writeUint8(255);
-    writer.writeInt32(n & -1, Endian.little);
-    writer.writeUint32((n / 0x100000000).floor(), Endian.little);
+
+  if (n != null) {
+    if (n.isNegative) {
+      throw BadParameterException(
+        'varintBufNum:The provided length can not be a negative value:\t$n',
+      );
+    }
+
+    if (n < 253) {
+      writer.writeUint8(n);
+    } else if (n < 0x10000) {
+      writer.writeUint8(253);
+      writer.writeUint16(n, Endian.little);
+    } else if (n < 0x100000000) {
+      writer.writeUint8(254);
+      writer.writeUint32(n, Endian.little);
+    } else {
+      writer.writeUint8(255);
+      writer.writeInt64(n, Endian.little);
+    }
   }
+
   return writer.toBytes().toList();
 }
 
 Uint8List varIntWriter(int length) {
   var writer = ByteDataWriter();
 
-  if (length == null) {
-    return writer.toBytes();
-  }
+  if (length != null) {
+    if (length.isNegative) {
+      throw BadParameterException(
+        'varIntWriter:The provided length can not be a negative value:\t$length',
+      );
+    }
 
-  if (length < 0xFD) {
-    writer.writeUint8(length);
-    return writer.toBytes();
-  }
-
-  if (length < 0xFFFF) {
-    writer.writeUint8(253);
-    writer.writeUint16(length, Endian.little);
-    return writer.toBytes();
-  }
-
-  if (length < 0xFFFFFFFF) {
-    writer.writeUint8(254);
-    writer.writeUint32(length, Endian.little);
-    return writer.toBytes();
-  }
-
-  if (length < 0xFFFFFFFFFFFFFFFF) {
-    writer.writeUint8(255);
-    writer.writeInt32(length & -1, Endian.little);
-    writer.writeUint32((length / 0x100000000).floor(), Endian.little);
-    return writer.toBytes();
+    /// In Dart 1 the value `0xFFFFFFFFFFFFFFFF` was too large, so it became
+    /// a [BigInt] and the comparison was ok, but in Dart 2 the same hex value
+    /// evaluate to a negative int (`-1`), so it iss necessary to use the
+    /// largest positive [int] value in Dart: `0x7fffffffffffffff`
+    /// (only with 64 bits, in Dart Web this won't work).
+    if (length < 0xFD) {
+      writer.writeUint8(length);
+    } else if (length < 0x10000) {
+      writer.writeUint8(253);
+      writer.writeUint16(length, Endian.little);
+    } else if (length < 0x100000000) {
+      writer.writeUint8(254);
+      writer.writeUint32(length, Endian.little);
+    } else if (length <= 0x7FFFFFFFFFFFFFFF) {
+      writer.writeUint8(255);
+      writer.writeInt64(length, Endian.little);
+    }
   }
 
   return writer.toBytes();
