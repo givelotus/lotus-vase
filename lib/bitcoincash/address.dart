@@ -43,10 +43,15 @@ class Address {
   ///
   Address(String address) {
     try {
-      _fromCashAddress(address);
+      _fromCashAddress(address, 'ecash');
       return;
     } catch (e) {
-      _fromBase58(address);
+      try {
+        _fromCashAddress(address, 'bitcoincash');
+        return;
+      } catch (e) {
+        _fromBase58(address);
+      }
     }
   }
 
@@ -149,11 +154,12 @@ class Address {
 
   /// Serialise this address object to a cashaddr encoded string
   ///
-  String toCashAddress() {
+  String toCashAddress({prefix = 'bitcoincash'}) {
     return cash_address.Encode(cash_address.RawCashAddress(
         addressBytes: HEX.decode(_publicKeyHash),
         networkType: networkType,
-        addressType: addressType));
+        addressType: addressType,
+        prefix: prefix));
   }
 
   /// Serialise this address object to a base58-encoded string.
@@ -208,8 +214,8 @@ class Address {
         HEX.encode(stripVersion.map((elem) => elem.toUnsigned(8)).toList());
   }
 
-  void _fromCashAddress(String address) {
-    final rawAddressData = cash_address.Decode(address);
+  void _fromCashAddress(String address, String prefix) {
+    final rawAddressData = cash_address.Decode(address, prefix);
     _networkType = rawAddressData.networkType;
     _addressType = rawAddressData.addressType;
     _publicKeyHash = HEX.encode(rawAddressData.addressBytes);

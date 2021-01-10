@@ -3,14 +3,14 @@ import 'exceptions.dart';
 import 'encoding/base32.dart';
 import 'encoding/convertbits.dart';
 
+const defaultPrefix = 'bitcoincash';
+
 class RawCashAddress {
   AddressType addressType;
   NetworkType networkType;
   List<int> addressBytes;
 
-  String get prefix {
-    return 'bitcoincash';
-  }
+  String prefix;
 
   int get version {
     switch (addressType) {
@@ -23,7 +23,11 @@ class RawCashAddress {
     }
   }
 
-  RawCashAddress({this.addressType, this.networkType, this.addressBytes});
+  RawCashAddress(
+      {this.addressType,
+      this.networkType,
+      this.addressBytes,
+      this.prefix = defaultPrefix});
 }
 
 const globalDefaultPrefix = 'bitcoincash';
@@ -125,6 +129,10 @@ NetworkType getNetworkTypeFromPrefix(String prefix) {
   switch (prefix) {
     case 'bitcoincash':
       return NetworkType.MAIN;
+    case 'ecash':
+      return NetworkType.MAIN;
+    case 'tecash':
+      return NetworkType.TEST;
     case 'bchtest':
       return NetworkType.TEST;
     case 'bchreg':
