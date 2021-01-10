@@ -48,7 +48,7 @@ List<KeyInfo> constructChildKeys(
     int childKeyCount,
     NetworkType network = constants.network}) {
   // Default electron cash path
-  final parentKey = rootKey.deriveChildKey("m/44'/145'");
+  final legacyParentKey = rootKey.deriveChildKey("m/44'/145'");
 
   final generateKeys =
       (priorList, generationRootKey, isChange, isDeprecated, number) =>
@@ -65,23 +65,37 @@ List<KeyInfo> constructChildKeys(
                     network: network,
                   )));
 
+  final newParentKey = rootKey.deriveChildKey("m/44'/899'");
+
 // Deprecated keys were incorrectly missing part of the deriviation path. We now
 // include them only so that they load up the balance, but won't be used by the
 // code elsewhere for change or receiving. We need to generally clean up this
 // keystore stuff, as all the state is a bit annoying to deal with elsewhere.
-  final withDeprecatedExternalKeys = generateKeys(
-      <KeyInfo>[], parentKey.deriveChildNumber(0), false, true, childKeyCount);
+  final withDeprecatedExternalKeys = generateKeys(<KeyInfo>[],
+      legacyParentKey.deriveChildNumber(0), false, true, childKeyCount);
   final withDeprecatedChangeKeys = generateKeys(withDeprecatedExternalKeys,
-      parentKey.deriveChildNumber(1), true, true, childKeyCount);
-  final withNewReceiveKeys = generateKeys(
+      legacyParentKey.deriveChildNumber(1), true, true, childKeyCount);
+  final withLegacyReceiveKeys = generateKeys(
       withDeprecatedChangeKeys,
-      parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      legacyParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      false,
+      true,
+      childKeyCount);
+  final withLegacyChangeKeys = generateKeys(
+      withLegacyReceiveKeys,
+      legacyParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+      true,
+      true,
+      childKeyCount);
+  final withNewDerivationKeys = generateKeys(
+      withLegacyChangeKeys,
+      newParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
       false,
       false,
       childKeyCount);
   final withNewChangeKeys = generateKeys(
-      withNewReceiveKeys,
-      parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+      withNewDerivationKeys,
+      newParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
       true,
       false,
       childKeyCount);
