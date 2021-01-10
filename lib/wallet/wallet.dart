@@ -92,8 +92,7 @@ class Wallet {
   Future<void> updateUtxos(ElectrumClient client) async {
     final pool = Pool(5, timeout: Duration(seconds: 60));
 
-    final futures =
-        keys.keys.where((keyInfo) => !keyInfo.isDeprecated).map((keyInfo) {
+    final futures = keys.keys.map((keyInfo) {
       final hexScriptHash = HEX.encode(keyInfo.scriptHash);
       return pool.withResource(() async {
         final unspentUtxos =
