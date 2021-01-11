@@ -107,30 +107,6 @@ Uint8List varIntWriter(int length) {
   return writer.toBytes();
 }
 
-List<int> calcVarInt(int length) {
-  if (length == null) {
-    return Uint8List(0);
-  }
-
-  if (length < 0xFD) {
-    return HEX.decode(length.toRadixString(16));
-  }
-
-  if (length < 0xFFFF) {
-    return HEX.decode('FD' + length.toRadixString(16));
-  }
-
-  if (length < 0xFFFFFFFF) {
-    return HEX.decode('FE' + length.toRadixString(16));
-  }
-
-  if (length < 0xFFFFFFFFFFFFFFFF) {
-    return HEX.decode('FF' + length.toRadixString(16));
-  }
-
-  return Uint8List(0);
-}
-
 // Implementation from bsv lib
 int readVarIntNum(ByteDataReader reader) {
   var first = reader.readUint8();
