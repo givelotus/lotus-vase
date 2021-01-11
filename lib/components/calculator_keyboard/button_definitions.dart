@@ -159,8 +159,8 @@ final ButtonDefinitions = {
     style: operationButtonStyle,
   ),
   CalculatorItem.SUBTRACT: CalculatorButtonDefinition(
-    text: '-',
-    action: pushOperation('-'),
+    text: '➖',
+    action: pushOperation('➖'),
     style: operationButtonStyle,
   ),
   CalculatorItem.ADD: CalculatorButtonDefinition(
