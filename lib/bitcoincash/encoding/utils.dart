@@ -7,7 +7,6 @@ import 'dart:typed_data';
 import 'package:buffer/buffer.dart';
 import 'dart:math';
 
-// import 'package:pointycastle/src/utils.dart';
 import 'package:pointycastle/export.dart';
 
 List<int> sha256Twice(List<int> bytes) {
@@ -182,29 +181,6 @@ BigInt readVarInt(Uint8List buffer) {
     default:
       return BigInt.from(first);
   }
-}
-
-int getBufferOffset(int count) {
-  if (count < 0xFD) {
-    return 1;
-  }
-
-  if (count == 0xFD) {
-    // 2 bytes ==  Uint16
-    return 3;
-  }
-
-  if (count == 0xFE) {
-    // 4 bytes == Uint32
-    return 5;
-  }
-
-  if (count == 0xFF) {
-    return 9;
-  }
-
-  assert(false, 'We should not be here');
-  return 0;
 }
 
 /// This function will return a [BigInt]. It has the same functionality
