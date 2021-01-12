@@ -148,4 +148,30 @@ void main() {
       );
     }
   });
+
+  test('decodeUInt256 method', () {
+    final toDecode = <List<int>>[
+      [1],
+      [18, 171],
+      [52, 205, 18, 171],
+      [32, 0, 0, 0, 0, 0, 0],
+      [52, 205, 18, 171, 52, 205, 18, 171],
+    ];
+    final expected = <BigInt>[
+      BigInt.from(1),
+      BigInt.from(4779),
+      BigInt.from(885854891),
+      BigInt.from(9007199254740992),
+      BigInt.from(3804717786732499627),
+    ];
+
+    for (var i = 0; i < toDecode.length; i++) {
+      final decoded = decodeUInt256(toDecode[i]);
+
+      expect(
+        decoded,
+        equals(expected[i]),
+      );
+    }
+  });
 }
