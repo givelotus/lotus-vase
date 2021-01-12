@@ -1,5 +1,7 @@
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:buffer/buffer.dart';
 import 'package:cashew/bitcoincash/bitcoincash.dart';
 import 'package:test/test.dart';
 
@@ -93,5 +95,32 @@ void main() {
                 'varIntWriter:The provided length can not be a negative value:\t-1'),
       ),
     );
+  });
+
+  test('readVarIntNum method', () {
+    final reader = ByteDataReader();
+
+    final toDecode = <List<int>>[
+      [1],
+      [253, 171, 18],
+      [254, 171, 18, 205, 52],
+      [255, 0, 0, 0, 0, 0, 0, 32, 0]
+    ];
+    final expected = <int>[
+      1,
+      4779,
+      885854891,
+      9007199254740992,
+    ];
+
+    for (var i = 0; i < toDecode.length; i++) {
+      reader.add(toDecode[i]);
+      final decoded = readVarIntNum(reader);
+
+      expect(
+        decoded,
+        equals(expected[i]),
+      );
+    }
   });
 }
