@@ -1,5 +1,6 @@
 import '../exceptions.dart';
 import 'package:hex/hex.dart';
+import 'package:meta/meta.dart';
 import 'package:pointycastle/digests/ripemd160.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'dart:typed_data';
@@ -199,6 +200,21 @@ int getBufferOffset(int count) {
 
   assert(false, 'We should not be here');
   return 0;
+}
+
+/// This function will return a [BigInt]. It has the same functionality
+/// as the [decodeUInt256] method, but with the added [endian] parameter.
+BigInt bytesToBigInt({
+  @required List<int> bytes,
+  Endian endian = Endian.big,
+}) {
+  /// The line
+  /// `BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);`
+  /// from [decodeBigInt] is the same as
+  /// `BigInt.from(bytes[bytes.length - i - 1]) * BigInt.from(256).pow(i);`
+  return decodeUInt256(
+    endian == Endian.big ? bytes : Uint8List.fromList(bytes.reversed.toList()),
+  );
 }
 
 /// Decode a BigInt from bytes in big-endian encoding.
