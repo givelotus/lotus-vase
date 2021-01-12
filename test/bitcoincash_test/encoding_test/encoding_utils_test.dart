@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:buffer/buffer.dart';
@@ -116,6 +115,32 @@ void main() {
     for (var i = 0; i < toDecode.length; i++) {
       reader.add(toDecode[i]);
       final decoded = readVarIntNum(reader);
+
+      expect(
+        decoded,
+        equals(expected[i]),
+      );
+    }
+  });
+
+  test('readVarInt method', () {
+    final toDecode = <List<int>>[
+      Uint8List.fromList([1]),
+      Uint8List.fromList([253, 171, 18]),
+      Uint8List.fromList([254, 171, 18, 205, 52]),
+      Uint8List.fromList([255, 0, 0, 0, 0, 0, 0, 32, 0]),
+      Uint8List.fromList([255, 171, 18, 205, 52, 171, 18, 205, 52]),
+    ];
+    final expected = <BigInt>[
+      BigInt.from(1),
+      BigInt.from(4779),
+      BigInt.from(885854891),
+      BigInt.from(9007199254740992),
+      BigInt.from(3804717786732499627),
+    ];
+
+    for (var i = 0; i < toDecode.length; i++) {
+      final decoded = readVarInt(toDecode[i]);
 
       expect(
         decoded,
