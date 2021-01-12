@@ -174,4 +174,30 @@ void main() {
       );
     }
   });
+
+  test('encodeUInt256 method', () {
+    final toEncode = <BigInt>[
+      BigInt.from(1),
+      BigInt.from(4779),
+      BigInt.from(885854891),
+      BigInt.from(9007199254740992),
+      BigInt.from(3804717786732499627),
+    ];
+    final expected = <List<int>>[
+      Uint8List.fromList([1]),
+      Uint8List.fromList([18, 171]),
+      Uint8List.fromList([52, 205, 18, 171]),
+      Uint8List.fromList([32, 0, 0, 0, 0, 0, 0]),
+      Uint8List.fromList([52, 205, 18, 171, 52, 205, 18, 171]),
+    ];
+
+    for (var i = 0; i < toEncode.length; i++) {
+      final encoded = encodeUInt256(toEncode[i]);
+
+      expect(
+        encoded,
+        equals(expected[i]),
+      );
+    }
+  });
 }
