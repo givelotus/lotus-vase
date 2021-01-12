@@ -157,22 +157,27 @@ int readVarIntNum(ByteDataReader reader) {
   }
 }
 
-// TODO: FIX Should probably have two versions of this function. One for BigInt, one for Int
 BigInt readVarInt(Uint8List buffer) {
-  var first =
-      int.parse(HEX.encode(buffer.sublist(0, 1)), radix: 16).toUnsigned(8);
+  final first = buffer.first;
 
   switch (first) {
     case 0xFD:
-      return BigInt.from(
-          hexToUint16(buffer.sublist(1, 3))); // 2 bytes ==  Uint16
+      return bytesToBigInt(
+        bytes: buffer.sublist(1, 3),
+        endian: Endian.little,
+      ); // 2 bytes ==  Uint16
 
     case 0xFE:
-      return BigInt.from(
-          hexToUint32(buffer.sublist(1, 5))); // 4 bytes == Uint32
+      return bytesToBigInt(
+        bytes: buffer.sublist(1, 5),
+        endian: Endian.little,
+      ); // 4 bytes == Uint32
 
     case 0xFF:
-      return hexToUint64(buffer.sublist(1, 9)); // 8 bytes == Uint64
+      return bytesToBigInt(
+        bytes: buffer.sublist(1, 9),
+        endian: Endian.little,
+      ); // 8 bytes == Uint64
 
     default:
       return BigInt.from(first);
