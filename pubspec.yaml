@@ -45,6 +45,7 @@ dependencies:
   provider: ^4.0.0
   flutter_secure_storage: 3.3.5
   pool: ^1.4.0
+  logging: ">=0.11.4 <2.0.0"
 
 dev_dependencies:
   flutter_test:
