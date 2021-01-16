@@ -29,6 +29,12 @@ class ElectrumClient extends JSONRPCWebsocket {
     return call('blockchain.transaction.broadcast', [transaction]);
   }
 
+  Future<Object> blockchainTransactionGet(String tx_hash, bool verbose) {
+    // TODO: Think about whether we really want to default verbose = true
+    verbose = true;
+    return call('blockchain.transaction.get', [tx_hash, verbose]);
+  }
+
   Future<Object> serverPing() {
     return call('server.ping', []);
   }
