@@ -135,6 +135,8 @@ class Wallet {
         .map((response) => response.confirmed + response.unconfirmed)
         .fold(0, (p, c) => p + c);
     _balance = totalBalance;
+
+    updateBalance(WalletBalance(balance: _balance));
   }
 
   void initialize() async {
