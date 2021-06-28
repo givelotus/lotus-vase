@@ -6,7 +6,7 @@ PODS:
   - qr_code_scanner (0.0.2):
     - Flutter
     - MTBBarcodeScanner
-  - vibration (1.7.1):
+  - vibration (1.7.3):
     - Flutter
 
 DEPENDENCIES:
@@ -34,7 +34,7 @@ SPEC CHECKSUMS:
   flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   qr_code_scanner: 16107718bdad7d708cdf6a5eacdca24b56cdf471
-  vibration: 4f4ded27b9d0e21e4110ca43978f057412d28c44
+  vibration: b5a33e764c3f609a975b9dca73dce20fdde627dc
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
