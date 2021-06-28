@@ -142,6 +142,21 @@ NetworkType getNetworkTypeFromPrefix(String prefix) {
   }
 }
 
+/// getPrefixFromNetworkType converts a Network Type to a
+/// cashaddress prefix for generating accesses appropriately.
+String getPrefixFromNetworkType(NetworkType type) {
+  switch (type) {
+    case NetworkType.MAIN:
+      return 'bitcoincash';
+    case NetworkType.TEST:
+      return 'bchtest';
+    case NetworkType.REGTEST:
+      return 'bchreg';
+    default:
+      return 'bitcoincash';
+  }
+}
+
 /// getAddressTypeFromByte converts a address type into the
 /// appropriate [AddressType] for internal representations.
 AddressType getAddressTypeFromByte(int addressType) {

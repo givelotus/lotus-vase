@@ -36,4 +36,18 @@ void main() {
     var address = Address(legacy);
     expect(address.toCashAddress(), cashaddr);
   });
+
+  test('can decode from lotus and encode to cashaddress', () async {
+    final xAddress = 'lotusT16PSJHU42xeYK54uebr811ZAdJ5LhsJRw92YAFVax';
+    final cashaddr = 'bchtest:qq9e0r875ed2zmd6qe0kgsjxwjnadzrl9sukcatjha';
+    var address = Address(xAddress);
+    expect(address.toCashAddress(), cashaddr);
+  });
+
+  test('can decode from cashaddress and encode to xaddress', () async {
+    final xAddress = 'lotusT16PSJHU42xeYK54uebr811ZAdJ5LhsJRw92YAFVax';
+    final cashaddr = 'bchtest:qq9e0r875ed2zmd6qe0kgsjxwjnadzrl9sukcatjha';
+    var address = Address(cashaddr);
+    expect(address.toXAddress(), xAddress);
+  });
 }
