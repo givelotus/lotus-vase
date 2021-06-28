@@ -5,9 +5,9 @@ import 'address.dart';
 
 void main() {
   test('can decode and encode to base58', () async {
-    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    final cashaddr = 'lotus:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
     final legacy = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
-    var address = Decode(cashaddr, 'bitcoincash');
+    var address = Decode(cashaddr, 'lotus');
 
     expect(
         Address.fromAddressBytes(address.addressBytes,
@@ -18,8 +18,8 @@ void main() {
   });
 
   test('can decode and encode cashaddresses', () async {
-    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
-    var address = Decode(cashaddr, 'bitcoincash');
+    final cashaddr = 'lotus:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    var address = Decode(cashaddr, 'lotus');
     var encodedCashaddr = Encode(address);
 
     expect(encodedCashaddr, cashaddr);

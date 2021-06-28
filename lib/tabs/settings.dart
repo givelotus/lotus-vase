@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'package:cashew/constants.dart';
-import 'package:cashew/viewmodel.dart';
-import 'package:cashew/bitcoincash/bip39/bip39.dart';
+import 'package:vase/constants.dart';
+import 'package:vase/viewmodel.dart';
+import 'package:vase/lotus/bip39/bip39.dart';
 import 'component/balance_display.dart';
 
 class SettingsTab extends StatelessWidget {

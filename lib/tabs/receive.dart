@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:flutter/material.dart';
 
-import 'package:cashew/constants.dart';
-import 'package:cashew/components/calculator_keyboard/keyboard.dart';
+import 'package:vase/constants.dart';
+import 'package:vase/components/calculator_keyboard/keyboard.dart';
 import '../viewmodel.dart';
 import 'component/payment_amount_display.dart';
 import 'component/balance_display.dart';

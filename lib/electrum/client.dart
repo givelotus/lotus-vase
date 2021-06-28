@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cashew/electrum/rpc.dart';
+import 'package:vase/electrum/rpc.dart';
 
 class ListUnspentResponseItem {
   ListUnspentResponseItem(this.height, this.tx_pos, this.tx_hash, this.value);

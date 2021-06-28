@@ -1,11 +1,11 @@
-import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:vase/lotus/lotus.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'package:cashew/wallet/wallet.dart';
-import 'package:cashew/wallet/keys.dart';
-import 'package:cashew/constants.dart';
+import 'package:vase/wallet/wallet.dart';
+import 'package:vase/wallet/keys.dart';
+import 'package:vase/constants.dart';
 
 import 'electrum/client.dart';
 

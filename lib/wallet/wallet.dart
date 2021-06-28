@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:pool/pool.dart';
 
-import 'package:cashew/bitcoincash/bitcoincash.dart';
-import 'package:cashew/wallet/vault.dart';
+import 'package:vase/lotus/lotus.dart';
+import 'package:vase/wallet/vault.dart';
 import 'package:hex/hex.dart';
 
 import '../constants.dart';

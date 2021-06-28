@@ -1,5 +1,6 @@
-import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:vase/lotus/lotus.dart';
 import 'package:test/test.dart';
+import 'package:vase/lotus/encoding/base58check.dart' as base58;
 
 void main() {
   test('PrivateKey Generation', () {
@@ -75,7 +76,6 @@ void main() {
       final pk = BCHPrivateKey.fromBigInt(
         arg[0],
       );
-
       expect(
         pk.toWIF(),
         equals(arg[1]),

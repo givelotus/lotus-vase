@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:vase/lotus/lotus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_annotation/json_annotation.dart';
 

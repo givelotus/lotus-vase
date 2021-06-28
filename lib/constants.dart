@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:cashew/bitcoincash/networks.dart';
+import 'package:vase/lotus/networks.dart';
 
 // Wallet constants
 const electrumUrls = [

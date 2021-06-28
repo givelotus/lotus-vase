@@ -1,5 +1,5 @@
-import 'package:cashew/bitcoincash/utils/parse_uri.dart';
-import 'package:cashew/viewmodel.dart';
+import 'package:vase/lotus/utils/parse_uri.dart';
+import 'package:vase/viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -10,7 +10,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 import './send_info.dart';
 import './sendModel.dart';
 import '../component/balance_display.dart';
-import '../../bitcoincash/utils/parse_uri.dart';
+import '../../lotus/utils/parse_uri.dart';
 
 class SendTab extends StatefulWidget {
   final PageController controller;

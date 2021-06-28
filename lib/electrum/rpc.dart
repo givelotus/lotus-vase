@@ -118,7 +118,7 @@ class JSONRPCWebsocket {
     handler(notification.params);
   }
 
-  void connect(Uri address) async {
+  Future<void> connect(Uri address) async {
     final r = Random();
     final key = base64.encode(List<int>.generate(8, (_) => r.nextInt(255)));
 

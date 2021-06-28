@@ -1,5 +1,5 @@
-import 'package:cashew/electrum/client.dart';
-import 'package:cashew/bitcoincash/bitcoincash.dart';
+import 'package:vase/electrum/client.dart';
+import 'package:vase/lotus/lotus.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/digests/sha256.dart';
 

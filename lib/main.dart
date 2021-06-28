@@ -1,8 +1,8 @@
-import 'package:cashew/tabs/settings.dart';
-import 'package:cashew/tabs/receive.dart';
-import 'package:cashew/tabs/send/send.dart';
-import 'package:cashew/viewmodel.dart';
-import 'package:cashew/tabs/send/sendModel.dart';
+import 'package:vase/tabs/settings.dart';
+import 'package:vase/tabs/receive.dart';
+import 'package:vase/tabs/send/send.dart';
+import 'package:vase/viewmodel.dart';
+import 'package:vase/tabs/send/sendModel.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -12,19 +12,19 @@ void main() {
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider(create: (_) => WalletModel()),
     ChangeNotifierProvider(create: (_) => SendModel()),
-  ], child: CashewApp()));
+  ], child: LotusApp()));
 }
 
-class CashewApp extends StatelessWidget {
+class LotusApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Cashew',
+      title: 'Lotus',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MainPage(title: 'Cashew'),
+      home: MainPage(title: 'Lotus'),
     );
   }
 }

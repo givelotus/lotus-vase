@@ -1,7 +1,7 @@
-import 'package:cashew/bitcoincash/bitcoincash.dart';
-import 'package:cashew/bitcoincash/utils/parse_uri.dart';
-import 'package:cashew/components/calculator_keyboard/keyboard.dart';
-import 'package:cashew/constants.dart';
+import 'package:vase/lotus/lotus.dart';
+import 'package:vase/lotus/utils/parse_uri.dart';
+import 'package:vase/components/calculator_keyboard/keyboard.dart';
+import 'package:vase/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'sendModel.dart';
 import '../../viewmodel.dart';
-import '../../bitcoincash/address.dart';
-import '../../bitcoincash/transaction/transaction.dart';
+import '../../lotus/address.dart';
+import '../../lotus/transaction/transaction.dart';
 import '../component/payment_amount_display.dart';
 import '../component/balance_display.dart';
 

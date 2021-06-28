@@ -1,4 +1,4 @@
-import 'package:cashew/bitcoincash/address.dart';
+import 'package:vase/lotus/address.dart';
 
 class ParseURIResult {
   String address;
