@@ -1,125 +1,348 @@
-import 'dart:typed_data';
-import 'dart:convert';
-
 import 'package:collection/collection.dart';
 
 import 'utils.dart';
 import '../exceptions.dart';
 
-/*
-    Ported from bitcoinj-sv 0.1.1
-    by Stephan February
-    7 April 2019
- */
-
-var ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const BASE58_ALPHABET =
+    '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const MAP_BASE58 = [
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  -1,
+  17,
+  18,
+  19,
+  20,
+  21,
+  -1,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  -1,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56,
+  57,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+  -1,
+];
 
 List<int> decode(String input) {
   if (input.isEmpty) {
     return <int>[];
   }
-
-  var encodedInput = utf8.encode(input);
-  var uintAlphabet = utf8.encode(ALPHABET);
-
-  var INDEXES = List<int>(128)..fillRange(0, 128, -1);
-  for (var i = 0; i < ALPHABET.length; i++) {
-    INDEXES[uintAlphabet[i]] = i;
+  final inputBytes = List<int>.from(input.runes);
+  // Count leading zeros. 48 = 0 in ASCII/Utf8
+  var zeros = 0;
+  while (zeros < inputBytes.length && inputBytes[zeros] == 49) {
+    ++zeros;
   }
 
   // Convert the base58-encoded ASCII chars to a base58 byte sequence (base58 digits).
-  var input58 = List<int>(encodedInput.length);
-  input58.fillRange(0, input58.length, 0);
-  for (var i = 0; i < encodedInput.length; ++i) {
-    var c = encodedInput[i];
-    var digit = c < 128 ? INDEXES[c] : -1;
-    if (digit < 0) {
-      var buff = List<int>(1)..add(c);
-      var invalidChar = utf8.decode(buff);
+  final buffer = List<int>.filled(inputBytes.length * 733 ~/ 1000 + 1, 0);
+  var length = 0;
+  for (var idx = 0; idx < inputBytes.length; ++idx) {
+    var c = inputBytes[idx];
+    var carry = c < 256 ? MAP_BASE58[c] : -1;
+    if (carry < 0) {
       throw AddressFormatException(
-          'Illegal character ' + invalidChar + ' at position ' + i.toString());
+          'Illegal character ${inputBytes[idx]} at position ${idx.toString()}');
     }
-    input58[i] = digit;
-  }
-
-  // Count leading zeros.
-  var zeros = 0;
-  while (zeros < input58.length && input58[zeros] == 0) {
-    ++zeros;
-  }
-
-  // Convert base-58 digits to base-256 digits.
-  var decoded = List<int>(encodedInput.length);
-  decoded.fillRange(0, decoded.length, 0);
-  var outputStart = decoded.length;
-  for (var inputStart = zeros; inputStart < input58.length;) {
-    decoded[--outputStart] = divmod(input58, inputStart, 58, 256);
-    if (input58[inputStart] == 0) {
-      ++inputStart; // optimization - skip leading zeros
+    var i = 0;
+    for (var bIdx = buffer.length - 1;
+        (carry != 0 || i < length) && (bIdx >= 0);
+        bIdx--, i++) {
+      carry += 58 * buffer[bIdx];
+      buffer[bIdx] = (carry % 256);
+      carry ~/= 256;
     }
+    assert(carry == 0);
+    length = i;
   }
-
-  // Ignore extra leading zeroes that were added during the calculation.
-  while (outputStart < decoded.length && decoded[outputStart] == 0) {
-    ++outputStart;
-  }
-
   // Return decoded data (including original number of leading zeros).
-  return decoded.sublist(outputStart - zeros, decoded.length);
-}
-
-/// Divides a number, represented as an array of bytes each containing a single digit
-/// in the specified base, by the given divisor. The given number is modified in-place
-/// to contain the quotient, and the return value is the remainder.
-int divmod(List<int> number, int firstDigit, int base, int divisor) {
-// this is just long division which accounts for the base of the input digits
-  var remainder = 0;
-  for (var i = firstDigit; i < number.length; i++) {
-    var digit = number[i] & 0xFF;
-    var temp = remainder * base + digit;
-    number[i] = temp ~/ divisor;
-    remainder = temp % divisor;
-  }
-
-  return remainder.toSigned(8);
+  return buffer.sublist(buffer.length - length - zeros);
 }
 
 /// Encodes the given bytes as a base58 string (no checksum is appended).
-Uint8List encode(List<int> encodedInput) {
-  var uintAlphabet = utf8.encode(ALPHABET);
-  var ENCODED_ZERO = uintAlphabet[0];
-
-  if (encodedInput.isEmpty) {
-    return Uint8List(0);
+String encode(List<int> input) {
+  if (input.isEmpty) {
+    return '';
   }
 
   // Count leading zeros.
   var zeros = 0;
-  while (zeros < encodedInput.length && encodedInput[zeros] == 0) {
+  while (zeros < input.length && input[zeros] == 0) {
     ++zeros;
   }
 
-  // Convert base-256 digits to base-58 digits (plus conversion to ASCII characters)
-  // input = Arrays.copyOf(input, input.length); // since we modify it in-place
-  var encoded = Uint8List(encodedInput.length * 2); // upper bound <----- ???
-  var outputStart = encoded.length;
-  for (var inputStart = zeros; inputStart < encodedInput.length;) {
-    encoded[--outputStart] =
-        uintAlphabet[divmod(encodedInput, inputStart, 256, 58)];
-    if (encodedInput[inputStart] == 0) {
-      // optimization - skip leading zeros
-      ++inputStart;
+  final size = input.length * 138 ~/ 100 + 1;
+  final b58 = List<int>.filled(size, 0);
+
+  // Process the bytes.
+  var length = 0;
+  for (var idx = zeros; idx < input.length; idx++) {
+    var carry = input[idx];
+    var i = 0;
+    // Apply "b58 = b58 * 256 + ch".
+    for (var bIdx = b58.length - 1;
+        (carry != 0 || i < length) && (bIdx >= 0);
+        i++, bIdx--) {
+      carry += 256 * b58[bIdx];
+      b58[bIdx] = carry % 58;
+      carry ~/= 58;
     }
+    assert(carry == 0);
+    length = i;
   }
-  // Preserve exactly as many leading encoded zeros in output as there were leading zeros in input.
-  while (outputStart < encoded.length && encoded[outputStart] == ENCODED_ZERO) {
-    ++outputStart;
+
+  final outputBuffer = StringBuffer();
+  for (; zeros > 0; zeros--) {
+    // Write zero in ASCII
+    outputBuffer.writeCharCode(49);
   }
-  while (--zeros >= 0) {
-    encoded[--outputStart] = ENCODED_ZERO;
+
+  for (var i = b58.length - length; i < b58.length; i++) {
+    var d = b58[i];
+    outputBuffer.writeCharCode(BASE58_ALPHABET.codeUnitAt(d));
   }
-  // Return encoded string (including encoded leading zeros).
-  return encoded.sublist(outputStart, encoded.length);
+  return outputBuffer.toString();
 }
 
 List<int> decodeChecked(String input) {
@@ -129,14 +352,10 @@ List<int> decodeChecked(String input) {
   }
 
   var data = decoded.sublist(0, decoded.length - 4);
-  var checksum = decoded.sublist(decoded.length - 4, decoded.length);
+  var checksum = decoded.sublist(decoded.length - 4);
   var actualChecksum = sha256Twice(data).sublist(0, 4);
-
-  // convert unsigned list back to signed
-  var byteConverted = actualChecksum.map((elem) => elem.toSigned(8));
-  if (!IterableEquality().equals(checksum, byteConverted)) {
+  if (!ListEquality().equals(checksum, actualChecksum)) {
     throw BadChecksumException('Checksum does not validate');
   }
-
   return data;
 }

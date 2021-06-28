@@ -43,7 +43,7 @@ abstract class CKDSerializer {
   String serialize() {
     var versionBytes = getVersionBytes();
 
-    var serializedKey = List<int>(78);
+    var serializedKey = List.filled(78, 0);
     serializedKey.setRange(0, 4, versionBytes);
     serializedKey.setRange(4, 5, [_nodeDepth]);
     serializedKey.setRange(5, 9, _parentFingerprint);
@@ -56,9 +56,7 @@ abstract class CKDSerializer {
     var checksum =
         doubleShaAddr.sublist(0, 4).map((elem) => elem.toSigned(8)).toList();
 
-    List<int> encoded = bs58check.encode(serializedKey + checksum);
-
-    return utf8.decode(encoded);
+    return bs58check.encode(serializedKey + checksum);
   }
 
   List<int> getVersionBytes() {

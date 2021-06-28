@@ -175,43 +175,32 @@ class Address {
   }
 
   String _getEncoded(List<int> hashAddress) {
-    var addressBytes = List<int>(1 + hashAddress.length + 4);
+    var addressBytes = List.filled(1 + hashAddress.length + 4, 0);
     addressBytes[0] = legacyVersionByte;
-
-    // copy all of raw address content, taking care not to
-    // overwrite the version byte at start
-    addressBytes.fillRange(1, addressBytes.length, 0);
     addressBytes.setRange(1, hashAddress.length + 1, hashAddress);
 
     // checksum calculation...
     // doubleSha everything except the last four checksum bytes
     var doubleShaAddr =
         sha256Twice(addressBytes.sublist(0, hashAddress.length + 1));
-    var checksum =
-        doubleShaAddr.sublist(0, 4).map((elem) => elem.toSigned(8)).toList();
-
+    var checksum = doubleShaAddr.sublist(0, 4);
     addressBytes.setRange(
         hashAddress.length + 1, addressBytes.length, checksum);
-    var encoded = bs58check.encode(addressBytes);
-    var utf8Decoded = utf8.decode(encoded);
-
-    return utf8Decoded;
+    return bs58check.encode(addressBytes);
   }
 
   void _fromBase58(String address) {
     address = address.trim();
 
     var versionAndDataBytes = bs58check.decodeChecked(address);
-    var versionByte = versionAndDataBytes[0].toUnsigned(8);
+    var versionByte = versionAndDataBytes[0];
 
     _version = versionByte & 0xFF;
     _networkTypes = Networks.getNetworkTypes(_version);
     _addressType = Networks.getAddressType(_version);
     _networkType = Networks.getNetworkTypes(_version)[0];
-    var stripVersion =
-        versionAndDataBytes.sublist(1, versionAndDataBytes.length);
-    _publicKeyHash =
-        HEX.encode(stripVersion.map((elem) => elem.toUnsigned(8)).toList());
+    var stripVersion = versionAndDataBytes.sublist(1);
+    _publicKeyHash = HEX.encode(stripVersion);
   }
 
   void _fromCashAddress(String address, String prefix) {

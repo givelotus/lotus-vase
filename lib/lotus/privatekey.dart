@@ -1,18 +1,23 @@
+import 'dart:typed_data';
+import 'dart:math';
+
+import 'package:pointycastle/key_generators/ec_key_generator.dart';
+import 'package:pointycastle/ecc/curves/secp256k1.dart';
+import 'package:pointycastle/api.dart';
+import 'package:pointycastle/pointycastle.dart';
+import 'package:pointycastle/random/fortuna_random.dart';
+// Use pointycastle asn1 bigint encode/decode. Does not include
+// padding for negative bigints numbers which is the needed encoding
+// for WIFs.
+import 'package:pointycastle/src/utils.dart';
+
 import 'address.dart';
 import 'exceptions.dart';
 import 'networks.dart';
 import 'publickey.dart';
-import 'package:pointycastle/pointycastle.dart';
-import 'package:pointycastle/random/fortuna_random.dart';
 import 'encoding/base58check.dart' as bs58check;
 import 'package:hex/hex.dart';
-import 'dart:typed_data';
-import 'dart:convert';
-import 'dart:math';
 import 'encoding/utils.dart';
-import 'package:pointycastle/key_generators/ec_key_generator.dart';
-import 'package:pointycastle/ecc/curves/secp256k1.dart';
-import 'package:pointycastle/api.dart';
 
 /// Manages an ECDSA private key.
 ///
@@ -191,27 +196,24 @@ class BCHPrivateKey {
   /// Returns this Private Key in WIF format. See [toWIF()].
   String toWIF() {
     // convert private key _d to a hex string
-    var wifKey = _d.toRadixString(16).padLeft(64, '0');
-
+    var wifKey = encodeBigInt(_d).toList();
+    if (wifKey[0] == 0) {}
     if (_networkType == NetworkType.MAIN) {
-      wifKey = HEX.encode([0x80]) + wifKey;
+      wifKey = [0x80] + wifKey;
     } else if (_networkType == NetworkType.TEST ||
         _networkType == NetworkType.REGTEST) {
-      wifKey = HEX.encode([0xef]) + wifKey;
+      wifKey = [0xef] + wifKey;
     }
 
     if (_hasCompressedPubKey) {
-      wifKey = wifKey + HEX.encode([0x01]);
+      wifKey.add(0x01);
     }
 
-    var shaWif = sha256Twice(HEX.decode(wifKey));
+    var shaWif = sha256Twice(wifKey);
     var checksum = shaWif.sublist(0, 4);
-
-    wifKey = wifKey + HEX.encode(checksum);
-
-    var finalWif = bs58check.encode(HEX.decode(wifKey));
-
-    return utf8.decode(finalWif);
+    wifKey.addAll(checksum);
+    var finalWif = bs58check.encode(wifKey);
+    return finalWif;
   }
 
   /// Returns the *naked* private key Big Integer value as a hexadecimal string
