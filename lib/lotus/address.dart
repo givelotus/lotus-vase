@@ -10,6 +10,8 @@ import 'networks.dart';
 import 'exceptions.dart';
 
 import 'cashaddress.dart' as cash_address;
+import 'xaddress.dart' as xaddress;
+import 'script/opcodes.dart';
 
 /// This class abstracts away the internals of address encoding and provides
 /// a convenient means to both encode and decode information from a bitcoin address.
@@ -43,12 +45,11 @@ class Address {
   ///
   Address(String address) {
     try {
-      _fromCashAddress(address, 'ecash');
+      _fromXAddress(address);
       return;
     } catch (e) {
       try {
         _fromCashAddress(address, 'bitcoincash');
-        return;
       } catch (e) {
         _fromBase58(address);
       }
@@ -154,12 +155,43 @@ class Address {
 
   /// Serialise this address object to a cashaddr encoded string
   ///
-  String toCashAddress({prefix = 'bitcoincash'}) {
+  String toCashAddress() {
     return cash_address.Encode(cash_address.RawCashAddress(
         addressBytes: HEX.decode(_publicKeyHash),
         networkType: networkType,
         addressType: addressType,
-        prefix: prefix));
+        prefix: cash_address.getPrefixFromNetworkType(networkType)));
+  }
+
+  String toXAddress() {
+    final pubKeyBytes = HEX.decode(_publicKeyHash);
+    final script = BCHScript();
+    if (_addressType == AddressType.PUBKEY_HASH) {
+      script.add(OpCodes.OP_DUP);
+      script.add(OpCodes.OP_HASH160);
+      script.add(pubKeyBytes);
+      script.add(OpCodes.OP_EQUALVERIFY);
+      script.add(OpCodes.OP_CHECKSIG);
+
+      return xaddress.XAddress(
+              type: xaddress.XAddressType.ScriptPubKey,
+              payload: script.buffer,
+              network: _networkType)
+          .Encode();
+    }
+
+    if (_addressType == AddressType.SCRIPT_HASH) {
+      script.add(OpCodes.OP_HASH160);
+      script.add(pubKeyBytes);
+      script.add(OpCodes.OP_EQUAL);
+      return xaddress.XAddress(
+              type: xaddress.XAddressType.ScriptPubKey,
+              payload: script.buffer,
+              network: _networkType)
+          .Encode();
+    }
+
+    throw AddressFormatException('Unknown address type');
   }
 
   /// Serialise this address object to a base58-encoded string.
@@ -208,6 +240,32 @@ class Address {
     _networkType = rawAddressData.networkType;
     _addressType = rawAddressData.addressType;
     _publicKeyHash = HEX.encode(rawAddressData.addressBytes);
+  }
+
+  void _fromXAddress(String address) {
+    final rawAddressData = xaddress.XAddress.Decode(address);
+    _networkType = rawAddressData.network;
+    final payload = rawAddressData.payload;
+    final script = BCHScript.fromByteArray(Uint8List.fromList(payload)).chunks;
+    if (script.length == 5 &&
+        script[0].opcodenum == OpCodes.OP_DUP &&
+        script[1].opcodenum == OpCodes.OP_HASH160 &&
+        script[3].opcodenum == OpCodes.OP_EQUALVERIFY &&
+        script[4].opcodenum == OpCodes.OP_CHECKSIG) {
+      _publicKeyHash = HEX.encode(script[2].buf);
+      _addressType = AddressType.PUBKEY_HASH;
+      return;
+    }
+
+    if (script.length == 3 &&
+        script[0].opcodenum == OpCodes.OP_HASH160 &&
+        script[2].opcodenum == OpCodes.OP_EQUAL) {
+      _publicKeyHash = HEX.encode(script[1].buf);
+      _addressType = AddressType.SCRIPT_HASH;
+      return;
+    }
+
+    throw AddressFormatException('Unknown address format');
   }
 
   void _createFromScript(BCHScript script, NetworkType networkType) {
