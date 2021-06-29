@@ -30,7 +30,7 @@ class CalculatorKeyboard extends StatelessWidget {
       final evaluatedStack = stack.sublist(0);
       evaluateExpression(evaluatedStack);
       final takenNumbers = takeNumbers(evaluatedStack.reversed.toList());
-      amount = takenNumbers.isNaN ? 0 : takenNumbers.truncate();
+      amount = takenNumbers.isNaN ? 0 : (takenNumbers * 1000000).truncate();
 
       // This will be mutated, that's why we need to update the value.
       dataNotifier.value =

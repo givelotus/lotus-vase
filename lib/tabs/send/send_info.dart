@@ -88,7 +88,7 @@ class SendInfo extends StatelessWidget {
 
         // Use the unparsed version, so that it appears as it was originally copied
         sendModel.sendToAddress = parseResult.address ?? '';
-        sendModel.sendAmount = parseResult.amount;
+        sendModel.sendAmount = parseResult.amount ?? 0;
 
         keyboardNotifier.value = CalculatorData(
             amount: sendModel.sendAmount,
@@ -165,7 +165,7 @@ class SendInfo extends StatelessWidget {
                     child: Consumer<SendModel>(
                         builder: (context, viewModel, child) =>
                             PaymentAmountDisplay(
-                                amount: (viewModel.sendAmount ?? 0).toString(),
+                                amount: viewModel.sendAmount ?? 0,
                                 function:
                                     keyboardNotifier.value.function ?? '')))
               ]),
