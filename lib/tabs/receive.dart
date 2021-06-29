@@ -116,8 +116,7 @@ class ReceiveTab extends StatelessWidget {
               valueListenable: keyboardNotifier,
               builder: (context, CalculatorData balance, child) =>
                   PaymentAmountDisplay(
-                      amount: balance.amount.toString(),
-                      function: balance.function)),
+                      amount: balance.amount, function: balance.function)),
           calculatorKeyboard,
         ],
       ),

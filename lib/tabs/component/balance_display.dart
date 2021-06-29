@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../wallet/wallet.dart';
 import '../../constants.dart';
+import '../../../lotus/utils/format_amount.dart';
 
 class BalanceDisplay extends StatelessWidget {
   final ValueNotifier<WalletBalance> balanceNotifier;
@@ -43,20 +44,12 @@ class BalanceDisplay extends StatelessWidget {
                       );
                     }
                     return Text.rich(TextSpan(
-                      text: '${balance.balance}',
+                      text: '${formatAmount(balance.balance)}',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                       ),
-                      children: [
-                        TextSpan(
-                          text: ' sats',
-                          style: TextStyle(
-                              color: Colors.black.withOpacity(.8),
-                              fontSize: 15),
-                        ),
-                      ],
                     ));
                   }),
             ],

@@ -22,7 +22,7 @@ ParseURIResult parseSendURI(String uri) {
 
   int intAmount;
   if (amount.truncateToDouble() != amount) {
-    intAmount = (amount * 100000000).truncate();
+    intAmount = (amount * 1000000).truncate();
   } else {
     intAmount = amount.truncate();
   }

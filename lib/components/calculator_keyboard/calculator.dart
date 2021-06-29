@@ -107,7 +107,7 @@ void evaluateExpression(List<String> stack) {
   stack.clear();
   assert(output.length < 2, 'Invalid output length');
   if (output.length == 1) {
-    stack.addAll(output.removeLast().truncate().toString().split(''));
+    stack.addAll(output.removeLast().toString().split(''));
   }
   stack.addAll(reversedStack.reversed);
   if (stack.isEmpty) {

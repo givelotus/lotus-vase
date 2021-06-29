@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../lotus/utils/format_amount.dart';
+
 class PaymentAmountDisplay extends StatelessWidget {
-  final String amount;
+  final int amount;
   final String function;
   PaymentAmountDisplay({Key key, this.amount, this.function})
       : super(
@@ -25,7 +27,7 @@ class PaymentAmountDisplay extends StatelessWidget {
       Row(children: [
         Expanded(
             child: Text(
-          '= ${amount} sats',
+          '= ${formatAmount(amount)}',
           textAlign: TextAlign.right,
           style: TextStyle(
               fontSize: Theme.of(context).textTheme.headline5.fontSize,
