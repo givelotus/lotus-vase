@@ -84,8 +84,7 @@ class SendInfo extends StatelessWidget {
       // TODO: Dedupe this with QR Scanning.
       try {
         final data = await Clipboard.getData('text/plain');
-        final parseResult =
-            parseSendURI(data.text.toString().trim().toLowerCase());
+        final parseResult = parseSendURI(data.text.toString().trim());
 
         // Use the unparsed version, so that it appears as it was originally copied
         sendModel.sendToAddress = parseResult.address ?? '';

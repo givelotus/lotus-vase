@@ -30,7 +30,7 @@ class ReceiveTab extends StatelessWidget {
 
     final keyInfo = keys.firstWhere((keyInfo) =>
         keyInfo.isChange == false && keyInfo.isDeprecated == false);
-    final strAddress = keyInfo.address.toCashAddress();
+    final strAddress = keyInfo.address.toXAddress();
     final _controller = TextEditingController(text: strAddress);
 
     final createAddressUri = (CalculatorData data) {
