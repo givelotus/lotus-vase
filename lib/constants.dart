@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 
 import 'package:vase/lotus/networks.dart';
 
-// Wallet constants
-const electrumUrls = [
-  'http://bchabc.fmarcosh.xyz:50003',
-  'https://electrum.bitcoinabc.org:50004',
-  'https://fulcrum.cashweb.io',
-];
+const network = NetworkType.TEST;
 
+// Wallet constants
+const electrumUrlMap = {
+  NetworkType.MAIN: ['https://fulcrum.cashweb.io'],
+  NetworkType.TEST: ['https://tfulcrum.cashweb.io'],
+};
+
+final electrumUrls = electrumUrlMap[network];
 const inputSize = 148;
 const outputSize = 34;
 const defaultFeePerByte = 10;
@@ -23,5 +25,3 @@ const copiedAd = SnackBar(
   content: Text('Copied address to Clipboard'),
   duration: Duration(seconds: 1),
 );
-
-const network = NetworkType.MAIN;
