@@ -48,7 +48,7 @@ List<KeyInfo> constructChildKeys(
     int childKeyCount,
     NetworkType network = constants.network}) {
   // Default electron cash path
-  final legacyParentKey = rootKey.deriveChildKey("m/44'/145'");
+  final bchParentKey = rootKey.deriveChildKey("m/44'/145'");
 
   final generateKeys =
       (priorList, generationRootKey, isChange, isDeprecated, number) =>
@@ -65,42 +65,55 @@ List<KeyInfo> constructChildKeys(
                     network: network,
                   )));
 
-  final newParentKey = rootKey.deriveChildKey("m/44'/899'");
+  final ecashParentKey = rootKey.deriveChildKey("m/44'/899'");
+  final lotusParentKey = rootKey.deriveChildKey("m/44'/10605'");
 
 // Deprecated keys were incorrectly missing part of the deriviation path. We now
 // include them only so that they load up the balance, but won't be used by the
 // code elsewhere for change or receiving. We need to generally clean up this
 // keystore stuff, as all the state is a bit annoying to deal with elsewhere.
   final withDeprecatedExternalKeys = generateKeys(<KeyInfo>[],
-      legacyParentKey.deriveChildNumber(0), false, true, childKeyCount);
+      bchParentKey.deriveChildNumber(0), false, true, childKeyCount);
   final withDeprecatedChangeKeys = generateKeys(withDeprecatedExternalKeys,
-      legacyParentKey.deriveChildNumber(1), true, true, childKeyCount);
+      bchParentKey.deriveChildNumber(1), true, true, childKeyCount);
   final withLegacyReceiveKeys = generateKeys(
       withDeprecatedChangeKeys,
-      legacyParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      bchParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
       false,
       true,
       childKeyCount);
   final withLegacyChangeKeys = generateKeys(
       withLegacyReceiveKeys,
-      legacyParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+      bchParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
       true,
       true,
       childKeyCount);
-  final withNewDerivationKeys = generateKeys(
+  final withEcashDerivationKeys = generateKeys(
       withLegacyChangeKeys,
-      newParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      ecashParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+      false,
+      true,
+      childKeyCount);
+  final withEcashChangeKeys = generateKeys(
+      withEcashDerivationKeys,
+      ecashParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+      true,
+      true,
+      childKeyCount);
+  final withLotusDerivationKeys = generateKeys(
+      withEcashChangeKeys,
+      lotusParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
       false,
       false,
       childKeyCount);
-  final withNewChangeKeys = generateKeys(
-      withNewDerivationKeys,
-      newParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+  final withLotusChangeKeys = generateKeys(
+      withLotusDerivationKeys,
+      lotusParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
       true,
       false,
       childKeyCount);
 
-  return withNewChangeKeys.toList();
+  return withLotusChangeKeys.toList();
 }
 
 // Construct a brand new set of keys from a seed over a worker. Processing a
