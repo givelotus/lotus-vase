@@ -35,8 +35,12 @@ class XAddress {
     type = _GetAddressType(decodedBytes.first);
     payload = decodedBytes.sublist(1, decodedBytes.length - 4);
     final checksum = _CreateChecksum(this);
+    final legacyChecksum = _CreateChecksumLegacy(this);
     final decodedChecksum = decodedBytes.sublist(decodedBytes.length - 4);
-    if (!ListEquality().equals(decodedChecksum, checksum)) {
+    final legacyDecodedChecksum =
+        decodedBytes.sublist(legacyChecksum.length - 4);
+    if (!ListEquality().equals(decodedChecksum, checksum) &&
+        !ListEquality().equals(legacyDecodedChecksum, checksum)) {
       throw AddressFormatException('Invalid checksum');
     }
   }
@@ -78,6 +82,17 @@ class XAddress {
 }
 
 List<int> _CreateChecksum(XAddress content) {
+  final buffer = BytesBuilder();
+  buffer.add(List.from(content.prefix.runes));
+  buffer.addByte(content.networkByte.runes.first);
+  buffer.addByte(content.typeByte);
+  buffer.add(content.payload);
+  final data = buffer.takeBytes();
+  final digest = sha256(data);
+  return digest.sublist(0, 4);
+}
+
+List<int> _CreateChecksumLegacy(XAddress content) {
   final buffer = BytesBuilder();
   buffer.add(varintBufNum(content.prefix.runes.length));
   buffer.add(List.from(content.prefix.runes));
