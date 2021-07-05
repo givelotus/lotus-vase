@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:vase/lotus/networks.dart';
 
-const network = NetworkType.TEST;
+const network = NetworkType.MAIN;
 
 // Wallet constants
 const electrumUrlMap = {
