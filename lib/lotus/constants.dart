@@ -20,7 +20,7 @@ const DEFAULT_LOCKTIME_SEQNUMBER = DEFAULT_SEQNUMBER - 1;
 const NLOCKTIME_MAX_VALUE = 4294967295;
 
 /// Value used for fee estimation (satoshis per kilobyte)
-const FEE_PER_KB = 1000;
+const FEE_PER_KB = 2000;
 
 /// Safe upper bound for change address script size in bytes
 const CHANGE_OUTPUT_MAX_SIZE = 20 + 4 + 34 + 4;
