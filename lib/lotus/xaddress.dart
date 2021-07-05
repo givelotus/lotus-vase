@@ -37,10 +37,9 @@ class XAddress {
     final checksum = _CreateChecksum(this);
     final legacyChecksum = _CreateChecksumLegacy(this);
     final decodedChecksum = decodedBytes.sublist(decodedBytes.length - 4);
-    final legacyDecodedChecksum =
-        decodedBytes.sublist(legacyChecksum.length - 4);
+
     if (!ListEquality().equals(decodedChecksum, checksum) &&
-        !ListEquality().equals(legacyDecodedChecksum, checksum)) {
+        !ListEquality().equals(decodedChecksum, legacyChecksum)) {
       throw AddressFormatException('Invalid checksum');
     }
   }
