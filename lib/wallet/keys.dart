@@ -48,7 +48,6 @@ List<KeyInfo> constructChildKeys(
     int childKeyCount,
     NetworkType network = constants.network}) {
   // Default electron cash path
-  final bchParentKey = rootKey.deriveChildKey("m/44'/145'");
 
   final generateKeys =
       (priorList, generationRootKey, isChange, isDeprecated, number) =>
@@ -65,43 +64,12 @@ List<KeyInfo> constructChildKeys(
                     network: network,
                   )));
 
+  final btcParentKey = rootKey.deriveChildKey("m/44'/0'");
+  final bchParentKey = rootKey.deriveChildKey("m/44'/145'");
   final ecashParentKey = rootKey.deriveChildKey("m/44'/899'");
   final lotusParentKey = rootKey.deriveChildKey("m/44'/10605'");
 
-// Deprecated keys were incorrectly missing part of the deriviation path. We now
-// include them only so that they load up the balance, but won't be used by the
-// code elsewhere for change or receiving. We need to generally clean up this
-// keystore stuff, as all the state is a bit annoying to deal with elsewhere.
-  final withDeprecatedExternalKeys = generateKeys(<KeyInfo>[],
-      bchParentKey.deriveChildNumber(0), false, true, childKeyCount);
-  final withDeprecatedChangeKeys = generateKeys(withDeprecatedExternalKeys,
-      bchParentKey.deriveChildNumber(1), true, true, childKeyCount);
-  final withLegacyReceiveKeys = generateKeys(
-      withDeprecatedChangeKeys,
-      bchParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
-      false,
-      true,
-      childKeyCount);
-  final withLegacyChangeKeys = generateKeys(
-      withLegacyReceiveKeys,
-      bchParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
-      true,
-      true,
-      childKeyCount);
-  final withEcashDerivationKeys = generateKeys(
-      withLegacyChangeKeys,
-      ecashParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
-      false,
-      true,
-      childKeyCount);
-  final withEcashChangeKeys = generateKeys(
-      withEcashDerivationKeys,
-      ecashParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
-      true,
-      true,
-      childKeyCount);
-  final withLotusDerivationKeys = generateKeys(
-      withEcashChangeKeys,
+  final withLotusDerivationKeys = generateKeys(<KeyInfo>[],
       lotusParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
       false,
       false,
@@ -112,8 +80,27 @@ List<KeyInfo> constructChildKeys(
       true,
       false,
       childKeyCount);
+// Deprecated keys were incorrectly missing part of the deriviation path. We now
+// include them only so that they load up the balance, but won't be used by the
+// code elsewhere for change or receiving. We need to generally clean up this
+// keystore stuff, as all the state is a bit annoying to deal with elsewhere.
+  var allKeys = withLotusChangeKeys;
+  for (final parentKey in [btcParentKey, bchParentKey, ecashParentKey]) {
+    allKeys = generateKeys(
+        allKeys,
+        parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
+        false,
+        true,
+        childKeyCount);
+    allKeys = generateKeys(
+        allKeys,
+        parentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
+        true,
+        true,
+        childKeyCount);
+  }
 
-  return withLotusChangeKeys.toList();
+  return allKeys.toList();
 }
 
 // Construct a brand new set of keys from a seed over a worker. Processing a
