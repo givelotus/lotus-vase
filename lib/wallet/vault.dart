@@ -1,10 +1,11 @@
 import 'dart:collection';
 
 class Outpoint {
-  Outpoint(this.transactionId, this.vout, this.amount);
+  Outpoint(this.transactionId, this.vout, this.amount, this.height);
   String transactionId;
   int vout;
   BigInt amount;
+  int height;
 }
 
 class Utxo {

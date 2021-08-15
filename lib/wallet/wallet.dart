@@ -65,7 +65,8 @@ class Wallet {
     final unspentList =
         await client.blockchainScripthashListunspent(scriptHash);
     for (final unspent in unspentList) {
-      final outpoint = Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+      final outpoint = Outpoint(
+          unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
 
       final spendable = Utxo(outpoint, keyInfo.keyIndex);
 
@@ -99,8 +100,8 @@ class Wallet {
             await client.blockchainScripthashListunspent(hexScriptHash);
         // TODO: Remove keyIndex concept. It is not particularly necessary;
         for (final unspent in unspentUtxos) {
-          final outpoint =
-              Outpoint(unspent.tx_hash, unspent.tx_pos, unspent.value);
+          final outpoint = Outpoint(
+              unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
           final spendable = Utxo(outpoint, keyInfo.keyIndex);
 
           _vault.addUtxo(spendable);
@@ -206,7 +207,8 @@ class Wallet {
 
     final utxos = _vault.values;
     final allUtxos = utxos.expand((utxos) => utxos).toList();
-    allUtxos.shuffle();
+    // Use oldest outpoints first
+    allUtxos.sort((Utxo a, Utxo b) => a.outpoint.height - b.outpoint.height);
     var satoshis = BigInt.from(0);
 
     for (final utxo in allUtxos) {
