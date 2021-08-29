@@ -19,12 +19,12 @@ class LotusApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lotus',
+      title: 'Vase',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MainPage(title: 'Lotus'),
+      home: MainPage(title: 'Vase'),
     );
   }
 }
