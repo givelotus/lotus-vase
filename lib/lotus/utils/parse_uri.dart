@@ -12,7 +12,7 @@ ParseURIResult parseSendURI(String uri) {
   final unparsedAmount = parseObject.queryParameters['amount'];
   final amount = unparsedAmount == null
       ? double.nan
-      : double.parse(unparsedAmount, (value) => double.nan);
+      : double.tryParse(unparsedAmount) ?? double.nan;
 
   Address(parseObject.path);
 

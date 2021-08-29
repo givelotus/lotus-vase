@@ -256,9 +256,9 @@ class Sighash {
       return sha256Twice(buf.toList());
     }
 
-    var hashPrevouts = List<int>(32)..fillRange(0, 32, 0);
-    var hashSequence = List<int>(32)..fillRange(0, 32, 0);
-    var hashOutputs = List<int>(32)..fillRange(0, 32, 0);
+    var hashPrevouts = List.filled(32, 0);
+    var hashSequence = List.filled(32, 0);
+    var hashOutputs = List.filled(32, 0);
 
     if (!(sighashType & SighashType.SIGHASH_ANYONECANPAY > 0)) {
       hashPrevouts = GetPrevoutHash(txn);

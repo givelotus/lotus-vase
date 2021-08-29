@@ -15,7 +15,7 @@ class WIFCodec {
       return keyBytes;
     } else {
       // Keys that have compressed public components have an extra 1 byte on the end in dumped form.
-      var bytes = List<int>(33);
+      var bytes = List.filled(33, 0);
 
       bytes.setRange(0, 32, keyBytes);
       bytes[32] = 1;

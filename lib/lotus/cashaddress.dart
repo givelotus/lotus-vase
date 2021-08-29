@@ -213,7 +213,7 @@ String Encode(RawCashAddress address) {
   final wchk = appendChecksum(packed, poly);
   final base32 = toBase32(wchk);
 
-  return '${address.prefix}:${base32}';
+  return '${address.prefix}:$base32';
 }
 
 // packAddress takes a RawAddress and converts it's payload to a 5-bit packed

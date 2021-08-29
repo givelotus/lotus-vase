@@ -49,7 +49,7 @@ void main() {
               .toCashAddress(),
           address,
           reason:
-              'Keynumber ${keyNumber} failed to check against test vectors');
+              'Keynumber $keyNumber failed to check against test vectors');
     });
 
     final masterChangeKey = masterAccountKey.deriveChildNumber(1).hdPublicKey;
@@ -74,7 +74,7 @@ void main() {
               .toCashAddress(),
           address,
           reason:
-              'Keynumber ${keyNumber} failed to check against test vectors');
+              'Keynumber $keyNumber failed to check against test vectors');
     });
   });
 }

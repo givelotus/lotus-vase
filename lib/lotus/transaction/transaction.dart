@@ -596,11 +596,11 @@ class Transaction {
         return 'transaction txout $ndx satoshis is invalid';
       }
       if (txout.satoshis > MAX_MONEY) {
-        return 'transaction txout ${ndx} greater than MAX_MONEY';
+        return 'transaction txout $ndx greater than MAX_MONEY';
       }
       valueoutbn = valueoutbn + txout.satoshis;
       if (valueoutbn > MAX_MONEY) {
-        return 'transaction txout ${ndx} total output greater than MAX_MONEY';
+        return 'transaction txout $ndx total output greater than MAX_MONEY';
       }
     }
 

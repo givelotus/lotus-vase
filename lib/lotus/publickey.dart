@@ -247,7 +247,7 @@ class BCHPublicKey {
 
     var encoded = HEX.decode(xValue);
 
-    var addressBytes = List<int>(1 + encoded.length);
+    var addressBytes = List.filled(1 + encoded.length, 0);
     addressBytes[0] = prefixByte;
     addressBytes.setRange(1, addressBytes.length, encoded);
 

@@ -51,7 +51,6 @@ class XAddress {
       default:
         throw AddressFormatException('Unknown address type');
     }
-    return 0;
   }
 
   String get networkByte {
@@ -65,7 +64,6 @@ class XAddress {
       default:
         throw AddressFormatException('Unknown network type');
     }
-    return 'U';
   }
 
   /// Encodes the given bytes as an xaddress string.
@@ -125,7 +123,6 @@ NetworkType _GetNetworkType(String network) {
     default:
       throw AddressFormatException('Unknown network type');
   }
-  return NetworkType.MAIN;
 }
 
 XAddressType _GetAddressType(int type) {
@@ -135,5 +132,4 @@ XAddressType _GetAddressType(int type) {
     default:
       throw AddressFormatException('Unknown address type');
   }
-  return XAddressType.ScriptPubKey;
 }

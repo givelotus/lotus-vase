@@ -95,7 +95,7 @@ mixin P2MSUnlockMixin on _P2MSUnlockBuilder implements UnlockingScriptBuilder {
             sprintf(' %s 0x%s',
                 [HEX.decode(elem.toTxFormat()).length, elem.toTxFormat()]));
 
-    return BCHScript.fromString('OP_0 ${multiSigs}');
+    return BCHScript.fromString('OP_0 $multiSigs');
   }
 }
 

@@ -61,7 +61,7 @@ void main() {
               .toCashAddress(),
           address,
           reason:
-              'Keynumber ${keyNumber} failed to check against test vectors');
+              'Keynumber $keyNumber failed to check against test vectors');
     });
 
     final masterChangeKey = masterAccountKey.deriveChildNumber(1);
@@ -86,7 +86,7 @@ void main() {
               .toCashAddress(),
           address,
           reason:
-              'Keynumber ${keyNumber} failed to check against test vectors');
+              'Keynumber $keyNumber failed to check against test vectors');
     });
   });
 
@@ -100,10 +100,10 @@ void main() {
 
     for (var i = 0; i < 1000; i++) {
       expect(() => masterReceiveKey.deriveChildNumber(i), returnsNormally,
-          reason: 'Key ${i} failed to generate');
+          reason: 'Key $i failed to generate');
       expect(
           () => masterReceiveKey.deriveChildNumber(i).xprivkey, returnsNormally,
-          reason: 'Key ${i} failed to generate');
+          reason: 'Key $i failed to generate');
     }
   });
 }
