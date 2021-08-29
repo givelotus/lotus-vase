@@ -227,7 +227,7 @@ class Wallet {
       final unlockBuilder = P2PKHUnlockBuilder(privateKey.publicKey);
       final address = privateKey.toAddress(networkType: network);
       assert(address.toBase58() == privateKeyInfo.address.toBase58(),
-          'Key info corrupt for ${address} != ${privateKeyInfo.address}');
+          'Key info corrupt for $address != ${privateKeyInfo.address}');
       var output = TransactionOutput(scriptBuilder: P2PKHLockBuilder(address));
       output.satoshis = utxo.outpoint.amount;
       output.transactionId = utxo.outpoint.transactionId;
@@ -275,6 +275,6 @@ class Wallet {
 
   Future<void> updateSeedPhrase(String newSeed, [String password = '']) async {
     keys = await Keys.construct(newSeed, password);
-    await initialize();
+    initialize();
   }
 }

@@ -11,7 +11,7 @@ part 'keys.g.dart';
 const KEYS_KEY_PREFIX = 'keys_';
 const METADATA = 'metadata';
 
-@JsonSerializable(nullable: false)
+@JsonSerializable()
 class KeyStorageMetadata {
   KeyStorageMetadata(this.keyCount);
 
@@ -39,7 +39,7 @@ class KeyStorageMetadata {
   Map<String, dynamic> toJson() => _$KeyStorageMetadataToJson(this);
 }
 
-@JsonSerializable(nullable: false)
+@JsonSerializable()
 class StoredKey {
   StoredKey(this.privateKey, this.isChange);
 

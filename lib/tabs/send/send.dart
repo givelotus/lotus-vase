@@ -81,9 +81,9 @@ class _SendTabState extends State<SendTab> {
     return Scaffold(
       body: Stack(alignment: Alignment.center, children: [
         Container(
-            child: qrWidget,
             width: screenDimension.width,
-            height: screenDimension.height),
+            height: screenDimension.height,
+            child: qrWidget),
         Positioned(
           bottom: 5,
           child: IconButton(

@@ -37,10 +37,11 @@ double takeNumbers(List<String> stack) {
   if (number.length == 0) {
     return double.nan;
   }
-  return double.parse(number.toString(), (value) {
-    stack.addAll(value.split(''));
-    return double.nan;
-  });
+  final parsed = double.tryParse(number.toString());
+  if (parsed == null) {
+    stack.addAll(number.toString().split(''));
+  }
+  return parsed ?? double.nan;
 }
 
 typedef BinaryDoubleFunction = double Function(double left, double right);
@@ -67,7 +68,7 @@ void evaluateExpression(List<String> stack) {
     while (reversedStack.isNotEmpty) {
       final peek = reversedStack[reversedStack.length - 1];
       if (!validSymbols.contains(peek)) {
-        throw Exception('Invalid math symbol `${peek}`');
+        throw Exception('Invalid math symbol `$peek`');
       }
 
       switch (peek) {

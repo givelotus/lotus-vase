@@ -18,7 +18,7 @@ class PaymentAmountDisplay extends StatelessWidget {
       Row(children: [
         Expanded(
             child: Text(
-          '${function}',
+          '$function',
           style: TextStyle(
               fontSize: Theme.of(context).textTheme.headline5.fontSize,
               fontWeight: FontWeight.bold),

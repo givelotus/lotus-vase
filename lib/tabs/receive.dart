@@ -75,7 +75,7 @@ class ReceiveTab extends StatelessWidget {
                           ),
                         );
 
-                        Scaffold.of(context).showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           copiedAd,
                         );
                       },

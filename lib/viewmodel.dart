@@ -73,7 +73,7 @@ class WalletModel with ChangeNotifier {
       _wallet = await generateNewWallet(_seed, password: _password);
     }
     wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
-    await wallet.initialize();
+    wallet.initialize();
     initialized = true;
   }
 

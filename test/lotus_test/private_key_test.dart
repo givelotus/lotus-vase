@@ -1,6 +1,5 @@
 import 'package:vase/lotus/lotus.dart';
 import 'package:test/test.dart';
-import 'package:vase/lotus/encoding/base58check.dart' as base58;
 
 void main() {
   test('PrivateKey Generation', () {
