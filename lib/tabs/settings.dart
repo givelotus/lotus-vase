@@ -62,7 +62,7 @@ class SettingsTab extends StatelessWidget {
                                   text: showSeedTextController.text,
                                 ),
                               );
-                              Scaffold.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Copied seed to Clipboard'),
                                   duration: Duration(seconds: 1),
@@ -160,7 +160,7 @@ class SettingsTab extends StatelessWidget {
 
                             if (!mnemonicGenerator
                                 .validateMnemonic(enteredSeed)) {
-                              Scaffold.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Invalid Seed Phrase'),
                                   duration: Duration(seconds: 1),
@@ -195,9 +195,7 @@ class SettingsTab extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: RaisedButton(
-                        color: Colors.blue,
-                        elevation: stdElevation,
+                      child: ElevatedButton(
                         onPressed: () => showSeedDialog(),
                         child: Text(
                           'Show Seed',
@@ -210,9 +208,7 @@ class SettingsTab extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: RaisedButton(
-                        color: Colors.blue,
-                        elevation: stdElevation,
+                      child: ElevatedButton(
                         onPressed: () => showEnterSeedDialog(),
                         child: Text(
                           'Import Seed',
