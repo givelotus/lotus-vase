@@ -54,7 +54,7 @@ class SettingsTab extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          height: 60.0,
+                          padding: EdgeInsets.fromLTRB(6, 0, 6, 0),
                           child: OutlinedButton(
                             onPressed: () {
                               Clipboard.setData(
@@ -74,17 +74,24 @@ class SettingsTab extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Expanded(
-                      child: TextField(
-                        maxLines: null,
-                        minLines: 2,
-                        controller: showPasswordTextController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+                        child: Text(
+                          'Password (Optional)',
+                        )),
+                    Row(children: [
+                      Expanded(
+                        child: TextField(
+                          maxLines: null,
+                          minLines: 2,
+                          controller: showPasswordTextController,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                      ),
-                    )
+                      )
+                    ])
                   ],
                 ),
               ),
@@ -97,91 +104,82 @@ class SettingsTab extends StatelessWidget {
     void showEnterSeedDialog() {
       showDialog(
         context: context,
-        builder: (context) => GestureDetector(
-          // leave the dialogContext open when it has been copied,
-          // only close it when the user decides to close it
-          onTap: () => Navigator.of(context).pop(),
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: Builder(
-              builder: (context) => SimpleDialog(
-                title: const Text('Enter Seed Phrase'),
-                contentPadding: stdPadding,
-                children: <Widget>[
-                  Text('Seed'),
-                  Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          maxLines: null,
-                          minLines: 2,
-                          controller: newSeedController,
-                          readOnly: false,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  Text(
-                    'Password (Optional)',
-                  ),
-                  Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          maxLines: null,
-                          minLines: 2,
-                          controller: newPasswordController,
-                          readOnly: false,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  Row(
-                    children: [
-                      Container(
-                        height: 60.0,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            final mnemonicGenerator = Mnemonic();
-                            final enteredSeed =
-                                newSeedController.text.trim().toLowerCase();
-                            final enteredPassword =
-                                newPasswordController.text.trim().toLowerCase();
-
-                            if (!mnemonicGenerator
-                                .validateMnemonic(enteredSeed)) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Invalid Seed Phrase'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
-                              return;
-                            }
-                            // This will regenerate everything
-                            walletModel.setSeed(enteredSeed,
-                                password: enteredPassword);
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Save'),
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
+        builder: (context) => SimpleDialog(
+          title: const Text('Enter Seed Phrase'),
+          contentPadding: stdPadding,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+              child: Text('Seed'),
             ),
-          ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    maxLines: null,
+                    minLines: 2,
+                    controller: newSeedController,
+                    readOnly: false,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+                padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+                child: Text(
+                  'Password (Optional)',
+                )),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    maxLines: null,
+                    minLines: 2,
+                    controller: newPasswordController,
+                    readOnly: false,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+                  height: 60.0,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      final mnemonicGenerator = Mnemonic();
+                      final enteredSeed =
+                          newSeedController.text.trim().toLowerCase();
+                      final enteredPassword =
+                          newPasswordController.text.trim().toLowerCase();
+
+                      if (!mnemonicGenerator.validateMnemonic(enteredSeed)) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Invalid Seed Phrase'),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                        return;
+                      }
+                      // This will regenerate everything
+                      walletModel.setSeed(enteredSeed,
+                          password: enteredPassword);
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Save'),
+                  ),
+                ),
+              ],
+            )
+          ],
         ),
       );
     }
