@@ -273,8 +273,8 @@ class Wallet {
     return txnMetadata.transaction;
   }
 
-  Future<void> updateSeedPhrase(String newSeed) async {
-    keys = await Keys.construct(newSeed);
+  Future<void> updateSeedPhrase(String newSeed, [String password = '']) async {
+    keys = await Keys.construct(newSeed, password);
     await initialize();
   }
 }

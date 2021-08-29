@@ -15,10 +15,11 @@ Uint8List calculateScriptHash(Address address) {
 }
 
 class KeyIsolateInput {
-  KeyIsolateInput(this.seed, this.sendPort,
+  KeyIsolateInput(this.seed, this.password, this.sendPort,
       {this.network = constants.network,
       this.childKeyCount = constants.defaultNumberOfChildKeys});
   String seed;
+  String password;
   SendPort sendPort;
   NetworkType network;
   int childKeyCount;
@@ -106,7 +107,7 @@ List<KeyInfo> constructChildKeys(
 // Construct a brand new set of keys from a seed over a worker. Processing a
 // seed to an HDPrivateKey is fairly time consuming, thus it is done this way.cas
 void _constructKeys(KeyIsolateInput input) {
-  final seedHex = Mnemonic().toSeedHex(input.seed);
+  final seedHex = Mnemonic().toSeedHex(input.seed, input.password);
   //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
@@ -115,18 +116,19 @@ void _constructKeys(KeyIsolateInput input) {
       childKeyCount: input.childKeyCount,
       network: input.network);
 
-  input.sendPort
-      .send(Keys(input.seed, rootKey, childKeys, network: input.network));
+  input.sendPort.send(Keys(input.seed, input.password, rootKey, childKeys,
+      network: input.network));
 }
 
 class Keys {
   NetworkType network;
   HDPrivateKey rootKey;
   String seed;
+  String password;
   List<KeyInfo> keys;
   int totalKeys;
 
-  Keys(this.seed, this.rootKey, this.keys,
+  Keys(this.seed, this.password, this.rootKey, this.keys,
       {this.network = constants.network,
       this.totalKeys = constants.defaultNumberOfChildKeys});
 
@@ -137,7 +139,7 @@ class Keys {
     return keyInfo;
   }
 
-  static Future<Keys> construct(String seed) async {
+  static Future<Keys> construct(String seed, [String password = '']) async {
     final receivePort = ReceivePort();
 
     // Construct key completer
@@ -153,6 +155,7 @@ class Keys {
       _constructKeys,
       KeyIsolateInput(
         seed,
+        password,
         receivePort.sendPort,
       ),
     );

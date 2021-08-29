@@ -14,11 +14,13 @@ const SCHEMA_VERSION_KEY = 'schema_version';
 const CURRENT_SCHEMA_VERSION = '3';
 
 const STORAGE_SEED_KEY = 'seed';
+const STORAGE_PASSWORD_KEY = 'password';
 const STORAGE_XPUB_KEY = 'rootKey';
 
 /// Generate a fresh wallet.
-Future<Wallet> generateNewWallet(String seed, {network = network}) async {
-  final keys = await Keys.construct(seed);
+Future<Wallet> generateNewWallet(String seed,
+    {NetworkType network = network, String password = ''}) async {
+  final keys = await Keys.construct(seed, password);
   final electrumFactory = ElectrumFactory(electrumUrls);
 
   return Wallet(keys, electrumFactory, network: network);
@@ -28,6 +30,7 @@ class WalletModel with ChangeNotifier {
   Wallet _wallet;
   bool _initialized = false;
   String _seed = '';
+  String _password = '';
   // Internally use a ValueNotifier here, as we don't want the entire wallet
   // to refresh when this field is updated.
   // We should probably introduce a secondary model of some sort.
@@ -54,8 +57,20 @@ class WalletModel with ChangeNotifier {
         final seed = mnemonicGenerator.generateMnemonic();
         _seed = seed;
       }
+      try {
+        // try to recover from read errors. Maybe seed is still valid.
+        _password = await readPasswordFromDisk();
+        // ignore: empty_catches
+      } catch (err) {
+        // Don't care
+      }
+      if (_seed == null || _seed.isEmpty) {
+        final mnemonicGenerator = Mnemonic();
+        final seed = mnemonicGenerator.generateMnemonic();
+        _seed = seed;
+      }
       // Don't notify listeners. Initlaize will do that
-      _wallet = await generateNewWallet(_seed);
+      _wallet = await generateNewWallet(_seed, password: _password);
     }
     wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
     await wallet.initialize();
@@ -68,13 +83,15 @@ class WalletModel with ChangeNotifier {
   }
 
   String get seed => _seed;
+  String get password => _password;
 
-  set seed(String newValue) {
+  void setSeed(String newValue, {String password = ''}) {
     _seed = newValue;
+    _password = password;
     balance.value = null;
     _initialized = false;
     notifyListeners();
-    generateNewWallet(_seed).then((newWallet) {
+    generateNewWallet(_seed, password: _password).then((newWallet) {
       _wallet = newWallet;
       wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
       wallet.initialize();
@@ -144,6 +161,12 @@ class WalletModel with ChangeNotifier {
         value: seed,
       );
 
+      // Persist password
+      await _storage.write(
+        key: STORAGE_PASSWORD_KEY,
+        value: password,
+      );
+
       // Persist XPub
       await _storage.write(
         key: STORAGE_XPUB_KEY,
@@ -163,11 +186,19 @@ class WalletModel with ChangeNotifier {
     return _storage.read(key: STORAGE_SEED_KEY);
   }
 
+  Future<String> readPasswordFromDisk() async {
+    // TODO: Read metadata
+
+    // Read seed
+    return _storage.read(key: STORAGE_PASSWORD_KEY);
+  }
+
   Future<Keys> readKeysFromDisk() async {
     // TODO: Read metadata
 
     // Read seed
     _seed = await readSeedFromDisk();
+    _password = await readPasswordFromDisk();
 
     // Read root key to avoid regenerating from seed
     final xprivHex = await _storage.read(key: STORAGE_XPUB_KEY);
@@ -183,6 +214,6 @@ class WalletModel with ChangeNotifier {
       childKeyCount: defaultNumberOfChildKeys,
     );
 
-    return Keys(seed, rootKey, childKeys, network: network);
+    return Keys(seed, password, rootKey, childKeys, network: network);
   }
 }

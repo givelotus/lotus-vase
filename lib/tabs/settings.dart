@@ -16,9 +16,13 @@ class SettingsTab extends StatelessWidget {
     final showSeedTextController = TextEditingController(
       text: walletModel.seed,
     );
+    final showPasswordTextController = TextEditingController(
+      text: walletModel.password,
+    );
     final balanceNotifier = walletModel.balance;
 
     final newSeedController = TextEditingController();
+    final newPasswordController = TextEditingController();
 
     void showSeedDialog() {
       showDialog(
@@ -33,29 +37,24 @@ class SettingsTab extends StatelessWidget {
               builder: (context) => GestureDetector(
                 onTap: () {},
                 child: SimpleDialog(
+                  contentPadding: stdPadding,
                   title: const Text('Seed Phrase'),
                   children: <Widget>[
                     Row(
                       children: [
                         Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: TextField(
-                              maxLines: null,
-                              minLines: 2,
-                              controller: showSeedTextController,
-                              readOnly: true,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                              ),
+                          child: TextField(
+                            maxLines: null,
+                            minLines: 2,
+                            controller: showSeedTextController,
+                            readOnly: true,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
                             ),
                           ),
                         ),
                         Container(
                           height: 60.0,
-                          padding: const EdgeInsets.only(
-                            right: 16.0,
-                          ),
                           child: OutlinedButton(
                             onPressed: () {
                               Clipboard.setData(
@@ -75,6 +74,17 @@ class SettingsTab extends StatelessWidget {
                         ),
                       ],
                     ),
+                    Expanded(
+                      child: TextField(
+                        maxLines: null,
+                        minLines: 2,
+                        controller: showPasswordTextController,
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -96,33 +106,58 @@ class SettingsTab extends StatelessWidget {
             body: Builder(
               builder: (context) => SimpleDialog(
                 title: const Text('Enter Seed Phrase'),
+                contentPadding: stdPadding,
                 children: <Widget>[
+                  Text('Seed'),
+                  Spacer(),
                   Row(
                     children: [
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: TextField(
-                            maxLines: null,
-                            minLines: 2,
-                            controller: newSeedController,
-                            readOnly: false,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                            ),
+                        child: TextField(
+                          maxLines: null,
+                          minLines: 2,
+                          controller: newSeedController,
+                          readOnly: false,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                  Spacer(),
+                  Text(
+                    'Password (Optional)',
+                  ),
+                  Spacer(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          maxLines: null,
+                          minLines: 2,
+                          controller: newPasswordController,
+                          readOnly: false,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
+                  Row(
+                    children: [
                       Container(
                         height: 60.0,
-                        padding: const EdgeInsets.only(
-                          right: 16.0,
-                        ),
                         child: OutlinedButton(
                           onPressed: () {
                             final mnemonicGenerator = Mnemonic();
                             final enteredSeed =
                                 newSeedController.text.trim().toLowerCase();
+                            final enteredPassword =
+                                newPasswordController.text.trim().toLowerCase();
+
                             if (!mnemonicGenerator
                                 .validateMnemonic(enteredSeed)) {
                               Scaffold.of(context).showSnackBar(
@@ -134,14 +169,15 @@ class SettingsTab extends StatelessWidget {
                               return;
                             }
                             // This will regenerate everything
-                            walletModel.seed = enteredSeed;
+                            walletModel.setSeed(enteredSeed,
+                                password: enteredPassword);
                             Navigator.of(context).pop();
                           },
                           child: Text('Save'),
                         ),
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
             ),
