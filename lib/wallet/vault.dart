@@ -28,18 +28,6 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
     addAll(vault);
   }
 
-  /// Removes the smallest output more than a specific amount.
-  Utxo smallestAbove(BigInt amount) {
-    final key = firstKeyAfter(amount);
-    return popAt(key);
-  }
-
-  /// Removes the largest output below a specific amount.
-  Utxo largestBelow(BigInt amount) {
-    final key = lastKeyBefore(amount);
-    return popAt(key);
-  }
-
   /// Remove all UTXOs under a specific key.
   void removeByKeyIndex(int keyIndex) {
     updateAll((key, utxos) {
@@ -48,12 +36,14 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
     });
   }
 
-  /// Add a utxo output.
+  /// Remove a utxo output.
   void removeUtxo(Utxo utxo) {
     update(utxo.outpoint.amount, (value) {
-      value.remove(utxo);
+      value.removeWhere((checkUtxo) =>
+          checkUtxo.outpoint.transactionId == utxo.outpoint.transactionId &&
+          checkUtxo.outpoint.vout == utxo.outpoint.vout);
       return value;
-    });
+    }, ifAbsent: () => []);
   }
 
   /// Add a utxo output.

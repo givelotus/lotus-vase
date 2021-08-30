@@ -170,7 +170,7 @@ class JSONRPCWebsocket {
                 0, 'Disconnected from electrum while awaiting response')));
       }
       // Nothing to do?
-    }, cancelOnError: true);
+    }, cancelOnError: false);
   }
 
   WebSocket get rpcSocket {

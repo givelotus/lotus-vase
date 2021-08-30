@@ -69,12 +69,16 @@ class WalletModel with ChangeNotifier {
         final seed = mnemonicGenerator.generateMnemonic();
         _seed = seed;
       }
-      // Don't notify listeners. Initlaize will do that
+      // Don't notify listeners. Initialize will do that
       _wallet = await generateNewWallet(_seed, password: _password);
     }
     wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
     wallet.initialize();
     initialized = true;
+  }
+
+  Future<void> updateWallet() async {
+    wallet.initialize();
   }
 
   set initialized(bool newValue) {

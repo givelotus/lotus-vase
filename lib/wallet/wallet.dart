@@ -90,7 +90,8 @@ class Wallet {
   }
 
   /// Fetch UTXOs from electrum then update vault.
-  Future<void> updateUtxos(ElectrumClient client) async {
+  Future<void> updateUtxos({ElectrumClient client}) async {
+    client ??= await electrumFactory.getInstance();
     final pool = Pool(5, timeout: Duration(seconds: 60));
 
     final futures = keys.keys.map((keyInfo) {
@@ -103,7 +104,7 @@ class Wallet {
           final outpoint = Outpoint(
               unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
           final spendable = Utxo(outpoint, keyInfo.keyIndex);
-
+          _vault.removeUtxo(spendable);
           _vault.addUtxo(spendable);
         }
       });
@@ -123,29 +124,12 @@ class Wallet {
     updateBalance(WalletBalance(balance: _balance));
   }
 
-  /// Use electrum to refresh balance.
-  Future<void> refreshBalanceRemote() async {
-    final client = await electrumFactory.getInstance();
-
-    final responses = await Future.wait(keys.keys.map((keyInfo) {
-      final scriptHashHex = HEX.encode(keyInfo.scriptHash);
-      return client.blockchainScripthashGetBalance(scriptHashHex);
-    }));
-
-    final totalBalance = responses
-        .map((response) => response.confirmed + response.unconfirmed)
-        .fold(0, (p, c) => p + c);
-    _balance = totalBalance;
-
-    updateBalance(WalletBalance(balance: _balance));
-  }
-
   void initialize() async {
     // Wipe out the vault before refreshing UTXOs
     try {
       final client = await electrumFactory.getInstance();
 
-      await updateUtxos(client);
+      await updateUtxos(client: client);
     } catch (err) {
       print(err);
       updateBalance(WalletBalance(balance: null, error: err));

@@ -38,13 +38,34 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
+  AppLifecycleState _notification;
+
   final PageController pagerController =
       PageController(keepPage: true, initialPage: 1);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_notification == state) {
+      return;
+    }
+    setState(() {
+      print(_notification);
+      _notification = state;
+      print(_notification);
+    });
   }
 
   @override
@@ -53,6 +74,10 @@ class _MainPageState extends State<MainPage> {
     if (viewModel.initialized) {
       viewModel.writeToDisk();
     }
+    if (viewModel.initialized && _notification == AppLifecycleState.resumed) {
+      viewModel.updateWallet();
+    }
+
     final ScopePopper = (widget) => WillPopScope(
         onWillPop: () async {
           print(pagerController.page.toString());
