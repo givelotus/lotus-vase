@@ -53,8 +53,7 @@ abstract class CKDSerializer {
 
     // checksum calculation... doubleSha
     var doubleShaAddr = utils.sha256Twice(serializedKey);
-    var checksum =
-        doubleShaAddr.sublist(0, 4).map((elem) => elem.toSigned(8)).toList();
+    var checksum = doubleShaAddr.sublist(0, 4);
 
     return bs58check.encode(serializedKey + checksum);
   }

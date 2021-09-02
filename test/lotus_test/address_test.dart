@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:hex/hex.dart';
 
-import 'address.dart';
+import 'package:vase/lotus/address.dart';
 
 void main() {
   test('can decode and encode an address', () async {
@@ -45,7 +45,7 @@ void main() {
   });
 
   test('can decode from cashaddress and encode to xaddress', () async {
-    final xAddress = 'lotusT16PSJHU42xeYK54uebr811ZAdJ5LhsJRw92YAFVax';
+    final xAddress = 'lotusT16PSJHU42xeYK54uebr811ZAdJ5LhsJRw92WgNQfL';
     final cashaddr = 'bchtest:qq9e0r875ed2zmd6qe0kgsjxwjnadzrl9sukcatjha';
     var address = Address(cashaddr);
     expect(address.toXAddress(), xAddress);
