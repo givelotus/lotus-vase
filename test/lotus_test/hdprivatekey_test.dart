@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
 
-import './hdprivatekey.dart';
-import './bip39/bip39.dart';
-import './networks.dart';
+import 'package:vase/lotus/hdprivatekey.dart';
+import 'package:vase/lotus/bip39/bip39.dart';
+import 'package:vase/lotus/networks.dart';
 
 const testSeed =
     'festival shrimp feel before tackle pyramid immense banner fire wash steel fiscal';
@@ -60,8 +60,7 @@ void main() {
               .toAddress()
               .toCashAddress(),
           address,
-          reason:
-              'Keynumber $keyNumber failed to check against test vectors');
+          reason: 'Keynumber $keyNumber failed to check against test vectors');
     });
 
     final masterChangeKey = masterAccountKey.deriveChildNumber(1);
@@ -85,8 +84,7 @@ void main() {
               .toAddress()
               .toCashAddress(),
           address,
-          reason:
-              'Keynumber $keyNumber failed to check against test vectors');
+          reason: 'Keynumber $keyNumber failed to check against test vectors');
     });
   });
 

@@ -6,10 +6,6 @@ import 'package:pointycastle/ecc/curves/secp256k1.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/pointycastle.dart';
 import 'package:pointycastle/random/fortuna_random.dart';
-// Use pointycastle asn1 bigint encode/decode. Does not include
-// padding for negative bigints numbers which is the needed encoding
-// for WIFs.
-import 'package:pointycastle/src/utils.dart';
 
 import 'address.dart';
 import 'exceptions.dart';
@@ -196,7 +192,7 @@ class BCHPrivateKey {
   /// Returns this Private Key in WIF format. See [toWIF()].
   String toWIF() {
     // convert private key _d to a hex string
-    var wifKey = encodeBigInt(_d).toList();
+    var wifKey = encodeUInt256(_d).toList();
     if (wifKey[0] == 0) {}
     if (_networkType == NetworkType.MAIN) {
       wifKey = [0x80] + wifKey;

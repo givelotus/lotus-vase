@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:dartz/dartz.dart';
 
-import 'base32.dart';
+import 'package:vase/lotus/encoding/base32.dart';
 
 void main() {
   test('can encode to base32', () async {

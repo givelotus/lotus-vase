@@ -1,8 +1,8 @@
 import 'package:test/test.dart';
 import 'dart:math';
 
-import 'xaddress.dart';
-import 'networks.dart';
+import 'package:vase/lotus/xaddress.dart';
+import 'package:vase/lotus/networks.dart';
 
 void main() {
   test('can decode and encode XAddresses', () {

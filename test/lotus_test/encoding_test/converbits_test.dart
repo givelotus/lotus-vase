@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'convertbits.dart';
+import 'package:vase/lotus/encoding/convertbits.dart';
 
 void main() {
   test('can convert back and forth between 8 and 5 bit format', () async {
