@@ -77,7 +77,7 @@ abstract class _DataLockBuilder implements LockingScriptBuilder {
       if (chunks[0].opcodenum == OpCodes.OP_FALSE &&
           chunks[1].opcodenum == OpCodes.OP_RETURN) {
         for (var i = 2; i < chunks.length; i++) {
-          if (chunks[i].opcodenum > OpCodes.OP_PUSHDATA4) {
+          if (chunks[i].opcodenum! > OpCodes.OP_PUSHDATA4) {
             throw ScriptException('Only data pushes allowed. Consider doing '
                 'a custom LockBuilder if you have a niche use case for data. ');
           }

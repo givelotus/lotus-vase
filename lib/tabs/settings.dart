@@ -8,7 +8,7 @@ import 'package:vase/lotus/bip39/bip39.dart';
 import 'component/balance_display.dart';
 
 class SettingsTab extends StatelessWidget {
-  SettingsTab({Key key}) : super(key: key);
+  SettingsTab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

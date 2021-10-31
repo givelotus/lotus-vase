@@ -15,7 +15,7 @@ import '../../lotus/utils/parse_uri.dart';
 class SendTab extends StatefulWidget {
   final PageController controller;
 
-  SendTab({Key key, @required this.controller}) : super(key: key);
+  SendTab({Key? key, required this.controller}) : super(key: key);
 
   @override
   _SendTabState createState() => _SendTabState();
@@ -56,7 +56,7 @@ class _SendTabState extends State<SendTab> {
             final parseResult = parseSendURI(scanData.code);
             // Don't keep pushing send info pages if the viewModel has already been updated.
             // TODO: Seems like there should be a better way to handle this.
-            if (viewModel.sendToAddress == parseResult.address ?? '') {
+            if (viewModel.sendToAddress == parseResult.address ?? '' as bool) {
               return;
             }
 

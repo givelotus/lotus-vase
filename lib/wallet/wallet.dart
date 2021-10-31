@@ -10,14 +10,14 @@ import 'keys.dart';
 import '../electrum/client.dart';
 
 class TransactionMetadata {
-  List<Utxo> usedUtxos;
-  Transaction transaction;
+  List<Utxo>? usedUtxos;
+  Transaction? transaction;
   TransactionMetadata({this.usedUtxos, this.transaction});
 }
 
 class WalletBalance {
-  int balance;
-  Exception error;
+  int? balance;
+  Exception? error;
 
   WalletBalance({this.balance, this.error});
 }
@@ -25,13 +25,13 @@ class WalletBalance {
 typedef BalanceUpdateHandler = void Function(WalletBalance result);
 
 class Wallet {
-  BalanceUpdateHandler balanceUpdateHandler;
+  BalanceUpdateHandler? balanceUpdateHandler;
   Wallet(this.keys, this.electrumFactory,
       {this.network, this.balanceUpdateHandler}) {
     electrumFactory.onConnected = (client) => startUtxoListeners(client);
   }
 
-  NetworkType network;
+  NetworkType? network;
   ElectrumFactory electrumFactory;
 
   Keys keys;
@@ -49,7 +49,7 @@ class Wallet {
   void addressUpdated(result) async {
     // Extract script hash from result (of form [scripthash, status])
     final scriptHash = result[0];
-    final client = await electrumFactory.getInstance();
+    final client = await (electrumFactory.getInstance() as FutureOr<ElectrumClient>);
 
     final keyInfo =
         keys.findKeyByScriptHash(Uint8List.fromList(HEX.decode(scriptHash)));
@@ -76,29 +76,29 @@ class Wallet {
   }
 
   /// Start UTXO listeners.
-  Future<void> startUtxoListeners(ElectrumClient client) async {
-    for (final keyInfo in keys.keys) {
+  Future<void> startUtxoListeners(ElectrumClient? client) async {
+    for (final keyInfo in keys.keys!) {
       if (keyInfo.isDeprecated == true) {
         // We don't care about deprecated keys being listened to. Only load them
         // on startup. Listening to lots of keys is slow.
         continue;
       }
-      final hexScriptHash = HEX.encode(keyInfo.scriptHash);
+      final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
 
-      await client.blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
+      await client!.blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
     }
   }
 
   /// Fetch UTXOs from electrum then update vault.
-  Future<void> updateUtxos({ElectrumClient client}) async {
+  Future<void> updateUtxos({ElectrumClient? client}) async {
     client ??= await electrumFactory.getInstance();
     final pool = Pool(5, timeout: Duration(seconds: 60));
 
-    final futures = keys.keys.map((keyInfo) {
-      final hexScriptHash = HEX.encode(keyInfo.scriptHash);
+    final futures = keys.keys!.map((keyInfo) {
+      final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
       return pool.withResource(() async {
         final unspentUtxos =
-            await client.blockchainScripthashListunspent(hexScriptHash);
+            await client!.blockchainScripthashListunspent(hexScriptHash);
         // TODO: Remove keyIndex concept. It is not particularly necessary;
         for (final unspent in unspentUtxos) {
           final outpoint = Outpoint(
@@ -114,7 +114,7 @@ class Wallet {
 
   void updateBalance(WalletBalance update) {
     if (balanceUpdateHandler != null) {
-      balanceUpdateHandler(update);
+      balanceUpdateHandler!(update);
     }
   }
 
@@ -143,8 +143,8 @@ class Wallet {
   }
 
   Transaction _finalizeTransaction(Transaction transaction, BigInt feePerByte,
-      {List<BCHPrivateKey> signingKeys}) {
-    final shuffledKeys = keys.keys.sublist(0);
+      {required List<BCHPrivateKey> signingKeys}) {
+    final shuffledKeys = keys.keys!.sublist(0);
     shuffledKeys.shuffle();
     final changeKeyInfo = shuffledKeys.firstWhere(
         (keyInfo) => keyInfo.isChange == true && keyInfo.isDeprecated == false);
@@ -175,7 +175,7 @@ class Wallet {
   }
 
   TransactionMetadata constructTransaction(List<TransactionOutput> outputs,
-      {BigInt feePerByte}) {
+      {BigInt? feePerByte}) {
     var transaction = Transaction();
 
     var amountRequired = BigInt.from(0);
@@ -189,18 +189,18 @@ class Wallet {
     final signingKeys = <BCHPrivateKey>[];
     final usedUtxos = <Utxo>[];
 
-    final utxos = _vault.values;
+    final Iterable<List<Utxo>> utxos = _vault.values;
     final allUtxos = utxos.expand((utxos) => utxos).toList();
     // Use oldest outpoints first
-    allUtxos.sort((Utxo a, Utxo b) => a.outpoint.height - b.outpoint.height);
+    allUtxos.sort((Utxo a, Utxo b) => a.outpoint.height! - b.outpoint.height!);
     var satoshis = BigInt.from(0);
 
     for (final utxo in allUtxos) {
       final txnSize = transaction.estimatedSize;
-      if (satoshis > amountRequired + BigInt.from(txnSize) * feePerByte) {
+      if (satoshis > amountRequired + BigInt.from(txnSize) * feePerByte!) {
         break;
       }
-      final privateKeyInfo = keys.keys[utxo.keyIndex];
+      final privateKeyInfo = keys.keys![utxo.keyIndex!];
       final privateKey = privateKeyInfo.key;
 
       usedUtxos.add(utxo);
@@ -210,7 +210,7 @@ class Wallet {
       // Create input
       final unlockBuilder = P2PKHUnlockBuilder(privateKey.publicKey);
       final address = privateKey.toAddress(networkType: network);
-      assert(address.toBase58() == privateKeyInfo.address.toBase58(),
+      assert(address.toBase58() == privateKeyInfo.address!.toBase58(),
           'Key info corrupt for $address != ${privateKeyInfo.address}');
       var output = TransactionOutput(scriptBuilder: P2PKHLockBuilder(address));
       output.satoshis = utxo.outpoint.amount;
@@ -228,26 +228,26 @@ class Wallet {
     // TODO: Need change UTXOs here so we can add them to the vault and spend from
     // them before confirmation
     transaction =
-        _finalizeTransaction(transaction, feePerByte, signingKeys: signingKeys);
+        _finalizeTransaction(transaction, feePerByte!, signingKeys: signingKeys);
 
     return TransactionMetadata(transaction: transaction, usedUtxos: usedUtxos);
   }
 
-  Future<Transaction> sendTransaction(
+  Future<Transaction?> sendTransaction(
       Address recipientAddress, BigInt amount) async {
     final feePerByte = await fetchFeePerByte();
     final output =
         TransactionOutput(scriptBuilder: P2PKHLockBuilder(recipientAddress));
     output.satoshis = amount;
     final txnMetadata = constructTransaction([output], feePerByte: feePerByte);
-    final transactionHex = txnMetadata.transaction.serialize();
+    final transactionHex = txnMetadata.transaction!.serialize();
 
     try {
-      final client = await electrumFactory.getInstance();
+      final client = await (electrumFactory.getInstance() as FutureOr<ElectrumClient>);
 
       await client.blockchainTransactionBroadcast(transactionHex);
     } catch (err) {
-      _vault.addAllUtxos(txnMetadata.usedUtxos);
+      _vault.addAllUtxos(txnMetadata.usedUtxos!);
       print(err.message);
       rethrow;
     } finally {

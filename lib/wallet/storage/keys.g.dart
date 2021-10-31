@@ -8,7 +8,7 @@ part of 'keys.dart';
 
 KeyStorageMetadata _$KeyStorageMetadataFromJson(Map<String, dynamic> json) {
   return KeyStorageMetadata(
-    json['keyCount'] as int,
+    json['keyCount'] as int?,
   );
 }
 
@@ -19,8 +19,8 @@ Map<String, dynamic> _$KeyStorageMetadataToJson(KeyStorageMetadata instance) =>
 
 StoredKey _$StoredKeyFromJson(Map<String, dynamic> json) {
   return StoredKey(
-    json['privateKey'] as String,
-    json['isChange'] as bool,
+    json['privateKey'] as String?,
+    json['isChange'] as bool?,
   );
 }
 

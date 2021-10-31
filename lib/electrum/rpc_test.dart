@@ -8,8 +8,8 @@ import 'client.dart';
 import 'rpc.dart';
 
 class FakeElectrumParams {
-  final SendPort sendPort;
-  final List<dynamic> responses;
+  final SendPort? sendPort;
+  final List<dynamic>? responses;
   FakeElectrumParams({this.sendPort, this.responses});
 }
 
@@ -24,7 +24,7 @@ void runFakeElectrum(FakeElectrumParams params) async {
       WebSocketTransformer.upgrade(request).then((WebSocket socket) {
         socket.listen((dynamic msg) {
           final decodedResponse = jsonDecode(msg as String);
-          final responses = params.responses.where((response) =>
+          final responses = params.responses!.where((response) =>
               response['id'] == decodedResponse['id'] ||
               response['method'] == decodedResponse['method']);
           for (final response in responses) {
@@ -47,10 +47,10 @@ void runFakeElectrum(FakeElectrumParams params) async {
     print('done');
   });
 
-  params.sendPort.send(url);
+  params.sendPort!.send(url);
 }
 
-typedef RPCServerClientCallback = Future<void> Function(Uri url);
+typedef RPCServerClientCallback = Future<void> Function(Uri? url);
 
 Future<Null> Function() withRPCServer(
     List<Object> responses, RPCServerClientCallback clientTest) {
@@ -60,7 +60,7 @@ Future<Null> Function() withRPCServer(
         runFakeElectrum,
         FakeElectrumParams(
             sendPort: receivePort.sendPort, responses: responses));
-    Uri url = await receivePort.first;
+    Uri? url = await (receivePort.first as FutureOr<Uri?>);
     try {
       await clientTest(url);
     } finally {
@@ -78,9 +78,9 @@ void main() {
           'result': ['poop']
         },
         {'id': 1, 'result': []}
-      ], (Uri url) async {
+      ], (Uri? url) async {
         final client = JSONRPCWebsocket();
-        await client.connect(url);
+        await client.connect(url!);
         final result = await client.call('poop', []);
         expect(result, ['poop']);
         client.dispose();
@@ -98,9 +98,9 @@ void main() {
           'params': ['bob', 'bar']
         },
         {'id': 0, 'result': 'some weird electrum hash'},
-      ], (Uri url) async {
+      ], (Uri? url) async {
         final client = ElectrumClient();
-        await client.connect(url);
+        await client.connect(url!);
         var currentCompleter = 0;
         var testTable = [
           {

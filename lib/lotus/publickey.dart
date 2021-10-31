@@ -21,7 +21,7 @@ import 'networks.dart';
 class BCHPublicKey {
   // We only deal with secp256k1
   final _domainParams = ECDomainParameters('secp256k1');
-  ECPoint _point;
+  ECPoint? _point;
 
   /// Creates a  public key from it's corresponding ECDSA private key.
   ///
@@ -30,11 +30,11 @@ class BCHPublicKey {
   ///
   /// [privkey] - The private key who's *d*-value we will use.
   BCHPublicKey.fromPrivateKey(BCHPrivateKey privkey) {
-    var decodedPrivKey = encodeUInt256(privkey.privateKey);
+    var decodedPrivKey = encodeUInt256(privkey.privateKey!);
     var hexPrivKey = HEX.encode(decodedPrivKey);
 
     var actualKey = hexPrivKey;
-    var point = _domainParams.G * BigInt.parse(actualKey, radix: 16);
+    var point = (_domainParams.G * BigInt.parse(actualKey, radix: 16))!;
     if (point.x == null && point.y == null) {
       throw InvalidPointException(
           'Cannot generate point from private key. Private key greater than N ?');
@@ -42,7 +42,7 @@ class BCHPublicKey {
 
     // create a  point taking into account compression request/indicator of parent private key
     var finalPoint = _domainParams.curve.createPoint(
-        point.x.toBigInteger(), point.y.toBigInteger(), privkey.isCompressed);
+        point.x!.toBigInteger()!, point.y!.toBigInteger()!, privkey.isCompressed);
 
     _checkIfOnCurve(finalPoint); // a bit paranoid
 
@@ -58,7 +58,7 @@ class BCHPublicKey {
   BCHPublicKey.fromPoint(ECPoint pubkeyPoint) {
     // create a  point taking into account compression request/indicator of parent private key
     var finalPoint = _domainParams.curve.createPoint(
-        pubkeyPoint.x.toBigInteger(), pubkeyPoint.y.toBigInteger(), true);
+        pubkeyPoint.x!.toBigInteger()!, pubkeyPoint.y!.toBigInteger()!, true);
 
     _checkIfOnCurve(finalPoint); // a bit paranoid
 
@@ -109,16 +109,16 @@ class BCHPublicKey {
 
     _point = _transformDER(buffer, strict);
 
-    if (_point.isInfinity) {
+    if (_point!.isInfinity) {
       throw InvalidPointException(
           'That public key generates point at infinity');
     }
 
-    if (_point.y.toBigInteger() == BigInt.zero) {
+    if (_point!.y!.toBigInteger() == BigInt.zero) {
       throw InvalidPointException('Invalid Y value for this public key');
     }
 
-    _checkIfOnCurve(_point);
+    _checkIfOnCurve(_point!);
   }
 
   /// Reconstruct a public key from the hexadecimal format of it's DER-encoding.
@@ -132,16 +132,16 @@ class BCHPublicKey {
     }
     _point = _transformDER(HEX.decode(pubkey), strict);
 
-    if (_point.isInfinity) {
+    if (_point!.isInfinity) {
       throw InvalidPointException(
           'That public key generates point at infinity');
     }
 
-    if (_point.y.toBigInteger() == BigInt.zero) {
+    if (_point!.y!.toBigInteger() == BigInt.zero) {
       throw InvalidPointException('Invalid Y value for this public key');
     }
 
-    _checkIfOnCurve(_point);
+    _checkIfOnCurve(_point!);
   }
 
   /// Validates that the DER-encoded hexadecimal string contains a valid
@@ -177,7 +177,7 @@ class BCHPublicKey {
   /// NOTE: The first byte will contain either an odd number or an even number,
   /// but this number is *NOT* a boolean flag.
   String getEncoded(bool compressed) {
-    return HEX.encode(_point.getEncoded(compressed));
+    return HEX.encode(_point!.getEncoded(compressed));
   }
 
   /// Returns the 'naked' public key value. Point compression is determined by
@@ -189,16 +189,16 @@ class BCHPublicKey {
       return '';
     }
 
-    return HEX.encode(_point.getEncoded(_point.isCompressed));
+    return HEX.encode(_point!.getEncoded(_point!.isCompressed));
   }
 
   /// Convenience method that constructs an [Address] instance from this
   /// public key.
-  Address toAddress({NetworkType networkType = NetworkType.MAIN}) {
+  Address toAddress({NetworkType? networkType = NetworkType.MAIN}) {
     // generate compressed addresses by default
-    List<int> buffer = _point.getEncoded(_point.isCompressed);
+    List<int> buffer = _point!.getEncoded(_point!.isCompressed);
 
-    if (_point.isCompressed) {
+    if (_point!.isCompressed) {
       return Address.fromCompressedPubKey(buffer, networkType);
     } else {
       return Address.fromHex(HEX.encode(buffer), networkType);
@@ -261,7 +261,7 @@ class BCHPublicKey {
 
     var encoded = HEX.decode(pkHex);
     try {
-      var point = _domainParams.curve.decodePoint(encoded);
+      var point = _domainParams.curve.decodePoint(encoded)!;
 
       if (point.isCompressed && encoded.length != 33) {
         throw BadParameterException(
@@ -285,8 +285,8 @@ class BCHPublicKey {
 
   bool _checkIfOnCurve(ECPoint point) {
     // a bit of math copied from PointyCastle. ecc/ecc_fp.dart -> decompressPoint()
-    var x = _domainParams.curve.fromBigInteger(point.x.toBigInteger());
-    var alpha = (x * ((x * x) + _domainParams.curve.a)) + _domainParams.curve.b;
+    var x = _domainParams.curve.fromBigInteger(point.x!.toBigInteger()!);
+    var alpha = (x * ((x * x) + _domainParams.curve.a!)) + _domainParams.curve.b!;
     var beta = alpha.sqrt();
 
     if (beta == null) {
@@ -296,19 +296,19 @@ class BCHPublicKey {
     // slight-of-hand. Create compressed point, reconstruct and check Y value.
     var compressedPoint = _compressPoint(point);
     var checkPoint =
-        _domainParams.curve.decodePoint(HEX.decode(compressedPoint));
-    if (checkPoint.y.toBigInteger() != point.y.toBigInteger()) {
+        _domainParams.curve.decodePoint(HEX.decode(compressedPoint))!;
+    if (checkPoint.y!.toBigInteger() != point.y!.toBigInteger()) {
       throw InvalidPointException('This point is not on the curve');
     }
 
-    return (point.x.toBigInteger() == BigInt.zero) &&
-        (point.y.toBigInteger() == BigInt.zero);
+    return (point.x!.toBigInteger() == BigInt.zero) &&
+        (point.y!.toBigInteger() == BigInt.zero);
   }
 
   /// Returns the (x,y) coordinates of this public key as an [ECPoint].
   /// The author dislikes leaking the wrapped PointyCastle implementation, but is too
   /// lazy to write his own Point implementation.
-  ECPoint get point {
+  ECPoint? get point {
     return _point;
   }
 
@@ -316,6 +316,6 @@ class BCHPublicKey {
   /// default when one calls the [toString()] or [toHex()] methods.
   /// Returns *false* otherwise.
   bool get isCompressed {
-    return _point.isCompressed;
+    return _point!.isCompressed;
   }
 }

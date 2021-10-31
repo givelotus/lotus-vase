@@ -2,10 +2,10 @@ import 'dart:collection';
 
 class Outpoint {
   Outpoint(this.transactionId, this.vout, this.amount, this.height);
-  String transactionId;
-  int vout;
+  String? transactionId;
+  int? vout;
   BigInt amount;
-  int height;
+  int? height;
 }
 
 class Utxo {
@@ -14,7 +14,7 @@ class Utxo {
   Outpoint outpoint;
 
   /// Index of the associated private key.
-  int keyIndex;
+  int? keyIndex;
 }
 
 /// The vault stores utxo outputs - that is, outputs together with
@@ -29,7 +29,7 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Remove all UTXOs under a specific key.
-  void removeByKeyIndex(int keyIndex) {
+  void removeByKeyIndex(int? keyIndex) {
     updateAll((key, utxos) {
       utxos.removeWhere((utxo) => utxo.keyIndex == keyIndex);
       return utxos;
@@ -59,8 +59,8 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Remove a utxo output at a given amount.
-  Utxo popAt(BigInt amount) {
-    final utxos = remove(amount);
+  Utxo? popAt(BigInt amount) {
+    final List<Utxo>? utxos = remove(amount);
     if (utxos != null) {
       final popped = utxos.removeLast();
       if (utxos.isNotEmpty) {

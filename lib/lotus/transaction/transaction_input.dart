@@ -22,22 +22,22 @@ import '../encoding/utils.dart';
 /// from one transaction to the next is also captured.
 ///
 class TransactionInput {
-  UnlockingScriptBuilder _scriptBuilder;
+  UnlockingScriptBuilder? _scriptBuilder;
 
   /// Maximum size an unsigned int can be. Used as value of [sequenceNumber] when we
   /// want to indicate that the transaction's [Transaction.nLockTime] should be ignored.
   static int UINT_MAX = 0xFFFFFFFF;
   bool _isSignedInput = false;
 
-  int _sequenceNumber;
+  int? _sequenceNumber;
 
-  int _prevTxnOutputIndex;
+  int? _prevTxnOutputIndex;
 
-  String _prevTxnId;
+  String? _prevTxnId;
 
-  BigInt _spendingAmount;
+  BigInt? _spendingAmount;
 
-  BCHScript _utxoScript;
+  BCHScript? _utxoScript;
 
   /// Constructs a new transaction input
   ///
@@ -52,9 +52,9 @@ class TransactionInput {
   /// purpose. At present this is only used to
   /// indicate whether nLockTime should be honored or ignored. Set this value to [UINT_MAX] to indicate
   /// that transaction's [Transaction.nLockTime] should be ignored.
-  TransactionInput(String txId, int outputIndex, BCHScript utxoScript,
-      BigInt satoshis, int seqNumber,
-      {UnlockingScriptBuilder scriptBuilder}) {
+  TransactionInput(String? txId, int? outputIndex, BCHScript? utxoScript,
+      BigInt? satoshis, int? seqNumber,
+      {UnlockingScriptBuilder? scriptBuilder}) {
     _prevTxnId = txId;
     _prevTxnOutputIndex = outputIndex;
     _utxoScript = utxoScript;
@@ -73,14 +73,14 @@ class TransactionInput {
   /// inputs in a raw transaction, which is also how it is currently
   /// being used.
   TransactionInput.fromReader(ByteDataReader reader,
-      {UnlockingScriptBuilder scriptBuilder}) {
+      {UnlockingScriptBuilder? scriptBuilder}) {
     _prevTxnId = HEX.encode(reader.read(32, copy: true).reversed.toList());
     _prevTxnOutputIndex = reader.readUint32(Endian.little);
 
     var len = readVarIntNum(reader);
     var scriptSig = BCHScript.fromBuffer(reader.read(len, copy: true));
     _scriptBuilder = scriptBuilder ??= DefaultUnlockBuilder();
-    _scriptBuilder.fromScript(scriptSig);
+    _scriptBuilder!.fromScript(scriptSig);
 
     _sequenceNumber = reader.readUint32(Endian.little);
     // TODO: FIX do this elsewhere (also other constructor)
@@ -91,16 +91,16 @@ class TransactionInput {
   List<int> serialize() {
     var writer = ByteDataWriter();
 
-    writer.write(HEX.decode(_prevTxnId).reversed.toList(), copy: true);
+    writer.write(HEX.decode(_prevTxnId!).reversed.toList(), copy: true);
 
-    writer.writeUint32(_prevTxnOutputIndex, Endian.little);
+    writer.writeUint32(_prevTxnOutputIndex!, Endian.little);
 
-    var scriptHex = HEX.decode(_scriptBuilder.getScriptSig().toHex());
+    var scriptHex = HEX.decode(_scriptBuilder!.getScriptSig()!.toHex());
 
     writer.write(varIntWriter(scriptHex.length).toList(), copy: true);
     writer.write(scriptHex, copy: true);
 
-    writer.writeUint32(sequenceNumber, Endian.little);
+    writer.writeUint32(sequenceNumber!, Endian.little);
 
     return writer.toBytes().toList();
   }
@@ -122,7 +122,7 @@ class TransactionInput {
       'prevTxId': _prevTxnId,
       'outputIndex': _prevTxnOutputIndex,
       'sequenceNumber': sequenceNumber,
-      'script': _scriptBuilder.getScriptSig().toHex()
+      'script': _scriptBuilder!.getScriptSig()!.toHex()
     };
   }
 
@@ -133,7 +133,7 @@ class TransactionInput {
   }
 
   /// Returns the number of satoshis this input is spending.
-  BigInt get satoshis => _spendingAmount;
+  BigInt? get satoshis => _spendingAmount;
 
   /// Sets the number of satoshis this input is spending.
   ///
@@ -141,47 +141,47 @@ class TransactionInput {
   /// change [TransactionOutput]s must be generated as needed, and the difference
   /// between satoshis "consumed" by and input and those "locked" by the
   /// spending transaction's outputs goes to the miner as a fee reward.
-  set satoshis(BigInt value) {
+  set satoshis(BigInt? value) {
     _spendingAmount = value;
   }
 
   /// Returns the scriptSig (Input Script / Unlocking Script)
-  BCHScript get script => _scriptBuilder.getScriptSig();
+  BCHScript? get script => _scriptBuilder!.getScriptSig();
 
   /// Returns the script from the previous transaction's output
-  BCHScript get subScript => _utxoScript;
+  BCHScript? get subScript => _utxoScript;
 
   /// Set the script that represents the parent transaction's output (UTXO)
-  set script(BCHScript script) {
-    _scriptBuilder.fromScript(script);
+  set script(BCHScript? script) {
+    _scriptBuilder!.fromScript(script);
   }
 
   /// Set the script that represents the UTXO's scriptPubKey
-  set subScript(BCHScript script) {
+  set subScript(BCHScript? script) {
     _utxoScript = script;
   }
 
   /// Set the builder that represents the real builder
-  set scriptBuilder(UnlockingScriptBuilder builder) {
+  set scriptBuilder(UnlockingScriptBuilder? builder) {
     _scriptBuilder = builder;
   }
 
   /// Returns the current instance of UnlockingScriptBuilder in use
-  UnlockingScriptBuilder get scriptBuilder => _scriptBuilder;
+  UnlockingScriptBuilder? get scriptBuilder => _scriptBuilder;
 
   /// Returns the index value of the transaction output (UTXO) that this input is spending from.
-  int get prevTxnOutputIndex => _prevTxnOutputIndex;
+  int? get prevTxnOutputIndex => _prevTxnOutputIndex;
 
   /// Sets the index value of the transaction output (UTXO) that this input is spending from.
-  set prevTxnOutputIndex(int value) {
+  set prevTxnOutputIndex(int? value) {
     _prevTxnOutputIndex = value;
   }
 
   /// Returns the transaction Id of the transaction that this input is spending from
-  String get prevTxnId => _prevTxnId;
+  String? get prevTxnId => _prevTxnId;
 
   /// Sets the transaction Id of the transaction that this input is spending from
-  set prevTxnId(String value) {
+  set prevTxnId(String? value) {
     _prevTxnId = value;
   }
 
@@ -194,9 +194,9 @@ class TransactionInput {
   /// broadcast to the network. At least, that was the original purpose. At present this is only used to
   /// indicate whether nLockTime should be honored or ignored. Set this value to [UINT_MAX] to indicate
   /// that transaction's [Transaction.nLockTime] should be ignored.
-  int get sequenceNumber => _sequenceNumber;
+  int? get sequenceNumber => _sequenceNumber;
 
-  set sequenceNumber(int seqNumber) {
+  set sequenceNumber(int? seqNumber) {
     _sequenceNumber = seqNumber;
   }
 }

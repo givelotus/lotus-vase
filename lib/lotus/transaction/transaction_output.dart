@@ -24,14 +24,14 @@ import 'default_builder.dart';
 ///
 class TransactionOutput {
   BigInt _satoshis = BigInt.zero;
-  String _transactionId;
-  int _outputIndex;
+  String? _transactionId;
+  int? _outputIndex;
   bool _isChangeOutput = false;
 
-  LockingScriptBuilder _scriptBuilder;
+  LockingScriptBuilder? _scriptBuilder;
 
   /// The default constructor. Initializes a "clean slate" output.
-  TransactionOutput({LockingScriptBuilder scriptBuilder}) {
+  TransactionOutput({LockingScriptBuilder? scriptBuilder}) {
     _scriptBuilder = scriptBuilder ??= DefaultLockBuilder();
   }
 
@@ -45,17 +45,17 @@ class TransactionOutput {
   /// outputs in a raw transaction, which is also how it is currently
   /// being used.
   TransactionOutput.fromReader(ByteDataReader reader,
-      {LockingScriptBuilder scriptBuilder}) {
+      {LockingScriptBuilder? scriptBuilder}) {
     _scriptBuilder = scriptBuilder ??= DefaultLockBuilder();
 
     satoshis = BigInt.from(reader.readUint64(Endian.little));
     var size = readVarIntNum(reader);
     if (size != 0) {
       var script = BCHScript.fromBuffer(reader.read(size, copy: true));
-      _scriptBuilder.fromScript(script);
+      _scriptBuilder!.fromScript(script);
     } else {
       var script = BCHScript.fromBuffer(Uint8List(0));
-      _scriptBuilder.fromScript(script);
+      _scriptBuilder!.fromScript(script);
     }
   }
 
@@ -101,21 +101,21 @@ class TransactionOutput {
   Map<String, dynamic> toObject() {
     return {
       'satoshis': _satoshis.toInt(),
-      'script': _scriptBuilder.getScriptPubkey().toHex()
+      'script': _scriptBuilder!.getScriptPubkey().toHex()
     };
   }
 
   /// Returns the output script in it's raw hexadecimal form
   String get scriptHex {
-    return _scriptBuilder.getScriptPubkey().toHex();
+    return _scriptBuilder!.getScriptPubkey().toHex();
   }
 
   /// Returns the output script as a [BCHScript] instance
-  BCHScript get script => _scriptBuilder.getScriptPubkey();
+  BCHScript get script => _scriptBuilder!.getScriptPubkey();
 
   /// Sets the output script to the provided value
   set script(BCHScript script) {
-    _scriptBuilder.fromScript(script);
+    _scriptBuilder!.fromScript(script);
   }
 
   /// Returns the number of satoshis the output is sending
@@ -127,18 +127,18 @@ class TransactionOutput {
   }
 
   /// Returns the transactionId of the transaction this output belongs to
-  String get transactionId => _transactionId;
+  String? get transactionId => _transactionId;
 
   /// Sets the transactionId of the transaction this output belongs to
-  set transactionId(String value) {
+  set transactionId(String? value) {
     _transactionId = value;
   }
 
   /// Returns the index of the (UTXO) in the transaction this output belongs to
-  int get outputIndex => _outputIndex;
+  int? get outputIndex => _outputIndex;
 
   /// sets the index of the (UTXO) in the transaction this output belongs to
-  set outputIndex(int value) {
+  set outputIndex(int? value) {
     _outputIndex = value;
   }
 
@@ -148,7 +148,7 @@ class TransactionOutput {
   ///
   ///
   bool get isDataOut {
-    var scriptChunks = scriptBuilder.getScriptPubkey().chunks;
+    var scriptChunks = scriptBuilder!.getScriptPubkey().chunks;
     if (scriptChunks.isNotEmpty &&
         scriptChunks[0].opcodenum == OpCodes.OP_FALSE) {
       // safe data out
@@ -173,5 +173,5 @@ class TransactionOutput {
   }
 
   /// Returns the current instance of LockingScriptBuilder in use by this instance
-  LockingScriptBuilder get scriptBuilder => _scriptBuilder;
+  LockingScriptBuilder? get scriptBuilder => _scriptBuilder;
 }

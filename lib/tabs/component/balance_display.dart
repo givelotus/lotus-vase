@@ -6,8 +6,8 @@ import '../../constants.dart';
 import '../../../lotus/utils/format_amount.dart';
 
 class BalanceDisplay extends StatelessWidget {
-  final ValueNotifier<WalletBalance> balanceNotifier;
-  BalanceDisplay({@required this.balanceNotifier});
+  final ValueNotifier<WalletBalance?> balanceNotifier;
+  BalanceDisplay({required this.balanceNotifier});
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +18,13 @@ class BalanceDisplay extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-          color: Colors.grey[400].withOpacity(0.6),
+          color: Colors.grey[400]!.withOpacity(0.6),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ValueListenableBuilder(
                   valueListenable: balanceNotifier,
-                  builder: (context, balance, child) {
+                  builder: (context, dynamic balance, child) {
                     if (balance != null && balance.error != null) {
                       return Text(
                         balance.error.message,

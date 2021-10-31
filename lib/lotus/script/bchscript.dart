@@ -14,7 +14,7 @@ import 'opcodes.dart';
 class ScriptChunk {
   List<int> _buf;
   int _len;
-  int _opcodenum;
+  int? _opcodenum;
 
   /// Construct a  ScriptChunk
   ///
@@ -28,11 +28,11 @@ class ScriptChunk {
 
   /// Returns this script chunk's numeric opcode
   ///
-  int get opcodenum => _opcodenum;
+  int? get opcodenum => _opcodenum;
 
   /// Sets this script chunk's numeric opcode
   ///
-  set opcodenum(int value) {
+  set opcodenum(int? value) {
     _opcodenum = value;
   }
 
@@ -96,7 +96,7 @@ class BCHScript with ScriptBuilder {
   /// ```
   ///
   BCHScript.fromHex(String script) {
-    _processBuffer(HEX.decode(script));
+    _processBuffer(HEX.decode(script) as Uint8List);
   }
 
   /// Constructs a  Script instance from a list of [ScriptChunk]s.
@@ -137,7 +137,7 @@ class BCHScript with ScriptBuilder {
       }
 
       var opstr;
-      int opcodenum;
+      int? opcodenum;
       var tbuf;
       if (token.startsWith('0x')) {
         var hex = token.substring(2).replaceAll(',', '');
@@ -149,11 +149,11 @@ class BCHScript with ScriptBuilder {
       } else if (OpCodes.opcodeMap.containsKey('OP_${token.toUpperCase()}')) {
         opstr = 'OP_' + token;
         opcodenum = OpCodes.opcodeMap[opstr];
-        bw.writeUint8(opcodenum);
+        bw.writeUint8(opcodenum!);
       } else if (OpCodes.opcodeMap[token] is num) {
         opstr = token;
         opcodenum = OpCodes.opcodeMap[opstr];
-        bw.writeUint8(opcodenum);
+        bw.writeUint8(opcodenum!);
       } else if (BigInt.tryParse(token) != null) {
         var script = BCHScript()
           ..add(Uint8List.fromList(toScriptNumBuffer(BigInt.parse(token))));
@@ -219,9 +219,9 @@ class BCHScript with ScriptBuilder {
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
       var opcodenum = chunk.opcodenum;
-      bw.writeUint8(chunk.opcodenum);
+      bw.writeUint8(chunk.opcodenum!);
       if (chunk.buf.isNotEmpty) {
-        if (opcodenum < OpCodes.OP_PUSHDATA1) {
+        if (opcodenum! < OpCodes.OP_PUSHDATA1) {
           bw.write(chunk.buf);
         } else if (opcodenum == OpCodes.OP_PUSHDATA1) {
           bw.writeUint8(chunk.len);
@@ -353,7 +353,7 @@ class BCHScript with ScriptBuilder {
   bool isPushOnly() {
     return _chunks.fold(true, (prev, chunk) {
       return prev &&
-          (chunk.opcodenum <= OpCodes.OP_16 ||
+          (chunk.opcodenum! <= OpCodes.OP_16 ||
               chunk.opcodenum == OpCodes.OP_PUSHDATA1 ||
               chunk.opcodenum == OpCodes.OP_PUSHDATA2 ||
               chunk.opcodenum == OpCodes.OP_PUSHDATA4);
@@ -417,7 +417,7 @@ class BCHScript with ScriptBuilder {
   /// `howMany` - the number of items to be removed.
   ///
   /// `values`  - an optional List of  items to insert; null if no items need insertion
-  List<ScriptChunk> splice(int index, int howMany, {List<ScriptChunk> values}) {
+  List<ScriptChunk> splice(int index, int howMany, {List<ScriptChunk>? values}) {
     var buffer = List<ScriptChunk>.from(_chunks);
 
     var removedItems = buffer.getRange(index, index + howMany).toList();
@@ -507,7 +507,7 @@ class BCHScript with ScriptBuilder {
           str = str + ' ' + OpCodes.fromNum(opcodenum);
         }
       } else {
-        var numstr = opcodenum.toRadixString(16);
+        var numstr = opcodenum!.toRadixString(16);
         if (numstr.length % 2 != 0) {
           numstr = '0' + numstr;
         }
@@ -580,9 +580,9 @@ class BCHScript with ScriptBuilder {
   }
 
   void _addOpcode(opcode, prepend) {
-    int op;
+    int? op;
     if (opcode is num) {
-      op = opcode;
+      op = opcode as int?;
     } else if (opcode is String && OpCodes.opcodeMap.containsKey(opcode)) {
       op = OpCodes.opcodeMap[opcode];
     }

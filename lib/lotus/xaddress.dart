@@ -14,11 +14,11 @@ enum XAddressType {
 }
 
 class XAddress {
-  XAddressType type;
-  NetworkType network;
-  List<int> payload;
+  XAddressType? type;
+  NetworkType? network;
+  List<int>? payload;
 
-  String prefix;
+  String? prefix;
 
   XAddress(
       {this.type = XAddressType.ScriptPubKey,
@@ -80,10 +80,10 @@ class XAddress {
 
 List<int> _CreateChecksum(XAddress content) {
   final buffer = BytesBuilder();
-  buffer.add(List.from(content.prefix.runes));
+  buffer.add(List.from(content.prefix!.runes));
   buffer.addByte(content.networkByte.runes.first);
   buffer.addByte(content.typeByte);
-  buffer.add(content.payload);
+  buffer.add(content.payload!);
   final data = buffer.takeBytes();
   final digest = sha256(data);
   return digest.sublist(0, 4);
@@ -91,12 +91,12 @@ List<int> _CreateChecksum(XAddress content) {
 
 List<int> _CreateChecksumLegacy(XAddress content) {
   final buffer = BytesBuilder();
-  buffer.add(varintBufNum(content.prefix.runes.length));
-  buffer.add(List.from(content.prefix.runes));
+  buffer.add(varintBufNum(content.prefix!.runes.length));
+  buffer.add(List.from(content.prefix!.runes));
   buffer.addByte(content.networkByte.runes.first);
   buffer.addByte(content.typeByte);
-  buffer.add(varintBufNum(content.payload.length));
-  buffer.add(content.payload);
+  buffer.add(varintBufNum(content.payload!.length));
+  buffer.add(content.payload!);
   final data = buffer.takeBytes();
   final digest = sha256(data);
   return digest.sublist(0, 4);
@@ -105,7 +105,7 @@ List<int> _CreateChecksumLegacy(XAddress content) {
 String _EncodePayload(XAddress content, List<int> checkBytes) {
   final buffer = BytesBuilder();
   buffer.addByte(content.typeByte);
-  buffer.add(content.payload);
+  buffer.add(content.payload!);
   buffer.add(checkBytes);
   final bytes = buffer.takeBytes();
   final encodedPayload = base58.encode(bytes);

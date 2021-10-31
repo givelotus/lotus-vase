@@ -22,25 +22,25 @@ class BCHSignature {
   static final SHA256Digest _sha256Digest = SHA256Digest();
   final ECDSASigner _dsaSigner = ECDSASigner(null, HMac(_sha256Digest, 64));
 
-  ECSignature _signature;
-  BigInt _r;
-  BigInt _s;
-  String _rHex;
-  String _sHex;
+  ECSignature? _signature;
+  BigInt? _r;
+  BigInt? _s;
+  String? _rHex;
+  String? _sHex;
   int _nhashtype = 0;
-  int _i;
+  int? _i;
   bool _compressed = false;
 
-  BCHPrivateKey _privateKey;
-  BCHPublicKey _publicKey;
+  BCHPrivateKey? _privateKey;
+  BCHPublicKey? _publicKey;
 
   /// Construct a  instance from the R and S components of an ECDSA signature.
   ///
   /// [r] - The r component of the signature
   ///
   /// [s] - The s component of the signature
-  BCHSignature.fromECParams(this._r, this._s) {
-    _signature = ECSignature(_r, _s);
+  BCHSignature.fromECParams(BigInt this._r, BigInt this._s) {
+    _signature = ECSignature(_r!, _s!);
   }
 
   /// Constructs a signature for it's bitcoin-transaction-encoded form.
@@ -61,7 +61,7 @@ class BCHSignature {
   /// Constructs a signature from it's DER-encoded form
   ///
   /// [derBuffer] - Hex-encoded DER string containing the signature
-  BCHSignature.fromDER(String derBuffer, {BCHPublicKey publicKey}) {
+  BCHSignature.fromDER(String derBuffer, {BCHPublicKey? publicKey}) {
     _publicKey = publicKey;
     _parseDER(derBuffer);
   }
@@ -121,14 +121,14 @@ class BCHSignature {
     _r = asn1.ASN1Utils.decodeBigInt(b2);
     _s = asn1.ASN1Utils.decodeBigInt(b3);
 
-    _rHex = _r.toRadixString(16);
-    _sHex = _s.toRadixString(16);
+    _rHex = _r!.toRadixString(16);
+    _sHex = _s!.toRadixString(16);
 
-    _signature = ECSignature(_r, _s);
+    _signature = ECSignature(_r!, _s!);
 
     _publicKey = _recoverPublicKey(i, signedMessage);
     _dsaSigner.init(false,
-        PublicKeyParameter(ECPublicKey(_publicKey.point, _domainParams)));
+        PublicKeyParameter(ECPublicKey(_publicKey!.point, _domainParams)));
   }
 
   /// Renders the signature in *compact* form.
@@ -140,14 +140,14 @@ class BCHSignature {
       throw SignatureException('i must be equal to 0, 1, 2, or 3');
     }
 
-    var val = _i + 27 + 4;
+    var val = _i! + 27 + 4;
     if (!_compressed) {
       val = val - 4;
     }
 
     var b1 = [val];
-    var b2 = asn1.ASN1Utils.encodeBigInt(_r);
-    var b3 = asn1.ASN1Utils.encodeBigInt(_s);
+    var b2 = asn1.ASN1Utils.encodeBigInt(_r!);
+    var b3 = asn1.ASN1Utils.encodeBigInt(_s!);
     return b1 + b2 + b3;
   }
 
@@ -163,7 +163,7 @@ class BCHSignature {
 
     var decodedMessage = Uint8List.fromList(HEX.decode(message).toList());
 
-    return _dsaSigner.verifySignature(decodedMessage, _signature);
+    return _dsaSigner.verifySignature(decodedMessage, _signature!);
   }
 
   /// Signs a message and optionally also calculates the first byte needed for compact format rendering.
@@ -182,11 +182,11 @@ class BCHSignature {
     // sign it
     List<int> decodedMessage = Uint8List.fromList(HEX.decode(message).toList());
 
-    _signature = _dsaSigner.generateSignature(decodedMessage);
-    _r = _signature.r;
-    _s = _signature.s;
-    _rHex = _r.toRadixString(16);
-    _sHex = _s.toRadixString(16);
+    _signature = _dsaSigner.generateSignature(decodedMessage as Uint8List) as ECSignature?;
+    _r = _signature!.r;
+    _s = _signature!.s;
+    _rHex = _r!.toRadixString(16);
+    _sHex = _s!.toRadixString(16);
 
     _toLowS();
 
@@ -204,14 +204,14 @@ class BCHSignature {
       return '';
     }
 
-    return HEX.encode(toDER());
+    return HEX.encode(toDER()!);
   }
 
   /// Returns the signature in standard DER format, with the [SighashType] value appended
   String toTxFormat() {
     // return HEX encoded transaction Format
 
-    var der = toDER().toList();
+    var der = toDER()!.toList();
 
     var buf = Uint8List(1).toList();
     buf[0] = _nhashtype;
@@ -222,7 +222,7 @@ class BCHSignature {
   }
 
   /// Renders the signature as a DER-encoded byte buffer
-  List<int> toDER() {
+  List<int>? toDER() {
     var seq = asn1.ASN1Sequence();
     seq.add(asn1.ASN1Integer(_r));
     seq.add(asn1.ASN1Integer(_s));
@@ -348,7 +348,7 @@ class BCHSignature {
     var hex =
         '7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0';
 
-    if (_s < (BigInt.from(1)) || _s > (BigInt.parse(hex, radix: 16))) {
+    if (_s! < (BigInt.from(1)) || _s! > (BigInt.parse(hex, radix: 16))) {
       return false;
     }
 
@@ -357,7 +357,7 @@ class BCHSignature {
 
   // side-effects on _i
   void _calculateI(List<int> decodedMessage) {
-    var pubKey = _privateKey.publicKey;
+    var pubKey = _privateKey!.publicKey;
     for (var i = 0; i < 4; i++) {
       _i = i;
       BCHPublicKey Qprime;
@@ -367,7 +367,7 @@ class BCHSignature {
         continue;
       }
 
-      if (Qprime.point == pubKey.point) {
+      if (Qprime.point == pubKey!.point) {
         _compressed = Qprime.isCompressed;
         return;
       }
@@ -383,7 +383,7 @@ class BCHSignature {
     }
 
     var e = asn1.ASN1Utils.decodeBigInt(hashBuffer);
-    var r = this.r;
+    var r = this.r!;
     var s = this.s;
 
     // The more significant bit specifies whether we should use the
@@ -399,7 +399,7 @@ class BCHSignature {
     var R = _domainParams.curve.decompressPoint(yTilde, x);
 
     // 1.4 Check that nR is at infinity
-    var nR = R * n;
+    var nR = (R * n)!;
 
     if (!nR.isInfinity) {
       throw SignatureException('nR is not a valid curve point');
@@ -414,9 +414,9 @@ class BCHSignature {
     var rInv = r.modInverse(n);
 
     // var Q = R.multiplyTwo(s, G, eNeg).mul(rInv);
-    var Q = (R * s + G * eNeg) * rInv;
+    var Q = (((R * s)! + G * eNeg)! * rInv)!;
 
-    return BCHPublicKey.fromXY(Q.x.toBigInteger(), Q.y.toBigInteger(),
+    return BCHPublicKey.fromXY(Q.x!.toBigInteger()!, Q.y!.toBigInteger()!,
         compressed: _compressed);
   }
 
@@ -426,43 +426,43 @@ class BCHSignature {
     }
     // enforce low s
     // see BIP 62, 'low S values in signatures'
-    if (_s >
+    if (_s! >
         BigInt.parse(
             '7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0',
             radix: 16)) {
-      _s = _domainParams.n - _s;
+      _s = _domainParams.n - _s!;
     }
   }
 
   void _parseDER(derBuffer) {
     try {
-      var parser = ASN1Parser(HEX.decode(derBuffer));
+      var parser = ASN1Parser(HEX.decode(derBuffer) as Uint8List?);
 
       var seq = parser.nextObject() as asn1.ASN1Sequence;
 
-      var rVal = seq.elements[0] as asn1.ASN1Integer;
-      var sVal = seq.elements[1] as asn1.ASN1Integer;
+      var rVal = seq.elements![0] as asn1.ASN1Integer;
+      var sVal = seq.elements![1] as asn1.ASN1Integer;
 
-      _rHex = HEX.encode(rVal.valueBytes);
-      _sHex = HEX.encode(sVal.valueBytes);
+      _rHex = HEX.encode(rVal.valueBytes!);
+      _sHex = HEX.encode(sVal.valueBytes!);
 
-      _r = BigInt.parse(_rHex, radix: 16);
-      _s = BigInt.parse(_sHex, radix: 16);
+      _r = BigInt.parse(_rHex!, radix: 16);
+      _s = BigInt.parse(_sHex!, radix: 16);
 
-      _signature = ECSignature(r, s);
+      _signature = ECSignature(r!, s!);
     } catch (e) {
       throw SignatureException(e.cause);
     }
   }
 
   /// Returns the signature's *S* value
-  BigInt get s => _s;
+  BigInt? get s => _s;
 
   /// Returns the signature's *R* value
-  BigInt get r => _r;
+  BigInt? get r => _r;
 
   /// Returns the public key that will be used to verify signatures
-  BCHPublicKey get publicKey => _publicKey;
+  BCHPublicKey? get publicKey => _publicKey;
 
 //    int get i => _i;
 
@@ -475,8 +475,8 @@ class BCHSignature {
   }
 
   /// Returns the signature's *S* value as a hexadecimal string
-  String get sHex => _sHex;
+  String? get sHex => _sHex;
 
   /// Returns the signature's *R* value as a hexadecimal string
-  String get rHex => _rHex;
+  String? get rHex => _rHex;
 }

@@ -1,8 +1,8 @@
 import 'package:vase/lotus/address.dart';
 
 class ParseURIResult {
-  String address;
-  int amount;
+  String? address;
+  int? amount;
 
   ParseURIResult({this.address, this.amount});
 }

@@ -1,5 +1,5 @@
 class WIFCodec {
-  bool compressed;
+  bool? compressed;
 
   WIFCodec.fromBase58(params, base58) {
     throw Exception('unimplemented');

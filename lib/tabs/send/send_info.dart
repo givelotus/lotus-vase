@@ -34,13 +34,13 @@ List<String> canSend(int amount, String address, int balance) {
   return errors;
 }
 
-Future showReceipt(BuildContext context, Transaction transaction) {
+Future showReceipt(BuildContext context, Transaction? transaction) {
   return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Transaction sent'),
-          content: Text(transaction.id),
+          content: Text(transaction!.id!),
         );
       });
 }
@@ -58,7 +58,7 @@ Future showError(BuildContext context, String errMessage) {
 class SendInfo extends StatelessWidget {
   final ValueNotifier<CalculatorData> keyboardNotifier;
 
-  SendInfo({Key key})
+  SendInfo({Key? key})
       : keyboardNotifier = ValueNotifier<CalculatorData>(
             CalculatorData(amount: 0, function: ''));
 
@@ -73,7 +73,7 @@ class SendInfo extends StatelessWidget {
     });
 
     void sendTransaction(BuildContext context, String address, int amount) {
-      walletModel.wallet
+      walletModel.wallet!
           .sendTransaction(Address(address), BigInt.from(amount))
           .then((transaction) {
             sendModel.sendAmount = null;
@@ -87,7 +87,7 @@ class SendInfo extends StatelessWidget {
     final pasteAddress = () async {
       // TODO: Dedupe this with QR Scanning.
       try {
-        final data = await Clipboard.getData('text/plain');
+        final data = await (Clipboard.getData('text/plain') as FutureOr<ClipboardData>);
         final parseResult = parseSendURI(data.text.toString().trim());
 
         // Use the unparsed version, so that it appears as it was originally copied
@@ -128,8 +128,8 @@ class SendInfo extends StatelessWidget {
                   Consumer<SendModel>(builder: (context, viewModel, child) {
                 final errors = canSend(
                     viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress,
-                    walletModel.balance.value.balance ?? 0);
+                    viewModel.sendToAddress!,
+                    walletModel.balance.value!.balance ?? 0);
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.end,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -176,16 +176,16 @@ class SendInfo extends StatelessWidget {
               Consumer<SendModel>(builder: (context, viewModel, child) {
                 final errors = canSend(
                     viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress,
-                    walletModel.balance.value.balance ?? 0);
+                    viewModel.sendToAddress!,
+                    walletModel.balance.value!.balance ?? 0);
                 return Row(children: [
                   Expanded(
                       child: ElevatedButton(
                     autofocus: true,
                     onPressed: errors.isEmpty
                         ? () {
-                            sendTransaction(context, viewModel.sendToAddress,
-                                viewModel.sendAmount);
+                            sendTransaction(context, viewModel.sendToAddress!,
+                                viewModel.sendAmount!);
                           }
                         : null,
                     child: Text('Send'),
@@ -208,7 +208,7 @@ String clipString(String data) {
 }
 
 class AddressDisplay extends StatelessWidget {
-  final void Function() onTap;
+  final void Function()? onTap;
 
   AddressDisplay({this.onTap}) : super();
 
@@ -231,8 +231,8 @@ class AddressDisplay extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
                         text: viewModel.sendToAddress != null &&
-                                viewModel.sendToAddress.isNotEmpty
-                            ? clipString(viewModel.sendToAddress)
+                                viewModel.sendToAddress!.isNotEmpty
+                            ? clipString(viewModel.sendToAddress!)
                             : 'Tap to Paste Address',
                         // TODO: This is waaay too small. We need to split the
                         // address up over multiple lines.

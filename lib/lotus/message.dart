@@ -19,7 +19,7 @@ import 'address.dart';
 ///
 /// Reference (section 4.1.6) : http:// www.secg.org/sec1-v2.pdf
 class Message {
-  List<int> _message;
+  List<int>? _message;
   final MAGIC_BYTES = 'Bitcoin Signed Message:\n';
 
   /// A double-sha256 digest unique to Bitcoin Signed Messages
@@ -35,9 +35,9 @@ class Message {
   /// Returns the double-sha256 of the buffer constructed as shown above
   List<int> magicHash() {
     var prefix1 = MAGIC_BYTES.length;
-    var prefix2 = _message.length;
+    var prefix2 = _message!.length;
     var buf =
-        HEX.encode([prefix1] + utf8.encode(MAGIC_BYTES) + [prefix2] + _message);
+        HEX.encode([prefix1] + utf8.encode(MAGIC_BYTES) + [prefix2] + _message!);
     var hash = sha256Twice(HEX.decode(buf));
     return hash;
   }
@@ -74,7 +74,7 @@ class Message {
     var signature =
         BCHSignature.fromCompact(base64Decode(sigBuffer), magicHash());
 
-    var recoveredPubKey = signature.publicKey;
+    var recoveredPubKey = signature.publicKey!;
 
     var recoveredAddress =
         recoveredPubKey.toAddress(networkType: address.networkType);
@@ -98,7 +98,7 @@ class Message {
     var signature =
         BCHSignature.fromCompact(base64Decode(sigBuffer), magicHash());
 
-    var recoveredKey = signature.publicKey;
+    var recoveredKey = signature.publicKey!;
 
     // sanity check on public key
     if (recoveredKey.point != publicKey.point) {
@@ -117,5 +117,5 @@ class Message {
   }
 
   /// The message we are signing/verifying
-  List<int> get message => _message;
+  List<int>? get message => _message;
 }

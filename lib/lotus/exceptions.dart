@@ -18,7 +18,7 @@ class BadParameterException implements Exception {
 }
 
 class InvalidPointException implements Exception {
-  String message;
+  String? message;
 
   InvalidPointException(this.message);
 }
@@ -72,7 +72,7 @@ class ScriptException implements Exception {
 }
 
 class SignatureException implements Exception {
-  String message;
+  String? message;
 
   SignatureException(this.message);
 }

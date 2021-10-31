@@ -56,12 +56,12 @@ class HDPublicKey extends CKDSerializer {
   /// Constructs a public key from it's matching HD private key parameters
   HDPublicKey(
       BCHPublicKey publicKey,
-      NetworkType networkType,
-      int nodeDepth,
-      List<int> parentFingerprint,
-      List<int> childNumber,
-      List<int> chainCode,
-      List<int> versionBytes) {
+      NetworkType? networkType,
+      int? nodeDepth,
+      List<int?> parentFingerprint,
+      List<int?> childNumber,
+      List<int?> chainCode,
+      List<int?> versionBytes) {
     this.nodeDepth = nodeDepth;
     this.parentFingerprint = parentFingerprint;
     this.childNumber = childNumber;
@@ -69,7 +69,7 @@ class HDPublicKey extends CKDSerializer {
     this.versionBytes = versionBytes;
     keyType = KeyType.PUBLIC;
     this.networkType = networkType;
-    keyBuffer = publicKey.point.getEncoded(true);
+    keyBuffer = publicKey.point!.getEncoded(true);
   }
 
   /// Constructs a new public key from it's `xpub`-encoded representation
@@ -81,7 +81,7 @@ class HDPublicKey extends CKDSerializer {
 
   /// Constructs a new public key from it's `xpub`-encoded representation
   BCHPublicKey get publicKey {
-    final point = _domainParams.curve.decodePoint(keyBuffer);
+    final point = _domainParams.curve.decodePoint(keyBuffer)!;
     return BCHPublicKey.fromPoint(point);
   }
 
@@ -94,7 +94,7 @@ class HDPublicKey extends CKDSerializer {
   /// Derive a new child public key at `index`
   HDPublicKey deriveChildNumber(int index) {
     var elem = ChildNumber(index, false);
-    return _deriveChildPublicKey(nodeDepth, elem);
+    return _deriveChildPublicKey(nodeDepth!, elem);
   }
 
   /// Derive a new child public key using the indicated path
@@ -107,7 +107,7 @@ class HDPublicKey extends CKDSerializer {
     var children = HDUtils.parsePath(path);
 
     // some imperative madness to ensure children have their parents' fingerprint
-    var lastChild = this;
+    HDPublicKey lastChild = this;
     var nd = nodeDepth;
     for (var elem in children) {
       if (elem.isHardened()) {
@@ -116,7 +116,7 @@ class HDPublicKey extends CKDSerializer {
       }
 
       lastChild = lastChild._deriveChildPublicKey(
-        nd,
+        nd!,
         elem,
       );
       nd++;
@@ -126,7 +126,7 @@ class HDPublicKey extends CKDSerializer {
   }
 
   List<int> get fingerprint {
-    return hash160(publicKey.point.getEncoded(true)).sublist(0, 4);
+    return hash160(publicKey.point!.getEncoded(true)).sublist(0, 4);
   }
 
   HDPublicKey _deriveChildPublicKey(
@@ -135,10 +135,10 @@ class HDPublicKey extends CKDSerializer {
   ) {
     var seriList = Uint8List(4);
     seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
-    final publicKeyPoint = publicKey.point;
+    final publicKeyPoint = publicKey.point!;
     var dataConcat = publicKeyPoint.getEncoded(true) + seriList;
     var I =
-        HDUtils.hmacSha512WithKey(chainCode, Uint8List.fromList(dataConcat));
+        HDUtils.hmacSha512WithKey(chainCode as Uint8List, Uint8List.fromList(dataConcat));
 
 // Ensure value is interpreted as positive by padding.
     var lhs = I.sublist(0, 32);
@@ -146,7 +146,7 @@ class HDPublicKey extends CKDSerializer {
 
     var privateKey =
         BCHPrivateKey.fromBigInt(decodeUInt256(lhs), networkType: networkType);
-    var derivedPoint = privateKey.publicKey.point + publicKeyPoint;
+    var derivedPoint = (privateKey.publicKey!.point! + publicKeyPoint)!;
 
     // TODO: Validate that the point is on the curve !
 

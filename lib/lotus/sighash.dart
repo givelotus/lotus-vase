@@ -73,8 +73,8 @@ class Sighash {
 
   static const _DEFAULT_SIGN_FLAGS = ScriptFlags.SCRIPT_ENABLE_SIGHASH_FORKID;
 
-  Transaction _txn;
-  BCHScript _subScript;
+  late Transaction _txn;
+  BCHScript? _subScript;
   int _sighashType = 0;
 
   /// Calculates the hash value according to the Sighash flags specified in [sighashType]
@@ -92,7 +92,7 @@ class Sighash {
   Sighash();
 
   String hash(Transaction txn, int sighashType, int inputNumber,
-      BCHScript subscript, BigInt satoshis,
+      BCHScript subscript, BigInt? satoshis,
       {flags = _DEFAULT_SIGN_FLAGS}) {
     var txnCopy =
         Transaction.fromHex(txn.serialize(performChecks: false)); // make a copy
@@ -208,7 +208,7 @@ class Sighash {
   }
 
   List<int> _sigHashForForkid(Transaction txn, int sighashType, int inputNumber,
-      BCHScript subscript, BigInt satoshis,
+      BCHScript subscript, BigInt? satoshis,
       // ignore: unused_element
       {flags = _DEFAULT_SIGN_FLAGS}) {
     if (satoshis == null) {
@@ -222,8 +222,8 @@ class Sighash {
       var writer = ByteDataWriter();
 
       tx.inputs.forEach((TransactionInput input) {
-        writer.write(HEX.decode(input.prevTxnId).reversed.toList());
-        writer.writeUint32(input.prevTxnOutputIndex, Endian.little);
+        writer.write(HEX.decode(input.prevTxnId!).reversed.toList());
+        writer.writeUint32(input.prevTxnOutputIndex!, Endian.little);
       });
 
       var buf = writer.toBytes();
@@ -234,14 +234,14 @@ class Sighash {
       var writer = ByteDataWriter();
 
       tx.inputs.forEach((input) {
-        writer.writeUint32(input.sequenceNumber, Endian.little);
+        writer.writeUint32(input.sequenceNumber!, Endian.little);
       });
 
       var buf = writer.toBytes();
       return sha256Twice(buf.toList());
     }
 
-    List<int> GetOutputsHash(Transaction tx, {int n}) {
+    List<int> GetOutputsHash(Transaction tx, {int? n}) {
       var writer = ByteDataWriter();
 
       if (n == null) {
@@ -281,15 +281,15 @@ class Sighash {
     var writer = ByteDataWriter();
 
     // Version
-    writer.writeInt32(txn.version, Endian.little);
+    writer.writeInt32(txn.version!, Endian.little);
 
     // Input prevouts/nSequence (none/all, depending on flags)
     writer.write(hashPrevouts);
     writer.write(hashSequence);
 
     //  outpoint (32-byte hash + 4-byte little endian)
-    writer.write(HEX.decode(input.prevTxnId).reversed.toList());
-    writer.writeUint32(input.prevTxnOutputIndex, Endian.little);
+    writer.write(HEX.decode(input.prevTxnId!).reversed.toList());
+    writer.writeUint32(input.prevTxnOutputIndex!, Endian.little);
 
     // scriptCode of the input (serialized as scripts inside CTxOuts)
     writer.write(varIntWriter(subscript.buffer.length).toList(), copy: true);
@@ -299,14 +299,14 @@ class Sighash {
     writer.writeUint64(satoshis.toInt(), Endian.little);
 
     // nSequence of the input (4-byte little endian)
-    var sequenceNumber = input.sequenceNumber;
+    var sequenceNumber = input.sequenceNumber!;
     writer.writeUint32(sequenceNumber, Endian.little);
 
     // Outputs (none/one/all, depending on flags)
     writer.write(hashOutputs);
 
     // Locktime
-    writer.writeUint32(txn.nLockTime, Endian.little);
+    writer.writeUint32(txn.nLockTime!, Endian.little);
 
     // sighashType
     writer.writeUint32(sighashType >> 0, Endian.little);

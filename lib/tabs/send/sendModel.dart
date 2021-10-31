@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 class SendModel with ChangeNotifier {
-  int _sendAmount;
-  String _sendToAddress;
+  int? _sendAmount;
+  String? _sendToAddress;
 
   // TODO: Storage should be injected
   SendModel() {
@@ -10,16 +10,16 @@ class SendModel with ChangeNotifier {
     _sendAmount = null;
   }
 
-  set sendAmount(int newValue) {
+  set sendAmount(int? newValue) {
     _sendAmount = newValue;
     notifyListeners();
   }
 
-  int get sendAmount => _sendAmount;
+  int? get sendAmount => _sendAmount;
 
-  String get sendToAddress => _sendToAddress;
+  String? get sendToAddress => _sendToAddress;
 
-  set sendToAddress(String newValue) {
+  set sendToAddress(String? newValue) {
     _sendToAddress = newValue;
     notifyListeners();
   }

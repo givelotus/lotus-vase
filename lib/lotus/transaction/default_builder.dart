@@ -32,28 +32,28 @@ class DefaultLockBuilder extends _DefaultLockBuilder with DefaultLockMixin {
 mixin DefaultUnlockMixin on _DefaultUnlockBuilder
     implements UnlockingScriptBuilder {
   @override
-  BCHScript getScriptSig() {
+  BCHScript? getScriptSig() {
     return script;
   }
 }
 
 abstract class _DefaultUnlockBuilder extends SignedUnlockBuilder
     implements UnlockingScriptBuilder {
-  BCHScript _script = BCHScript();
+  BCHScript? _script = BCHScript();
 
   _DefaultUnlockBuilder();
 
   @override
   List<BCHSignature> signatures = <BCHSignature>[];
 
-  BCHScript get scriptSig => getScriptSig();
+  BCHScript? get scriptSig => getScriptSig();
 
   @override
-  void fromScript(BCHScript script) {
+  void fromScript(BCHScript? script) {
     _script = script;
   }
 
-  BCHScript get script => _script;
+  BCHScript? get script => _script;
 }
 
 class DefaultUnlockBuilder extends _DefaultUnlockBuilder

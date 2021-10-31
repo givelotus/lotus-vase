@@ -3,7 +3,7 @@ import '../script/bchscript.dart';
 abstract class UnlockingScriptBuilder {
   /// This method must be implemented by all subclasses. It must return a
   /// valid unlocking script a.k.a scriptSig
-  BCHScript getScriptSig();
+  BCHScript? getScriptSig();
 
   /// This method must be implemented by all subclasses.
   ///
@@ -11,5 +11,5 @@ abstract class UnlockingScriptBuilder {
   /// and recover the internal state of the subclass. I.e. it must deserialize
   /// the unlocking script.
   ///
-  void fromScript(BCHScript script);
+  void fromScript(BCHScript? script);
 }

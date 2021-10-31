@@ -56,7 +56,7 @@ class P2SHLockBuilder extends _P2SHLockBuilder with P2SHLockMixin {
 /// P2SH unlocking Script
 mixin P2SHUnlockMixin on _P2SHUnlockBuilder implements UnlockingScriptBuilder {
   @override
-  BCHScript getScriptSig() {
+  BCHScript? getScriptSig() {
     return script;
   }
 }
@@ -70,12 +70,12 @@ abstract class _P2SHUnlockBuilder extends SignedUnlockBuilder
   @override
   List<BCHSignature> signatures = <BCHSignature>[];
 
-  BCHScript script;
+  BCHScript? script;
 
   _P2SHUnlockBuilder();
 
   @override
-  void fromScript(BCHScript script) {
+  void fromScript(BCHScript? script) {
     if (script != null && script.buffer != null) {
       this.script = script;
     } else {
@@ -83,7 +83,7 @@ abstract class _P2SHUnlockBuilder extends SignedUnlockBuilder
     }
   }
 
-  BCHScript get scriptSig => getScriptSig();
+  BCHScript? get scriptSig => getScriptSig();
 }
 
 class P2SHUnlockBuilder extends _P2SHUnlockBuilder with P2SHUnlockMixin {

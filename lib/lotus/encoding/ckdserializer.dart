@@ -15,14 +15,14 @@ abstract class CKDSerializer {
   static final List<int> TESTNET_PUBLIC = HEX.decode('043587CF');
   static final List<int> TESTNET_PRIVATE = HEX.decode('04358394');
 
-  int _nodeDepth;
-  List<int> _parentFingerprint = List(4); // Uint32
-  List<int> _childNumber = List(4); // Uint32
-  List<int> _chainCode = List(32); // Uint8List(32)
-  List<int> _keyHex = List(33); // Uint8List(33)
-  List<int> _versionBytes = List(4); // Uint32
-  NetworkType _networkType;
-  KeyType _keyType;
+  int? _nodeDepth;
+  List<int?> _parentFingerprint = List(4); // Uint32
+  List<int?> _childNumber = List(4); // Uint32
+  List<int?> _chainCode = List(32); // Uint8List(32)
+  List<int?> _keyHex = List(33); // Uint8List(33)
+  List<int?> _versionBytes = List(4); // Uint32
+  NetworkType? _networkType;
+  KeyType? _keyType;
 
   void deserialize(String vector) {
     var decoded = bs58check.decodeChecked(vector);
@@ -36,7 +36,7 @@ abstract class CKDSerializer {
 
     // ignore: unused_local_variable
     var version =
-        HEX.encode(_versionBytes.map((elem) => elem.toUnsigned(8)).toList());
+        HEX.encode(_versionBytes.map((elem) => elem!.toUnsigned(8)).toList());
   }
 
   // TODO: FIX Rewrite using the Buffer class
@@ -45,11 +45,11 @@ abstract class CKDSerializer {
 
     var serializedKey = List.filled(78, 0);
     serializedKey.setRange(0, 4, versionBytes);
-    serializedKey.setRange(4, 5, [_nodeDepth]);
-    serializedKey.setRange(5, 9, _parentFingerprint);
-    serializedKey.setRange(9, 13, _childNumber);
-    serializedKey.setRange(13, 45, _chainCode);
-    serializedKey.setRange(45, 78, _keyHex);
+    serializedKey.setRange(4, 5, [_nodeDepth!]);
+    serializedKey.setRange(5, 9, _parentFingerprint as Iterable<int>);
+    serializedKey.setRange(9, 13, _childNumber as Iterable<int>);
+    serializedKey.setRange(13, 45, _chainCode as Iterable<int>);
+    serializedKey.setRange(45, 78, _keyHex as Iterable<int>);
 
     // checksum calculation... doubleSha
     var doubleShaAddr = utils.sha256Twice(serializedKey);
@@ -77,17 +77,17 @@ abstract class CKDSerializer {
     }
   }
 
-  set chainCode(List<int> bytes) {
+  set chainCode(List<int?> bytes) {
     _chainCode = bytes;
   }
 
-  NetworkType get networkType => _networkType;
+  NetworkType? get networkType => _networkType;
 
-  set networkType(NetworkType value) {
+  set networkType(NetworkType? value) {
     _networkType = value;
   }
 
-  List<int> get chainCode {
+  List<int?> get chainCode {
     return _chainCode;
   }
 
@@ -105,44 +105,44 @@ abstract class CKDSerializer {
   List<int> get keyBuffer {
     // TODO: Why does this need to be converted to a Uin8list and back?
     // Simply duplicating the lists broke lots of the code.
-    return Uint8List.fromList(_keyHex).toList();
+    return Uint8List.fromList(_keyHex as List<int>).toList();
   }
 
-  set versionBytes(List<int> bytes) {
+  set versionBytes(List<int?> bytes) {
     _versionBytes = bytes;
   }
 
-  List<int> get versionBytes {
+  List<int?> get versionBytes {
     return _versionBytes;
   }
 
-  set nodeDepth(int depth) {
+  set nodeDepth(int? depth) {
     _nodeDepth = depth;
   }
 
-  int get nodeDepth {
+  int? get nodeDepth {
     return _nodeDepth;
   }
 
-  set parentFingerprint(List<int> bytes) {
+  set parentFingerprint(List<int?> bytes) {
     _parentFingerprint = bytes;
   }
 
-  List<int> get parentFingerprint {
+  List<int?> get parentFingerprint {
     return _parentFingerprint;
   }
 
-  set childNumber(List<int> bytes) {
+  set childNumber(List<int?> bytes) {
     _childNumber = bytes;
   }
 
-  List<int> get childNumber {
+  List<int?> get childNumber {
     return _childNumber;
   }
 
-  KeyType get keyType => _keyType;
+  KeyType? get keyType => _keyType;
 
-  set keyType(KeyType value) {
+  set keyType(KeyType? value) {
     _keyType = value;
   }
 }

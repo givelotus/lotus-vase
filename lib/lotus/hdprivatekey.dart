@@ -74,7 +74,7 @@ class HDPrivateKey extends CKDSerializer {
   HDPrivateKey.fromSeed(String seed, NetworkType networkType) {
     // I = HMAC-SHA512(Key = "Bitcoin seed", Data = S)
     var I = HDUtils.hmacSha512WithKey(
-        utf8.encode('Bitcoin seed'), HEX.decode(seed));
+        utf8.encode('Bitcoin seed') as Uint8List, HEX.decode(seed) as Uint8List);
 
     // Ensure the bytes are interpreted as positive by adding a padding.
     var masterKey = I.sublist(0, 32);
@@ -110,7 +110,7 @@ class HDPrivateKey extends CKDSerializer {
   HDPrivateKey deriveChildNumber(int index, {bool hardened = false}) {
     var elem = ChildNumber(index, hardened);
     return _deriveChildPrivateKey(
-      nodeDepth + 1,
+      nodeDepth! + 1,
       elem,
     );
   }
@@ -126,7 +126,7 @@ class HDPrivateKey extends CKDSerializer {
     var children = HDUtils.parsePath(path);
 
     // some imperative madness to ensure children have their parents' fingerprint
-    var lastChild = this;
+    HDPrivateKey lastChild = this;
     var nd = 1;
     for (var elem in children) {
       lastChild = lastChild._deriveChildPrivateKey(
@@ -151,7 +151,7 @@ class HDPrivateKey extends CKDSerializer {
   }
 
   List<int> get fingerprint {
-    return hash160(privateKey.publicKey.point.getEncoded(true)).sublist(0, 4);
+    return hash160(privateKey.publicKey!.point!.getEncoded(true)).sublist(0, 4);
   }
 
   HDPrivateKey _deriveChildPrivateKey(int nd, ChildNumber cn) {
@@ -162,9 +162,9 @@ class HDPrivateKey extends CKDSerializer {
 
     var dataConcat = cn.isHardened()
         ? paddedKey + seriList
-        : publicKey.point.getEncoded(true) + seriList;
+        : publicKey!.point!.getEncoded(true) + seriList;
     var I = HDUtils.hmacSha512WithKey(
-        Uint8List.fromList(chainCode), Uint8List.fromList(dataConcat));
+        Uint8List.fromList(chainCode as List<int>), Uint8List.fromList(dataConcat));
 
     var lhs = I.sublist(0, 32);
     var childChainCode = I.sublist(32, 64);
@@ -187,7 +187,7 @@ class HDPrivateKey extends CKDSerializer {
   }
 
   HDPublicKey get hdPublicKey {
-    return HDPublicKey(publicKey, networkType, nodeDepth, parentFingerprint,
+    return HDPublicKey(publicKey!, networkType, nodeDepth, parentFingerprint,
         childNumber, chainCode, versionBytes);
   }
 
@@ -219,7 +219,7 @@ class HDPrivateKey extends CKDSerializer {
   }
 
   /// Returns the public key associated with this private key as a [BCHPublicKey]
-  BCHPublicKey get publicKey {
+  BCHPublicKey? get publicKey {
     return privateKey.publicKey;
   }
 }
