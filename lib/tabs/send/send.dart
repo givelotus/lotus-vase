@@ -53,7 +53,7 @@ class _SendTabState extends State<SendTab> {
       onQRViewCreated: (QRViewController controller) {
         controller.scannedDataStream.listen((scanData) {
           try {
-            final parseResult = parseSendURI(scanData);
+            final parseResult = parseSendURI(scanData.code);
             // Don't keep pushing send info pages if the viewModel has already been updated.
             // TODO: Seems like there should be a better way to handle this.
             if (viewModel.sendToAddress == parseResult.address ?? '') {
