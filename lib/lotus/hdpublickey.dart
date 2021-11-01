@@ -58,10 +58,10 @@ class HDPublicKey extends CKDSerializer {
       BCHPublicKey publicKey,
       NetworkType? networkType,
       int? nodeDepth,
-      List<int?> parentFingerprint,
-      List<int?> childNumber,
-      List<int?> chainCode,
-      List<int?> versionBytes) {
+      List<int> parentFingerprint,
+      List<int> childNumber,
+      List<int> chainCode,
+      List<int> versionBytes) {
     this.nodeDepth = nodeDepth;
     this.parentFingerprint = parentFingerprint;
     this.childNumber = childNumber;
@@ -137,8 +137,8 @@ class HDPublicKey extends CKDSerializer {
     seriList.buffer.asByteData(0, 4).setUint32(0, cn.i);
     final publicKeyPoint = publicKey.point!;
     var dataConcat = publicKeyPoint.getEncoded(true) + seriList;
-    var I =
-        HDUtils.hmacSha512WithKey(chainCode as Uint8List, Uint8List.fromList(dataConcat));
+    var I = HDUtils.hmacSha512WithKey(
+        chainCode as Uint8List, Uint8List.fromList(dataConcat));
 
 // Ensure value is interpreted as positive by padding.
     var lhs = I.sublist(0, 32);

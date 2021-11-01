@@ -16,11 +16,11 @@ abstract class CKDSerializer {
   static final List<int> TESTNET_PRIVATE = HEX.decode('04358394');
 
   int? _nodeDepth;
-  List<int?> _parentFingerprint = List.filled(4, null, growable: false); // Uint32
-  List<int?> _childNumber = List.filled(4, null, growable: false); // Uint32
-  List<int?> _chainCode = List.filled(32, null, growable: false); // Uint8List(32)
-  List<int?> _keyHex = List.filled(33, null, growable: false); // Uint8List(33)
-  List<int?> _versionBytes = List.filled(4, null, growable: false); // Uint32
+  var _parentFingerprint = List.filled(4, 0, growable: false); // Uint32
+  var _childNumber = List.filled(4, 0, growable: false); // Uint32
+  var _chainCode = List.filled(32, 0, growable: false); // Uint8List(32)
+  var _keyHex = List.filled(33, 0, growable: false); // Uint8List(33)
+  var _versionBytes = List.filled(4, 0, growable: false); // Uint32
   NetworkType? _networkType;
   KeyType? _keyType;
 
@@ -46,10 +46,10 @@ abstract class CKDSerializer {
     var serializedKey = List.filled(78, 0);
     serializedKey.setRange(0, 4, versionBytes);
     serializedKey.setRange(4, 5, [_nodeDepth!]);
-    serializedKey.setRange(5, 9, _parentFingerprint as Iterable<int>);
-    serializedKey.setRange(9, 13, _childNumber as Iterable<int>);
-    serializedKey.setRange(13, 45, _chainCode as Iterable<int>);
-    serializedKey.setRange(45, 78, _keyHex as Iterable<int>);
+    serializedKey.setRange(5, 9, _parentFingerprint);
+    serializedKey.setRange(9, 13, _childNumber);
+    serializedKey.setRange(13, 45, _chainCode);
+    serializedKey.setRange(45, 78, _keyHex);
 
     // checksum calculation... doubleSha
     var doubleShaAddr = utils.sha256Twice(serializedKey);
@@ -77,7 +77,7 @@ abstract class CKDSerializer {
     }
   }
 
-  set chainCode(List<int?> bytes) {
+  set chainCode(List<int> bytes) {
     _chainCode = bytes;
   }
 
@@ -87,7 +87,7 @@ abstract class CKDSerializer {
     _networkType = value;
   }
 
-  List<int?> get chainCode {
+  List<int> get chainCode {
     return _chainCode;
   }
 
@@ -108,11 +108,11 @@ abstract class CKDSerializer {
     return Uint8List.fromList(_keyHex as List<int>).toList();
   }
 
-  set versionBytes(List<int?> bytes) {
+  set versionBytes(List<int> bytes) {
     _versionBytes = bytes;
   }
 
-  List<int?> get versionBytes {
+  List<int> get versionBytes {
     return _versionBytes;
   }
 
@@ -124,19 +124,19 @@ abstract class CKDSerializer {
     return _nodeDepth;
   }
 
-  set parentFingerprint(List<int?> bytes) {
+  set parentFingerprint(List<int> bytes) {
     _parentFingerprint = bytes;
   }
 
-  List<int?> get parentFingerprint {
+  List<int> get parentFingerprint {
     return _parentFingerprint;
   }
 
-  set childNumber(List<int?> bytes) {
+  set childNumber(List<int> bytes) {
     _childNumber = bytes;
   }
 
-  List<int?> get childNumber {
+  List<int> get childNumber {
     return _childNumber;
   }
 
