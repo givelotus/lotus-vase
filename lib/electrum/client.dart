@@ -25,45 +25,54 @@ class ElectrumClient extends JSONRPCWebsocket {
     });
   }
 
-  Future<Object> blockchainTransactionBroadcast(String transaction) {
-    return call('blockchain.transaction.broadcast', [transaction]).then((value) => value as Object);
+  Future<Object?> blockchainTransactionBroadcast(String transaction) {
+    return call('blockchain.transaction.broadcast', [transaction])
+        .then((value) => value);
   }
 
-  Future<Object> serverPing() {
-    return call('server.ping', []).then((value) => value as Object);
+  Future<Object?> serverPing() {
+    return call('server.ping', []).then((value) => value);
   }
 
   Future<List<ListUnspentResponseItem>> blockchainScripthashListunspent(
       String scriptHash) async {
     final List<dynamic> response =
-        await (call('blockchain.scripthash.listunspent', [scriptHash]) as FutureOr<List<dynamic>>);
+        await (call('blockchain.scripthash.listunspent', [scriptHash]));
+
+    // this is needed to prevent type errors
+    if (response.isEmpty) return [];
+
     return response
-        .map((unspent) => ListUnspentResponseItem(
+        .map(
+          (unspent) => ListUnspentResponseItem(
             unspent['height'],
             unspent['tx_pos'],
             unspent['tx_hash'],
-            BigInt.from(unspent['value'])))
+            BigInt.from(unspent['value']),
+          ),
+        )
         .toList();
   }
 
   Future<GetBalanceResponse> blockchainScripthashGetBalance(
       String scripthash) async {
-    final Map<String, dynamic> response =
-        await (call('blockchain.scripthash.get_balance', [scripthash]) as FutureOr<Map<String, dynamic>>);
+    final response =
+        await (call('blockchain.scripthash.get_balance', [scripthash]));
     return GetBalanceResponse(response['confirmed'], response['unconfirmed']);
   }
 
   Future<List<String>> serverVersion(
       String ownVersion, String supportedVersion) async {
-    final List<dynamic> response =
-        await (call('server.version', [ownVersion, supportedVersion]) as FutureOr<List<dynamic>>);
+    final response =
+        await (call('server.version', [ownVersion, supportedVersion]));
     return response.cast<String>();
   }
 
-  Future<Object> blockchainScripthashSubscribe(
+  Future<Object?> blockchainScripthashSubscribe(
       String scripthash, SubscriptionHandler resultHandler) {
     return subscribe(
-        'blockchain.scripthash.subscribe', [scripthash], resultHandler).then((value) => value as Object);
+            'blockchain.scripthash.subscribe', [scripthash], resultHandler)
+        .then((value) => value);
   }
 }
 
@@ -81,13 +90,19 @@ class ElectrumFactory {
     try {
       if (_client == null) {
         _client = ElectrumClient(disconnectHandler: (error) {
-          _client!.dispose();
+          print('disconnect error $error');
+          _client?.dispose();
           _client = null;
         });
         final urls = this.urls!.sublist(0);
         urls.shuffle();
-        await _client!.connect(Uri.parse(urls[0]));
-        await onConnected!(_client);
+        await _client?.connect(Uri.parse(urls[0]));
+
+        print('rpc called connect $onConnected');
+
+        if (onConnected != null) {
+          await onConnected!(_client);
+        }
       }
     } catch (err) {
       print(err);

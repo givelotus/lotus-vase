@@ -243,6 +243,6 @@ class Mnemonic {
   }
 
   String _salt(String password) {
-    return 'mnemonic${password ?? ""}';
+    return 'mnemonic$password';
   }
 }

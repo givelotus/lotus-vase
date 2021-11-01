@@ -56,7 +56,7 @@ class _SendTabState extends State<SendTab> {
             final parseResult = parseSendURI(scanData.code);
             // Don't keep pushing send info pages if the viewModel has already been updated.
             // TODO: Seems like there should be a better way to handle this.
-            if (viewModel.sendToAddress == parseResult.address ?? '' as bool) {
+            if (viewModel.sendToAddress == parseResult.address) {
               return;
             }
 

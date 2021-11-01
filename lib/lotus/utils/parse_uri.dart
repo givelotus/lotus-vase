@@ -17,7 +17,7 @@ ParseURIResult parseSendURI(String uri) {
   Address(parseObject.path);
 
   if (amount.isNaN) {
-    return ParseURIResult(address: parseObject.path ?? '', amount: null);
+    return ParseURIResult(address: parseObject.path, amount: null);
   }
 
   int intAmount;
@@ -27,5 +27,5 @@ ParseURIResult parseSendURI(String uri) {
     intAmount = amount.truncate();
   }
 
-  return ParseURIResult(address: parseObject.path ?? '', amount: intAmount);
+  return ParseURIResult(address: parseObject.path, amount: intAmount);
 }

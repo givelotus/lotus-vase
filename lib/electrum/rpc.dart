@@ -142,7 +142,10 @@ class JSONRPCWebsocket {
       serverSide: false,
     );
 
-    _rpcSocket!.listen((dynamic data) {
+    print('RPC CONNECT');
+
+    _rpcSocket?.listen((dynamic data) {
+      print('RPC LISTEN');
       Map<String, dynamic> jsonResult = jsonDecode(data);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
@@ -152,6 +155,7 @@ class JSONRPCWebsocket {
       }
       return _handleResponse(response);
     }, onError: (Object error) {
+      print('RPC ERROR $error');
       if (disconnectHandler != null) {
         disconnectHandler!(error);
       }
@@ -161,6 +165,7 @@ class JSONRPCWebsocket {
                 0, 'Disconnected from electrum while awaiting response')));
       }
     }, onDone: () {
+      print('RPC DONE??');
       if (disconnectHandler != null) {
         disconnectHandler!(null);
       }
@@ -196,7 +201,7 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    rpcSocket!.add(payload);
+    rpcSocket?.add(payload);
 
     return completer.future;
   }
@@ -215,12 +220,13 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    rpcSocket!.add(payload);
+    rpcSocket?.add(payload);
 
     return completer.future;
   }
 
   void dispose() {
-    _rpcSocket!.close();
+    print('called dispose');
+    _rpcSocket?.close();
   }
 }

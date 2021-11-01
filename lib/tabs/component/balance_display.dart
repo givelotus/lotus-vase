@@ -22,12 +22,12 @@ class BalanceDisplay extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ValueListenableBuilder(
+              ValueListenableBuilder<WalletBalance?>(
                   valueListenable: balanceNotifier,
-                  builder: (context, dynamic balance, child) {
+                  builder: (context, balance, child) {
                     if (balance != null && balance.error != null) {
                       return Text(
-                        balance.error.message,
+                        balance.error.toString(),
                         style: TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.bold,

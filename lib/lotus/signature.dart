@@ -451,7 +451,7 @@ class BCHSignature {
 
       _signature = ECSignature(r!, s!);
     } catch (e) {
-      throw SignatureException(e.cause);
+      throw SignatureException(e.toString());
     }
   }
 

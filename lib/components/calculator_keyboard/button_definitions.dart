@@ -57,7 +57,7 @@ final operationButtonStyle = TextButton.styleFrom(
   backgroundColor: Colors.grey[300],
 );
 
-typedef CalculatorButtonAction = void Function(List<String>? stack);
+typedef CalculatorButtonAction = void Function(List<String> stack);
 
 class CalculatorButtonDefinition {
   IconData? icon;
@@ -78,8 +78,10 @@ CalculatorButtonAction pushNumber(String number) {
 }
 
 CalculatorButtonAction pushOperation(String operator) {
-  return (List<String>? stack) {
-    final lastItem = stack!.removeLast();
+  return (List<String> stack) {
+    if (stack.isEmpty) return;
+
+    final lastItem = stack.removeLast();
     // Replace opertators
     if (!operators.contains(lastItem)) {
       stack.add(lastItem);

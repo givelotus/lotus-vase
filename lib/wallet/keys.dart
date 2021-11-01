@@ -107,7 +107,7 @@ List<KeyInfo>? constructChildKeys(
 // Construct a brand new set of keys from a seed over a worker. Processing a
 // seed to an HDPrivateKey is fairly time consuming, thus it is done this way.cas
 void _constructKeys(KeyIsolateInput input) {
-  final seedHex = Mnemonic().toSeedHex(input.seed!, input.password!);
+  final seedHex = Mnemonic().toSeedHex(input.seed!, input.password ?? '');
   //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
@@ -143,7 +143,7 @@ class Keys {
     final receivePort = ReceivePort();
 
     // Construct key completer
-    final completer = Completer();
+    final completer = Completer<Keys>();
     var completedKeys;
     receivePort.listen((keys) {
       completedKeys = keys;
@@ -160,6 +160,6 @@ class Keys {
       ),
     );
 
-    return await (completer.future as FutureOr<Keys>);
+    return await (completer.future);
   }
 }

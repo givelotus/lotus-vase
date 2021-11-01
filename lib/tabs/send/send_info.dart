@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/lotus/utils/parse_uri.dart';
 import 'package:vase/components/calculator_keyboard/keyboard.dart';
@@ -87,8 +89,8 @@ class SendInfo extends StatelessWidget {
     final pasteAddress = () async {
       // TODO: Dedupe this with QR Scanning.
       try {
-        final data = await (Clipboard.getData('text/plain') as FutureOr<ClipboardData>);
-        final parseResult = parseSendURI(data.text.toString().trim());
+        final data = await (Clipboard.getData('text/plain'));
+        final parseResult = parseSendURI(data?.text?.toString().trim() ?? '');
 
         // Use the unparsed version, so that it appears as it was originally copied
         sendModel.sendToAddress = parseResult.address ?? '';
@@ -128,7 +130,7 @@ class SendInfo extends StatelessWidget {
                   Consumer<SendModel>(builder: (context, viewModel, child) {
                 final errors = canSend(
                     viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress!,
+                    viewModel.sendToAddress ?? '',
                     walletModel.balance.value!.balance ?? 0);
                 return Column(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -176,7 +178,7 @@ class SendInfo extends StatelessWidget {
               Consumer<SendModel>(builder: (context, viewModel, child) {
                 final errors = canSend(
                     viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress!,
+                    viewModel.sendToAddress ?? '',
                     walletModel.balance.value!.balance ?? 0);
                 return Row(children: [
                   Expanded(

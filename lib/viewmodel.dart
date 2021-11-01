@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:vase/lotus/lotus.dart';
 import 'package:flutter/foundation.dart';
 
@@ -205,7 +207,7 @@ class WalletModel with ChangeNotifier {
     _password = await readPasswordFromDisk();
 
     // Read root key to avoid regenerating from seed
-    final xprivHex = await (_storage.read(key: STORAGE_XPUB_KEY) as FutureOr<String>);
+    final xprivHex = await (_storage.read(key: STORAGE_XPUB_KEY)) ?? '';
     final rootKey = HDPrivateKey.fromXpriv(xprivHex);
 
     // Convert to key info

@@ -270,10 +270,10 @@ class Block {
 
   /// Returns the block's hash (header hash) as a buffer
   ///
-  List<int> get hash => _header.hash;
+  List<int>? get hash => _header?.hash;
 
   /// Returns a HEX encoded version of the block's hash
-  String get id => HEX.encode(hash);
+  String? get id => hash != null ? HEX.encode(hash!) : null;
 
   /// Returns this block's header as a [BlockHeader] object
   BlockHeader? get header => _header;

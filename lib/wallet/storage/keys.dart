@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:vase/lotus/lotus.dart';
@@ -23,7 +24,8 @@ class KeyStorageMetadata {
 
   static Future<KeyStorageMetadata> readFromDisk() async {
     final storage = FlutterSecureStorage();
-    final storageMetadataString = await (storage.read(key: _getDatabaseKey()) as FutureOr<String>);
+    final storageMetadataString =
+        await (storage.read(key: _getDatabaseKey())) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
     return KeyStorageMetadata.fromJson(storageMetadataJson);
   }
@@ -57,7 +59,7 @@ class StoredKey {
   static Future<StoredKey> readFromDisk(int number) async {
     final storage = FlutterSecureStorage();
     final storageMetadataString =
-        await (storage.read(key: _getDatabaseKey(number)) as FutureOr<String>);
+        await (storage.read(key: _getDatabaseKey(number))) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
     return StoredKey.fromJson(storageMetadataJson);
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:pool/pool.dart';
 
@@ -49,21 +50,17 @@ class Wallet {
   void addressUpdated(result) async {
     // Extract script hash from result (of form [scripthash, status])
     final scriptHash = result[0];
-    final client = await (electrumFactory.getInstance() as FutureOr<ElectrumClient>);
+    final client = await (electrumFactory.getInstance());
 
     final keyInfo =
         keys.findKeyByScriptHash(Uint8List.fromList(HEX.decode(scriptHash)));
-
-    if (keyInfo == null) {
-      throw Exception('Script hash not found'); // TODO: Handle this gracefully
-    }
 
     // Remove all UTXOs at that index
     _vault.removeByKeyIndex(keyInfo.keyIndex);
 
     // Refresh UTXOs
     final unspentList =
-        await client.blockchainScripthashListunspent(scriptHash);
+        await client?.blockchainScripthashListunspent(scriptHash) ?? [];
     for (final unspent in unspentList) {
       final outpoint = Outpoint(
           unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
@@ -85,7 +82,8 @@ class Wallet {
       }
       final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
 
-      await client!.blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
+      await client!
+          .blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
     }
   }
 
@@ -94,21 +92,23 @@ class Wallet {
     client ??= await electrumFactory.getInstance();
     final pool = Pool(5, timeout: Duration(seconds: 60));
 
-    final futures = keys.keys!.map((keyInfo) {
-      final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
-      return pool.withResource(() async {
-        final unspentUtxos =
-            await client!.blockchainScripthashListunspent(hexScriptHash);
-        // TODO: Remove keyIndex concept. It is not particularly necessary;
-        for (final unspent in unspentUtxos) {
-          final outpoint = Outpoint(
-              unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
-          final spendable = Utxo(outpoint, keyInfo.keyIndex);
-          _vault.removeUtxo(spendable);
-          _vault.addUtxo(spendable);
-        }
-      });
-    });
+    final futures = keys.keys?.map((keyInfo) {
+          final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
+          return pool.withResource(() async {
+            final unspentUtxos =
+                await client?.blockchainScripthashListunspent(hexScriptHash) ??
+                    [];
+            // TODO: Remove keyIndex concept. It is not particularly necessary;
+            for (final unspent in unspentUtxos) {
+              final outpoint = Outpoint(unspent.tx_hash, unspent.tx_pos,
+                  unspent.value, unspent.height);
+              final spendable = Utxo(outpoint, keyInfo.keyIndex);
+              _vault.removeUtxo(spendable);
+              _vault.addUtxo(spendable);
+            }
+          });
+        }) ??
+        [];
     await Future.wait(futures);
   }
 
@@ -132,7 +132,8 @@ class Wallet {
       await updateUtxos(client: client);
     } catch (err) {
       print(err);
-      updateBalance(WalletBalance(balance: null, error: err));
+      print("ERROR");
+      updateBalance(WalletBalance(balance: null, error: err as Exception?));
       return;
     }
     refreshBalanceLocal();
@@ -227,8 +228,8 @@ class Wallet {
 
     // TODO: Need change UTXOs here so we can add them to the vault and spend from
     // them before confirmation
-    transaction =
-        _finalizeTransaction(transaction, feePerByte!, signingKeys: signingKeys);
+    transaction = _finalizeTransaction(transaction, feePerByte!,
+        signingKeys: signingKeys);
 
     return TransactionMetadata(transaction: transaction, usedUtxos: usedUtxos);
   }
@@ -243,12 +244,11 @@ class Wallet {
     final transactionHex = txnMetadata.transaction!.serialize();
 
     try {
-      final client = await (electrumFactory.getInstance() as FutureOr<ElectrumClient>);
-
-      await client.blockchainTransactionBroadcast(transactionHex);
+      final client = await (electrumFactory.getInstance());
+      await client?.blockchainTransactionBroadcast(transactionHex);
     } catch (err) {
       _vault.addAllUtxos(txnMetadata.usedUtxos!);
-      print(err.message);
+      print(err.toString());
       rethrow;
     } finally {
       refreshBalanceLocal();

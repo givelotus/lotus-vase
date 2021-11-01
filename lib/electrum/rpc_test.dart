@@ -60,7 +60,7 @@ Future<Null> Function() withRPCServer(
         runFakeElectrum,
         FakeElectrumParams(
             sendPort: receivePort.sendPort, responses: responses));
-    Uri? url = await (receivePort.first as FutureOr<Uri?>);
+    final url = await (receivePort.first as Future<Uri?>);
     try {
       await clientTest(url);
     } finally {

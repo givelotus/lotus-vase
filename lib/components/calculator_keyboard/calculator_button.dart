@@ -5,10 +5,10 @@ typedef CalculatorButtonTapCallback = void Function({String? buttonLabel});
 
 class CalculatorButton extends StatelessWidget {
   final CalculatorItem? button;
-  final List<String>? stack;
+  final List<String> stack;
   final void Function() onPressed;
 
-  CalculatorButton({this.button, this.stack, required this.onPressed});
+  CalculatorButton({this.button, required this.stack, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

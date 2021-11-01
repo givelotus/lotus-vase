@@ -16,11 +16,11 @@ abstract class CKDSerializer {
   static final List<int> TESTNET_PRIVATE = HEX.decode('04358394');
 
   int? _nodeDepth;
-  List<int?> _parentFingerprint = List(4); // Uint32
-  List<int?> _childNumber = List(4); // Uint32
-  List<int?> _chainCode = List(32); // Uint8List(32)
-  List<int?> _keyHex = List(33); // Uint8List(33)
-  List<int?> _versionBytes = List(4); // Uint32
+  List<int?> _parentFingerprint = List.filled(4, null, growable: false); // Uint32
+  List<int?> _childNumber = List.filled(4, null, growable: false); // Uint32
+  List<int?> _chainCode = List.filled(32, null, growable: false); // Uint8List(32)
+  List<int?> _keyHex = List.filled(33, null, growable: false); // Uint8List(33)
+  List<int?> _versionBytes = List.filled(4, null, growable: false); // Uint32
   NetworkType? _networkType;
   KeyType? _keyType;
 
