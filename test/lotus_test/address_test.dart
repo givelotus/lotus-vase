@@ -14,7 +14,7 @@ void main() {
     final legacyAddress = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
     var address = Address(legacyAddress);
 
-    var decodedAddress = Address.fromAddressBytes(HEX.decode(address.toHex()),
+    var decodedAddress = Address.fromAddressBytes(HEX.decode(address.toHex()!),
         addressType: address.addressType, networkType: address.networkType);
 
     expect(address.toBase58(), decodedAddress.toBase58());

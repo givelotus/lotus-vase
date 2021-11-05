@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../../../lotus/utils/format_amount.dart';
 
 class PaymentAmountDisplay extends StatelessWidget {
-  final int amount;
-  final String function;
-  PaymentAmountDisplay({Key key, this.amount, this.function})
+  final int? amount;
+  final String? function;
+  PaymentAmountDisplay({Key? key, this.amount, this.function})
       : super(
           key: key,
         );
@@ -20,7 +20,7 @@ class PaymentAmountDisplay extends StatelessWidget {
             child: Text(
           '$function',
           style: TextStyle(
-              fontSize: Theme.of(context).textTheme.headline5.fontSize,
+              fontSize: Theme.of(context).textTheme.headline5!.fontSize,
               fontWeight: FontWeight.bold),
         ))
       ]),
@@ -30,7 +30,7 @@ class PaymentAmountDisplay extends StatelessWidget {
           '= ${formatAmount(amount)}',
           textAlign: TextAlign.right,
           style: TextStyle(
-              fontSize: Theme.of(context).textTheme.headline5.fontSize,
+              fontSize: Theme.of(context).textTheme.headline5!.fontSize,
               fontWeight: FontWeight.bold),
         ))
       ]),

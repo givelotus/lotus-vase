@@ -35,7 +35,7 @@ class HDUtils {
   }
 
   static Uint8List toCompressed(Uint8List uncompressedPoint) {
-    return _domainParams.curve.decodePoint(uncompressedPoint).getEncoded(true);
+    return _domainParams.curve.decodePoint(uncompressedPoint)!.getEncoded(true);
   }
 
   /// Append a derivation level to an existing path */

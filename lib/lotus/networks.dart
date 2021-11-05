@@ -28,7 +28,7 @@ class Networks {
   /// [version] - The version byte from the head of a serialized [Address]
   ///
   /// Returns a list of possible network types for the corresponding version byte
-  static List<NetworkType> getNetworkTypes(int version) {
+  static List<NetworkType> getNetworkTypes(int? version) {
     switch (version) {
       case 0:
         return [NetworkType.MAIN];
@@ -50,7 +50,7 @@ class Networks {
   /// [version] - The version byte from the head of a serialized [Address]
   ///
   /// Returns the address type corresponding to a specific [Address] version byte.
-  static AddressType getAddressType(int version) {
+  static AddressType getAddressType(int? version) {
     switch (version) {
       case 0:
         return AddressType.PUBKEY_HASH;

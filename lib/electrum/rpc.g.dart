@@ -9,8 +9,8 @@ part of 'rpc.dart';
 RPCRequest _$RPCRequestFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['method']);
   return RPCRequest(
-    json['method'] as String,
-    id: json['id'] as int,
+    json['method'] as String?,
+    id: json['id'] as int?,
     params: json['params'],
   );
 }
@@ -33,8 +33,8 @@ Map<String, dynamic> _$RPCRequestToJson(RPCRequest instance) {
 Error _$ErrorFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['code', 'message']);
   return Error(
-    json['code'] as int,
-    json['message'] as String,
+    json['code'] as int?,
+    json['message'] as String?,
     data: json['data'],
   );
 }
@@ -58,7 +58,7 @@ RPCResponse _$RPCResponseFromJson(Map<String, dynamic> json) {
   $checkKeys(json, disallowNullValues: const ['id']);
   return RPCResponse(
     json['result'],
-    id: json['id'] as int,
+    id: json['id'] as int?,
     error: json['error'] == null
         ? null
         : Error.fromJson(json['error'] as Map<String, dynamic>),

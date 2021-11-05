@@ -7,8 +7,8 @@ import 'calculator_button.dart';
 import 'calculator.dart';
 
 class CalculatorData {
-  int amount;
-  String function;
+  int? amount;
+  String? function;
   CalculatorData({this.amount, this.function});
 }
 
@@ -17,14 +17,14 @@ class CalculatorKeyboard extends StatelessWidget {
   final List<String> stack = [];
 
   CalculatorKeyboard(
-      {Key key, String initialValue = '', @required this.dataNotifier})
+      {Key? key, String initialValue = '', required this.dataNotifier})
       : super(key: key) {
     stack.addAll(initialValue.split(''));
   }
 
   @override
   Widget build(BuildContext context) {
-    var amount = 0;
+    int? amount = 0;
 
     final updateStack = () {
       final evaluatedStack = stack.sublist(0);
@@ -44,7 +44,7 @@ class CalculatorKeyboard extends StatelessWidget {
       }
       amount = dataNotifier.value.amount;
       stack.clear();
-      stack.addAll(dataNotifier.value.function.split(''));
+      stack.addAll(dataNotifier.value.function!.split(''));
     });
 
     return Container(

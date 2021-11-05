@@ -7,7 +7,7 @@ import 'package:pointycastle/digests/sha256.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/constants.dart' as constants;
 
-Uint8List calculateScriptHash(Address address) {
+Uint8List calculateScriptHash(Address? address) {
   final p2pkhBuilder = P2PKHLockBuilder(address);
   final script = p2pkhBuilder.getScriptPubkey();
   final scriptHash = SHA256Digest().process(script.buffer).toList();
@@ -18,8 +18,8 @@ class KeyIsolateInput {
   KeyIsolateInput(this.seed, this.password, this.sendPort,
       {this.network = constants.network,
       this.childKeyCount = constants.defaultNumberOfChildKeys});
-  String seed;
-  String password;
+  String? seed;
+  String? password;
   SendPort sendPort;
   NetworkType network;
   int childKeyCount;
@@ -27,14 +27,14 @@ class KeyIsolateInput {
 
 class KeyInfo {
   BCHPrivateKey key;
-  Address address;
-  Uint8List scriptHash;
-  bool isChange;
+  Address? address;
+  Uint8List? scriptHash;
+  bool? isChange;
   bool isDeprecated;
-  int keyIndex;
+  int? keyIndex;
 
   KeyInfo(
-      {this.key,
+      {required this.key,
       this.isChange = false,
       this.isDeprecated = false,
       this.keyIndex,
@@ -44,21 +44,21 @@ class KeyInfo {
   }
 }
 
-List<KeyInfo> constructChildKeys(
-    {HDPrivateKey rootKey,
-    int childKeyCount,
+List<KeyInfo>? constructChildKeys(
+    {required HDPrivateKey rootKey,
+    int? childKeyCount,
     NetworkType network = constants.network}) {
   // Default electron cash path
 
   final generateKeys =
       (priorList, generationRootKey, isChange, isDeprecated, number) =>
           priorList.followedBy(List<KeyInfo>.generate(
-              childKeyCount,
+              childKeyCount!,
               (index) => KeyInfo(
                     // TODO: Remove this keyIndex crap. it makes it very hard to handle
                     // finding various other values because we have this unnecessary
                     // surrogate key
-                    keyIndex: index + priorList.length,
+                    keyIndex: index + priorList.length as int?,
                     key: generationRootKey.deriveChildNumber(index).privateKey,
                     isChange: isChange,
                     isDeprecated: isDeprecated,
@@ -107,7 +107,7 @@ List<KeyInfo> constructChildKeys(
 // Construct a brand new set of keys from a seed over a worker. Processing a
 // seed to an HDPrivateKey is fairly time consuming, thus it is done this way.cas
 void _constructKeys(KeyIsolateInput input) {
-  final seedHex = Mnemonic().toSeedHex(input.seed, input.password);
+  final seedHex = Mnemonic().toSeedHex(input.seed!, input.password ?? '');
   //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
@@ -123,9 +123,9 @@ void _constructKeys(KeyIsolateInput input) {
 class Keys {
   NetworkType network;
   HDPrivateKey rootKey;
-  String seed;
-  String password;
-  List<KeyInfo> keys;
+  String? seed;
+  String? password;
+  List<KeyInfo>? keys;
   int totalKeys;
 
   Keys(this.seed, this.password, this.rootKey, this.keys,
@@ -134,16 +134,16 @@ class Keys {
 
   /// Find the index of a script hash.
   KeyInfo findKeyByScriptHash(Uint8List scriptHash) {
-    final keyInfo = keys.firstWhere(
+    final keyInfo = keys!.firstWhere(
         (keyInfo) => ListEquality().equals(scriptHash, keyInfo.scriptHash));
     return keyInfo;
   }
 
-  static Future<Keys> construct(String seed, [String password = '']) async {
+  static Future<Keys> construct(String? seed, [String? password = '']) async {
     final receivePort = ReceivePort();
 
     // Construct key completer
-    final completer = Completer();
+    final completer = Completer<Keys>();
     var completedKeys;
     receivePort.listen((keys) {
       completedKeys = keys;
@@ -160,6 +160,6 @@ class Keys {
       ),
     );
 
-    return await completer.future;
+    return await (completer.future);
   }
 }

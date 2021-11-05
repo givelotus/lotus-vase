@@ -73,7 +73,7 @@ void main() {
 
     for (final arg in arguments) {
       final pk = BCHPrivateKey.fromBigInt(
-        arg[0],
+        arg[0] as BigInt,
       );
       expect(
         pk.toWIF(),

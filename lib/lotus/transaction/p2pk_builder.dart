@@ -74,10 +74,10 @@ abstract class _P2PKUnlockBuilder extends SignedUnlockBuilder
   @override
   List<BCHSignature> signatures = <BCHSignature>[];
 
-  BCHScript get scriptSig => getScriptSig();
+  BCHScript? get scriptSig => getScriptSig();
 
   @override
-  void fromScript(BCHScript script) {
+  void fromScript(BCHScript? script) {
     throw UnimplementedError();
   }
 }

@@ -42,7 +42,7 @@ typedef RandomBytes = Uint8List Function(int size);
 /// of words. This is a popular means for wallets to provide backup and recovery functionality
 /// to users.
 class Mnemonic {
-  Wordlist DEFAULT_WORDLIST;
+  Wordlist? DEFAULT_WORDLIST;
 
   static const int _SIZE_8BITS = 255;
   static const String _INVALID_ENTROPY = 'Invalid entroy';
@@ -84,8 +84,8 @@ class Mnemonic {
     final saltBuffer = utf8.encode(_salt(nfkd(password)));
     final pbkdf2 = KeyDerivator('SHA-512/HMAC/PBKDF2');
 
-    pbkdf2.init(Pbkdf2Parameters(saltBuffer, 2048, 64));
-    return pbkdf2.process(mnemonicBuffer);
+    pbkdf2.init(Pbkdf2Parameters(saltBuffer as Uint8List, 2048, 64));
+    return pbkdf2.process(mnemonicBuffer as Uint8List);
   }
 
   /// Converts [mnemonic] code to seed, as hex string.
@@ -139,7 +139,7 @@ class Mnemonic {
     final _wordRes = getWordlist(DEFAULT_WORDLIST);
 
     return chunks
-        .map((binary) => _wordRes[_binaryToByte(binary)])
+        .map((binary) => _wordRes[_binaryToByte(binary!)])
         .join(DEFAULT_WORDLIST == Wordlist.JAPANESE ? '\u3000' : ' ');
   }
 
@@ -173,7 +173,7 @@ class Mnemonic {
 
     final entropyBytes = Uint8List.fromList(regex
         .allMatches(entropyBits)
-        .map((match) => _binaryToByte(match.group(0)))
+        .map((match) => _binaryToByte(match.group(0)!))
         .toList(growable: false));
     if (entropyBytes.length < 16) {
       throw StateError(_INVALID_ENTROPY);
@@ -219,7 +219,7 @@ class Mnemonic {
     return int.parse(binary, radix: 2);
   }
 
-  List<String> getWordlist(Wordlist wordlist) {
+  List<String> getWordlist(Wordlist? wordlist) {
     switch (wordlist) {
       case Wordlist.CHINESE_SIMPLIFIED:
         return chineseSimplified;
@@ -243,6 +243,6 @@ class Mnemonic {
   }
 
   String _salt(String password) {
-    return 'mnemonic${password ?? ""}';
+    return 'mnemonic$password';
   }
 }

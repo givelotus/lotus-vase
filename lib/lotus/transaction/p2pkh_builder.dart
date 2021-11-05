@@ -18,12 +18,12 @@ import 'signed_unlock_builder.dart';
 mixin P2PKHLockMixin on _P2PKHLockBuilder implements LockingScriptBuilder {
   @override
   BCHScript getScriptPubkey() {
-    String destAddress;
+    String? destAddress;
     int addressLength;
     if (address != null) {
-      destAddress = address.address; // hash160(pubkey) aka pubkeyHash
+      destAddress = address!.address; // hash160(pubkey) aka pubkeyHash
 
-      addressLength = HEX.decode(destAddress).length;
+      addressLength = HEX.decode(destAddress!).length;
 
       // TODO: FIX Another hack. For some reason some addresses don't have proper ripemd160 hashes of the hex value. Fix later !
       if (addressLength == 33) {
@@ -31,8 +31,8 @@ mixin P2PKHLockMixin on _P2PKHLockBuilder implements LockingScriptBuilder {
         destAddress = HEX.encode(hash160(HEX.decode(destAddress)));
       }
     } else if (pubkeyHash != null) {
-      addressLength = pubkeyHash.length;
-      destAddress = HEX.encode(pubkeyHash);
+      addressLength = pubkeyHash!.length;
+      destAddress = HEX.encode(pubkeyHash!);
     } else {
       return BCHScript(); // return empty script if no pubkeyHash or Address
     }
@@ -46,15 +46,15 @@ mixin P2PKHLockMixin on _P2PKHLockBuilder implements LockingScriptBuilder {
 }
 
 abstract class _P2PKHLockBuilder implements LockingScriptBuilder {
-  Address address;
-  List<int> pubkeyHash;
+  Address? address;
+  List<int>? pubkeyHash;
 
   _P2PKHLockBuilder(this.address);
 
   _P2PKHLockBuilder.fromPublicKey(BCHPublicKey publicKey,
       {NetworkType networkType = NetworkType.MAIN}) {
     address = publicKey.toAddress(networkType: networkType);
-    pubkeyHash = HEX.decode(address.pubkeyHash160);
+    pubkeyHash = HEX.decode(address!.pubkeyHash160!);
   }
 
   @override
@@ -87,7 +87,7 @@ abstract class _P2PKHLockBuilder implements LockingScriptBuilder {
 }
 
 class P2PKHLockBuilder extends _P2PKHLockBuilder with P2PKHLockMixin {
-  P2PKHLockBuilder(Address address) : super(address);
+  P2PKHLockBuilder(Address? address) : super(address);
   P2PKHLockBuilder.fromPublicKey(BCHPublicKey publicKey,
       {NetworkType networkType = NetworkType.MAIN})
       : super.fromPublicKey(publicKey, networkType: networkType);
@@ -121,7 +121,7 @@ mixin P2PKHUnlockMixin on _P2PKHUnlockBuilder
 
 abstract class _P2PKHUnlockBuilder extends SignedUnlockBuilder
     implements UnlockingScriptBuilder {
-  BCHPublicKey signerPubkey;
+  BCHPublicKey? signerPubkey;
 
   @override
   List<BCHSignature> signatures = <BCHSignature>[];
@@ -134,7 +134,7 @@ abstract class _P2PKHUnlockBuilder extends SignedUnlockBuilder
   // Parse signature and signerPubkey
 
   @override
-  void fromScript(BCHScript script) {
+  void fromScript(BCHScript? script) {
     if (script != null && script.buffer != null) {
       var chunkList = script.chunks;
 
@@ -158,7 +158,7 @@ abstract class _P2PKHUnlockBuilder extends SignedUnlockBuilder
     }
   }
 
-  BCHScript get scriptSig => getScriptSig();
+  BCHScript? get scriptSig => getScriptSig();
 }
 
 // TODO: FIX We need to figure out a way to enforce the requirement of a "fromScript()"
@@ -166,5 +166,5 @@ abstract class _P2PKHUnlockBuilder extends SignedUnlockBuilder
 class P2PKHUnlockBuilder extends _P2PKHUnlockBuilder with P2PKHUnlockMixin {
   // Expect the Signature to be injected after the fact. Input Signing is a
   // weird one.
-  P2PKHUnlockBuilder(BCHPublicKey signerPubkey) : super(signerPubkey);
+  P2PKHUnlockBuilder(BCHPublicKey? signerPubkey) : super(signerPubkey);
 }

@@ -33,7 +33,7 @@ mixin P2MSLockMixin on _P2MSLockBuilder implements LockingScriptBuilder {
     }
     var pubKeyString = publicKeys.fold(
         '',
-        (prev, elem) =>
+        (dynamic prev, elem) =>
             prev +
             sprintf(
                 ' %s 0x%s', [HEX.decode(elem.toHex()).length, elem.toHex()]));
@@ -64,14 +64,14 @@ abstract class _P2MSLockBuilder implements LockingScriptBuilder {
             'Malformed multisig script. OP_CHECKMULTISIG is missing.');
       }
 
-      var keyCount = chunkList[0].opcodenum - 80;
+      var keyCount = chunkList[0].opcodenum! - 80;
 
       publicKeys = <BCHPublicKey>[];
       for (var i = 1; i < keyCount + 1; i++) {
         publicKeys.add(BCHPublicKey.fromDER(chunkList[i].buf));
       }
 
-      requiredSigs = chunkList[keyCount + 1].opcodenum - 80;
+      requiredSigs = chunkList[keyCount + 1].opcodenum! - 80;
     } else {
       throw ScriptException('Invalid Script or Malformed Script.');
     }
@@ -90,7 +90,7 @@ mixin P2MSUnlockMixin on _P2MSUnlockBuilder implements UnlockingScriptBuilder {
   BCHScript getScriptSig() {
     var multiSigs = signatures.fold(
         '',
-        (prev, elem) =>
+        (dynamic prev, elem) =>
             prev +
             sprintf(' %s 0x%s',
                 [HEX.decode(elem.toTxFormat()).length, elem.toTxFormat()]));
@@ -111,7 +111,7 @@ abstract class _P2MSUnlockBuilder extends SignedUnlockBuilder
   _P2MSUnlockBuilder();
 
   @override
-  void fromScript(BCHScript script) {
+  void fromScript(BCHScript? script) {
     if (script != null && script.buffer != null) {
       var chunkList = script.chunks;
 
@@ -124,7 +124,7 @@ abstract class _P2MSUnlockBuilder extends SignedUnlockBuilder
     }
   }
 
-  BCHScript get scriptSig => getScriptSig();
+  BCHScript? get scriptSig => getScriptSig();
 }
 
 class P2MSUnlockBuilder extends _P2MSUnlockBuilder with P2MSUnlockMixin {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:vase/lotus/lotus.dart';
@@ -15,7 +16,7 @@ const METADATA = 'metadata';
 class KeyStorageMetadata {
   KeyStorageMetadata(this.keyCount);
 
-  int keyCount;
+  int? keyCount;
 
   static String _getDatabaseKey() {
     return KEYS_KEY_PREFIX + METADATA;
@@ -23,7 +24,8 @@ class KeyStorageMetadata {
 
   static Future<KeyStorageMetadata> readFromDisk() async {
     final storage = FlutterSecureStorage();
-    final storageMetadataString = await storage.read(key: _getDatabaseKey());
+    final storageMetadataString =
+        await (storage.read(key: _getDatabaseKey())) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
     return KeyStorageMetadata.fromJson(storageMetadataJson);
   }
@@ -43,8 +45,8 @@ class KeyStorageMetadata {
 class StoredKey {
   StoredKey(this.privateKey, this.isChange);
 
-  String privateKey;
-  bool isChange;
+  String? privateKey;
+  bool? isChange;
 
   static String _getDatabaseKey(int number) {
     return KEYS_KEY_PREFIX + number.toString();
@@ -57,7 +59,7 @@ class StoredKey {
   static Future<StoredKey> readFromDisk(int number) async {
     final storage = FlutterSecureStorage();
     final storageMetadataString =
-        await storage.read(key: _getDatabaseKey(number));
+        await (storage.read(key: _getDatabaseKey(number))) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
     return StoredKey.fromJson(storageMetadataJson);
   }
@@ -69,7 +71,7 @@ class StoredKey {
   }
 
   KeyInfo toKeyInfo(NetworkType network) {
-    final key = BCHPrivateKey.fromWIF(privateKey);
+    final key = BCHPrivateKey.fromWIF(privateKey!);
     return KeyInfo(key: key, isChange: isChange, network: network);
   }
 

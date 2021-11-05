@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:vase/lotus/lotus.dart';
 import 'package:flutter/foundation.dart';
 
@@ -18,8 +20,8 @@ const STORAGE_PASSWORD_KEY = 'password';
 const STORAGE_XPUB_KEY = 'rootKey';
 
 /// Generate a fresh wallet.
-Future<Wallet> generateNewWallet(String seed,
-    {NetworkType network = network, String password = ''}) async {
+Future<Wallet> generateNewWallet(String? seed,
+    {NetworkType network = network, String? password = ''}) async {
   final keys = await Keys.construct(seed, password);
   final electrumFactory = ElectrumFactory(electrumUrls);
 
@@ -27,20 +29,20 @@ Future<Wallet> generateNewWallet(String seed,
 }
 
 class WalletModel with ChangeNotifier {
-  Wallet _wallet;
+  Wallet? _wallet;
   bool _initialized = false;
-  String _seed = '';
-  String _password = '';
+  String? _seed = '';
+  String? _password = '';
   // Internally use a ValueNotifier here, as we don't want the entire wallet
   // to refresh when this field is updated.
   // We should probably introduce a secondary model of some sort.
-  final ValueNotifier<WalletBalance> balance;
+  final ValueNotifier<WalletBalance?> balance;
   final FlutterSecureStorage _storage;
 
   // TODO: Storage should be injected
   WalletModel()
       : _storage = FlutterSecureStorage(),
-        balance = ValueNotifier<WalletBalance>(WalletBalance()) {
+        balance = ValueNotifier<WalletBalance?>(WalletBalance()) {
     initializeModel(); // Run in background.
   }
 
@@ -52,7 +54,7 @@ class WalletModel with ChangeNotifier {
         _seed = await readSeedFromDisk();
         // ignore: empty_catches
       } catch (err) {}
-      if (_seed == null || _seed.isEmpty) {
+      if (_seed == null || _seed!.isEmpty) {
         final mnemonicGenerator = Mnemonic();
         final seed = mnemonicGenerator.generateMnemonic();
         _seed = seed;
@@ -64,7 +66,7 @@ class WalletModel with ChangeNotifier {
       } catch (err) {
         // Don't care
       }
-      if (_seed == null || _seed.isEmpty) {
+      if (_seed == null || _seed!.isEmpty) {
         final mnemonicGenerator = Mnemonic();
         final seed = mnemonicGenerator.generateMnemonic();
         _seed = seed;
@@ -72,13 +74,13 @@ class WalletModel with ChangeNotifier {
       // Don't notify listeners. Initialize will do that
       _wallet = await generateNewWallet(_seed, password: _password);
     }
-    wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
-    wallet.initialize();
+    wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+    wallet!.initialize();
     initialized = true;
   }
 
   Future<void> updateWallet() async {
-    wallet.initialize();
+    wallet!.initialize();
   }
 
   set initialized(bool newValue) {
@@ -86,8 +88,8 @@ class WalletModel with ChangeNotifier {
     notifyListeners();
   }
 
-  String get seed => _seed;
-  String get password => _password;
+  String? get seed => _seed;
+  String? get password => _password;
 
   void setSeed(String newValue, {String password = ''}) {
     _seed = newValue;
@@ -97,22 +99,22 @@ class WalletModel with ChangeNotifier {
     notifyListeners();
     generateNewWallet(_seed, password: _password).then((newWallet) {
       _wallet = newWallet;
-      wallet.balanceUpdateHandler = (balance) => this.balance.value = balance;
-      wallet.initialize();
+      wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+      wallet!.initialize();
       initialized = true;
     });
   }
 
   bool get initialized => _initialized;
 
-  Wallet get wallet => _wallet;
+  Wallet? get wallet => _wallet;
 
-  set wallet(Wallet newValue) {
+  set wallet(Wallet? newValue) {
     _wallet = newValue;
     notifyListeners();
   }
 
-  Future<String> readSchemaVersion() {
+  Future<String?> readSchemaVersion() {
     final storage = FlutterSecureStorage();
     return storage.read(key: SCHEMA_VERSION_KEY);
   }
@@ -174,7 +176,7 @@ class WalletModel with ChangeNotifier {
       // Persist XPub
       await _storage.write(
         key: STORAGE_XPUB_KEY,
-        value: wallet.keys.rootKey.toString(),
+        value: wallet!.keys.rootKey.toString(),
       );
 
       // TODO: Write metadata
@@ -183,14 +185,14 @@ class WalletModel with ChangeNotifier {
     }
   }
 
-  Future<String> readSeedFromDisk() async {
+  Future<String?> readSeedFromDisk() async {
     // TODO: Read metadata
 
     // Read seed
     return _storage.read(key: STORAGE_SEED_KEY);
   }
 
-  Future<String> readPasswordFromDisk() async {
+  Future<String?> readPasswordFromDisk() async {
     // TODO: Read metadata
 
     // Read seed
@@ -205,7 +207,7 @@ class WalletModel with ChangeNotifier {
     _password = await readPasswordFromDisk();
 
     // Read root key to avoid regenerating from seed
-    final xprivHex = await _storage.read(key: STORAGE_XPUB_KEY);
+    final xprivHex = await (_storage.read(key: STORAGE_XPUB_KEY)) ?? '';
     final rootKey = HDPrivateKey.fromXpriv(xprivHex);
 
     // Convert to key info

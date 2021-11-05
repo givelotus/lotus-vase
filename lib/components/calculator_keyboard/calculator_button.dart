@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'button_definitions.dart';
 
-typedef CalculatorButtonTapCallback = void Function({String buttonLabel});
+typedef CalculatorButtonTapCallback = void Function({String? buttonLabel});
 
 class CalculatorButton extends StatelessWidget {
-  final CalculatorItem button;
+  final CalculatorItem? button;
   final List<String> stack;
   final void Function() onPressed;
 
-  CalculatorButton({this.button, this.stack, @required this.onPressed});
+  CalculatorButton({this.button, required this.stack, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -20,24 +20,24 @@ class CalculatorButton extends StatelessWidget {
       child: Padding(
           padding: EdgeInsets.all(3.0),
           child: ElevatedButton(
-              style: ButtonDefinitions[button].style ??
+              style: ButtonDefinitions[button!]!.style ??
                   TextButton.styleFrom(
                     padding: EdgeInsets.fromLTRB(6.0, 12.0, 6.0, 12.0),
                     primary: Colors.black,
                     backgroundColor: Colors.white,
                   ),
               onPressed: () {
-                ButtonDefinitions[button].action(stack);
+                ButtonDefinitions[button!]!.action!(stack);
                 onPressed();
               },
-              child: ButtonDefinitions[button].text == null
+              child: ButtonDefinitions[button!]!.text == null
                   ? Icon(
-                      ButtonDefinitions[button].icon,
+                      ButtonDefinitions[button!]!.icon,
                     )
-                  : Text(ButtonDefinitions[button].text,
+                  : Text(ButtonDefinitions[button!]!.text!,
                       style: TextStyle(
                           fontSize:
-                              Theme.of(context).textTheme.headline5.fontSize,
+                              Theme.of(context).textTheme.headline5!.fontSize,
                           fontWeight: FontWeight.bold)))),
     ));
   }

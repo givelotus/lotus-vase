@@ -12,7 +12,7 @@ import 'component/balance_display.dart';
 class ReceiveTab extends StatelessWidget {
   final ValueNotifier<CalculatorData> keyboardNotifier;
 
-  ReceiveTab({Key key})
+  ReceiveTab({Key? key})
       : keyboardNotifier = ValueNotifier<CalculatorData>(
             CalculatorData(amount: 0, function: '')),
         super(key: key);
@@ -25,12 +25,12 @@ class ReceiveTab extends StatelessWidget {
     }
     final balanceNotifier = viewModel.balance;
 
-    final keys = viewModel.wallet.keys.keys.sublist(0);
+    final keys = viewModel.wallet!.keys.keys!.sublist(0);
     keys.shuffle();
 
     final keyInfo = keys.firstWhere((keyInfo) =>
         keyInfo.isChange == false && keyInfo.isDeprecated == false);
-    final strAddress = keyInfo.address.toXAddress();
+    final strAddress = keyInfo.address!.toXAddress();
     final _controller = TextEditingController(text: strAddress);
 
     final createAddressUri = (CalculatorData data) {

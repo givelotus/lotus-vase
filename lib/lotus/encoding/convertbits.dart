@@ -4,7 +4,7 @@ import 'dart:core';
 // bit representation to a `tobits` bit representation, while optionally
 // padding it.  ConvertBits returns the new representation and a bool
 // indicating that the output was not truncated.
-List<int> ConvertBits(int frombits, int tobits, List<int> input, bool pad) {
+List<int>? ConvertBits(int frombits, int tobits, List<int>? input, bool pad) {
   if (frombits > 8) {
     return null;
   }
@@ -16,7 +16,7 @@ List<int> ConvertBits(int frombits, int tobits, List<int> input, bool pad) {
 
   var maxv = (1 << tobits) - 1;
   var max_acc = (1 << (frombits + tobits - 1)) - 1;
-  for (var element in input) {
+  for (var element in input!) {
     acc = ((acc << frombits) | (element)) & max_acc;
     bits += frombits;
     while (bits >= tobits) {

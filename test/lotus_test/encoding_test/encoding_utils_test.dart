@@ -42,7 +42,7 @@ void main() {
     expect(
       () => varintBufNum(-1),
       throwsA(
-        predicate((e) =>
+        predicate((dynamic e) =>
             e is BadParameterException &&
             e.message ==
                 'varintBufNum:The provided length can not be a negative value:\t-1'),
@@ -88,7 +88,7 @@ void main() {
     expect(
       () => varIntWriter(-1),
       throwsA(
-        predicate((e) =>
+        predicate((dynamic e) =>
             e is BadParameterException &&
             e.message ==
                 'varIntWriter:The provided length can not be a negative value:\t-1'),
@@ -140,7 +140,7 @@ void main() {
     ];
 
     for (var i = 0; i < toDecode.length; i++) {
-      final decoded = readVarInt(toDecode[i]);
+      final decoded = readVarInt(toDecode[i] as Uint8List);
 
       expect(
         decoded,

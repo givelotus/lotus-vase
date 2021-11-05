@@ -25,7 +25,7 @@ List<int> sha1(List<int> bytes) {
 
 List<int> hash160(List<int> bytes) {
   List<int> shaHash = SHA256Digest().process(Uint8List.fromList(bytes));
-  var ripeHash = RIPEMD160Digest().process(shaHash);
+  var ripeHash = RIPEMD160Digest().process(shaHash as Uint8List);
   return ripeHash.toList();
 }
 
@@ -168,7 +168,7 @@ BigInt readVarInt(Uint8List buffer) {
 /// This function will return a [BigInt]. It has the same functionality
 /// as the [decodeUInt256] method, but with the added [endian] parameter.
 BigInt bytesToBigInt({
-  @required List<int> bytes,
+  required List<int> bytes,
   Endian endian = Endian.big,
 }) {
   /// The line

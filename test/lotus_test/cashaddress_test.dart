@@ -9,7 +9,7 @@ void main() {
     final legacy = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
     var address = Decode(cashaddr, 'bitcoincash');
     expect(
-        Address.fromAddressBytes(address.addressBytes,
+        Address.fromAddressBytes(address.addressBytes!,
                 networkType: address.networkType,
                 addressType: address.addressType)
             .toBase58(),

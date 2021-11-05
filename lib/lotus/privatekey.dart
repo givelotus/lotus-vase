@@ -31,13 +31,13 @@ class BCHPrivateKey {
   final _secureRandom = FortunaRandom();
 
   var _hasCompressedPubKey = false;
-  var _networkType = NetworkType.MAIN; // Mainnet by default
+  NetworkType? _networkType = NetworkType.MAIN; // Mainnet by default
 
   var random = Random.secure();
 
-  BigInt _d;
-  ECPrivateKey _ecPrivateKey;
-  BCHPublicKey _BCHPublicKey;
+  BigInt? _d;
+  late ECPrivateKey _ecPrivateKey;
+  BCHPublicKey? _BCHPublicKey;
 
   /// Constructs a  random private key.
   ///
@@ -56,7 +56,7 @@ class BCHPrivateKey {
     _hasCompressedPubKey = true;
     _networkType = networkType;
 
-    _ecPrivateKey = keypair.privateKey;
+    _ecPrivateKey = keypair.privateKey as ECPrivateKey;
     _d = _ecPrivateKey.d;
     _BCHPublicKey = BCHPublicKey.fromPrivateKey(this);
   }
@@ -66,7 +66,7 @@ class BCHPrivateKey {
   /// [privateKey] - The private key as a Big Integer value. Remember that in
   /// ECDSA we compute the public key (Q) as `Q = d * G`
   BCHPrivateKey.fromBigInt(BigInt privateKey,
-      {NetworkType networkType = NetworkType.MAIN}) {
+      {NetworkType? networkType = NetworkType.MAIN}) {
     _ecPrivateKey = _privateKeyFromBigInt(privateKey);
     _d = privateKey;
     _hasCompressedPubKey = true;
@@ -192,7 +192,7 @@ class BCHPrivateKey {
   /// Returns this Private Key in WIF format. See [toWIF()].
   String toWIF() {
     // convert private key _d to a hex string
-    var wifKey = encodeUInt256(_d).toList();
+    var wifKey = encodeUInt256(_d!).toList();
     if (wifKey[0] == 0) {}
     if (_networkType == NetworkType.MAIN) {
       wifKey = [0x80] + wifKey;
@@ -214,14 +214,14 @@ class BCHPrivateKey {
 
   /// Returns the *naked* private key Big Integer value as a hexadecimal string
   String toHex() {
-    return _d.toRadixString(16).padLeft(64, '0');
+    return _d!.toRadixString(16).padLeft(64, '0');
   }
 
   // convenience method to retrieve an address
   /// Convenience method that jumps through the hoops of generating and [Address] from this
   /// Private Key's corresponding [BCHPublicKey].
-  Address toAddress({NetworkType networkType = NetworkType.MAIN}) {
-    return _BCHPublicKey.toAddress(networkType: networkType ?? _networkType);
+  Address toAddress({NetworkType? networkType = NetworkType.MAIN}) {
+    return _BCHPublicKey!.toAddress(networkType: networkType ?? _networkType);
   }
 
   Uint8List _seed() {
@@ -241,19 +241,19 @@ class BCHPrivateKey {
 
   /// Returns the Network Type that we intend to use this private key on.
   /// This is also the value encoded in the WIF format representation of this key.
-  NetworkType get networkType {
+  NetworkType? get networkType {
     return _networkType;
   }
 
   /// Returns the *naked* private key Big Integer value as a Big Integer
-  BigInt get privateKey {
+  BigInt? get privateKey {
     return _d;
   }
 
   /// Returns the [BCHPublicKey] corresponding to this ECDSA private key.
   ///
   /// NOTE: `Q = d * G` where *Q* is the public key, *d* is the private key and `G` is the curve's Generator.
-  BCHPublicKey get publicKey {
+  BCHPublicKey? get publicKey {
     return _BCHPublicKey;
   }
 

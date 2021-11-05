@@ -26,11 +26,11 @@ class RPCRequest {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = '2.0';
   @JsonKey(disallowNullValue: true)
-  final String method;
+  final String? method;
   @JsonKey(includeIfNull: true)
-  final int id;
+  final int? id;
   @JsonKey(includeIfNull: true)
-  final Object params;
+  final Object? params;
 
   RPCRequest(this.method, {this.id, this.params});
   factory RPCRequest.fromJson(Map<String, dynamic> json) =>
@@ -48,11 +48,11 @@ class RequestConverter extends Converter<Map<String, dynamic>, RPCRequest> {
 @JsonSerializable()
 class Error implements Exception {
   @JsonKey(disallowNullValue: true)
-  final int code;
+  final int? code;
   @JsonKey(disallowNullValue: true)
-  final String message;
+  final String? message;
   @JsonKey(includeIfNull: true)
-  final Object data;
+  final Object? data;
 
   Error(this.code, this.message, {this.data});
   factory Error.fromJson(Map<String, dynamic> json) => _$ErrorFromJson(json);
@@ -60,7 +60,7 @@ class Error implements Exception {
 
   @override
   String toString() {
-    return message;
+    return message!;
   }
 }
 
@@ -69,11 +69,11 @@ class RPCResponse {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = '2.0';
   @JsonKey(includeIfNull: true)
-  final Object result;
+  final Object? result;
   @JsonKey(includeIfNull: true)
-  final Error error;
+  final Error? error;
   @JsonKey(disallowNullValue: true)
-  final int id;
+  final int? id;
 
   RPCResponse(this.result, {this.id, this.error});
   factory RPCResponse.fromJson(Map<String, dynamic> json) =>
@@ -82,28 +82,28 @@ class RPCResponse {
 }
 
 typedef ResponseHandler = void Function(RPCResponse response);
-typedef SubscriptionHandler = void Function(List<Object> result);
+typedef SubscriptionHandler = void Function(List<Object>? result);
 
 class GetBalanceResponse {
   GetBalanceResponse(this.confirmed, this.unconfirmed);
 
-  int confirmed;
-  int unconfirmed;
+  int? confirmed;
+  int? unconfirmed;
 }
 
 typedef DisconnectHandler = void Function(dynamic err);
 
 class JSONRPCWebsocket {
-  WebSocket _rpcSocket;
+  WebSocket? _rpcSocket;
   Map<int, ResponseHandler> outstandingRequests = {};
   Map<String, SubscriptionHandler> subscriptions = {};
   var currentRequestId = 0;
-  DisconnectHandler disconnectHandler;
+  DisconnectHandler? disconnectHandler;
 
   JSONRPCWebsocket({this.disconnectHandler});
 
   void _handleResponse(RPCResponse response) {
-    final handler = outstandingRequests[response.id] ??
+    final handler = outstandingRequests[response.id!] ??
         (RPCResponse _response) {
           // TODO: Log error here - electrum misbehaving.
         };
@@ -111,11 +111,11 @@ class JSONRPCWebsocket {
   }
 
   void _handleNotification(RPCRequest notification) {
-    final handler = subscriptions[notification.method] ??
-        (List<Object> params) {
+    final handler = subscriptions[notification.method!] ??
+        (List<Object>? params) {
           // TODO: Log error here - electrum misbehaving.
         };
-    handler(notification.params);
+    handler(notification.params as List<Object>?);
   }
 
   Future<void> connect(Uri address) async {
@@ -142,7 +142,10 @@ class JSONRPCWebsocket {
       serverSide: false,
     );
 
-    _rpcSocket.listen((dynamic data) {
+    print('RPC CONNECT');
+
+    _rpcSocket?.listen((dynamic data) {
+      print('RPC LISTEN');
       Map<String, dynamic> jsonResult = jsonDecode(data);
       // Attempt to deserialize response
       final response = RPCResponse.fromJson(jsonResult);
@@ -152,8 +155,9 @@ class JSONRPCWebsocket {
       }
       return _handleResponse(response);
     }, onError: (Object error) {
+      print('RPC ERROR $error');
       if (disconnectHandler != null) {
-        disconnectHandler(error);
+        disconnectHandler!(error);
       }
       for (final requestHandler in outstandingRequests.entries) {
         requestHandler.value(RPCResponse(null,
@@ -161,8 +165,9 @@ class JSONRPCWebsocket {
                 0, 'Disconnected from electrum while awaiting response')));
       }
     }, onDone: () {
+      print('RPC DONE??');
       if (disconnectHandler != null) {
-        disconnectHandler(null);
+        disconnectHandler!(null);
       }
       for (final requestHandler in outstandingRequests.entries) {
         requestHandler.value(RPCResponse(null,
@@ -173,7 +178,7 @@ class JSONRPCWebsocket {
     }, cancelOnError: false);
   }
 
-  WebSocket get rpcSocket {
+  WebSocket? get rpcSocket {
     if (_rpcSocket == null) {
       throw Exception('Socket disconnected prematurely');
     }
@@ -188,7 +193,7 @@ class JSONRPCWebsocket {
       if (response.error == null) {
         completer.complete(response.result);
       } else {
-        completer.completeError(response.error);
+        completer.completeError(response.error!);
       }
 
       outstandingRequests.remove(requestId);
@@ -196,7 +201,7 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    rpcSocket.add(payload);
+    rpcSocket?.add(payload);
 
     return completer.future;
   }
@@ -215,12 +220,13 @@ class JSONRPCWebsocket {
 
     final payload =
         jsonEncode(RPCRequest(method, id: requestId, params: params).toJson());
-    rpcSocket.add(payload);
+    rpcSocket?.add(payload);
 
     return completer.future;
   }
 
   void dispose() {
-    _rpcSocket.close();
+    print('called dispose');
+    _rpcSocket?.close();
   }
 }

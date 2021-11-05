@@ -42,11 +42,11 @@ class Ecies {
     //     k = Bob's private key;
     //     Qa = Alice's public key;
 
-    final S = recipientPublicKey.point *
-        senderPrivateKey.privateKey; // point multiplication
-    final pubkeyS = BCHPublicKey.fromXY(S.x.toBigInteger(), S.y.toBigInteger());
+    final S = (recipientPublicKey.point! *
+        senderPrivateKey.privateKey)!; // point multiplication
+    final pubkeyS = BCHPublicKey.fromXY(S.x!.toBigInteger()!, S.y!.toBigInteger()!);
     final pubkeyBuffer = HEX.decode(pubkeyS.getEncoded(true));
-    final pubkeyHash = SHA512Digest().process(pubkeyBuffer);
+    final pubkeyHash = SHA512Digest().process(pubkeyBuffer as Uint8List);
 
     // initialization vector parameters
     final iv = pubkeyHash.sublist(0, 16);
@@ -58,11 +58,11 @@ class Ecies {
     BlockCipher encryptionCipher = PaddedBlockCipher('AES/CBC/PKCS7');
     encryptionCipher.init(true, params);
 
-    final cipherText = encryptionCipher.process(messageBuffer);
+    final cipherText = encryptionCipher.process(messageBuffer as Uint8List);
     final magic = utf8.encode('BIE1');
 
     final encodedBuffer = Uint8List.fromList(
-        magic + HEX.decode(senderPrivateKey.publicKey.toHex()) + cipherText);
+        magic + HEX.decode(senderPrivateKey.publicKey!.toHex()) + cipherText);
 
     // calc checksum
     final hmac = _calculateHmac(kM, encodedBuffer);
@@ -113,8 +113,8 @@ class Ecies {
         BCHPublicKey.fromHex(HEX.encode(senderPubkeyBuffer));
 
     // calculate S = recipientPrivateKey o senderPublicKey
-    final S = senderPublicKey.point *
-        recipientPrivateKey.privateKey; // point multiplication
+    final S = (senderPublicKey.point! *
+        recipientPrivateKey.privateKey)!; // point multiplication
 
     if (cipherText.length - tagLength <= 37) {
       throw Exception(
@@ -122,9 +122,9 @@ class Ecies {
     }
 
     // validate the checksum bytes
-    final pubkeyS = BCHPublicKey.fromXY(S.x.toBigInteger(), S.y.toBigInteger());
+    final pubkeyS = BCHPublicKey.fromXY(S.x!.toBigInteger()!, S.y!.toBigInteger()!);
     final pubkeyBuffer = HEX.decode(pubkeyS.getEncoded(true));
-    final pubkeyHash = SHA512Digest().process(pubkeyBuffer);
+    final pubkeyHash = SHA512Digest().process(pubkeyBuffer as Uint8List);
 
     // initialization vector parameters
     final iv = pubkeyHash.sublist(0, 16);
@@ -148,7 +148,7 @@ class Ecies {
     decryptionCipher.init(false, params);
 
     final decrypted = decryptionCipher
-        .process(cipherText.sublist(37, cipherText.length - tagLength));
+        .process(cipherText.sublist(37, cipherText.length - tagLength) as Uint8List);
     return decrypted;
   }
 }

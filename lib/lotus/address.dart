@@ -31,12 +31,12 @@ import 'script/opcodes.dart';
 /// * last 4 bytes  - a checksum value taken from the first four bytes of sha256(sha256(previous_21_bytes))
 
 class Address {
-  List<NetworkType> _networkTypes;
+  List<NetworkType>? _networkTypes;
 
-  String _publicKeyHash;
-  AddressType _addressType;
-  NetworkType _networkType;
-  int _version;
+  String? _publicKeyHash;
+  AddressType? _addressType;
+  NetworkType? _networkType;
+  int? _version;
 
   /// Constructs a new Address object
   ///
@@ -62,7 +62,7 @@ class Address {
   /// [networkType] is used to distinguish between MAINNET and TESTNET.
   ///
   /// Also see [NetworkType]
-  Address.fromHex(String hexPubKey, NetworkType networkType) {
+  Address.fromHex(String hexPubKey, NetworkType? networkType) {
     _createFromHex(hexPubKey, networkType);
   }
 
@@ -93,7 +93,7 @@ class Address {
   /// [networkType] is used to distinguish between MAINNET and TESTNET.
   ///
   /// Also see [NetworkType]
-  Address.fromCompressedPubKey(List<int> pubkeyBytes, NetworkType networkType) {
+  Address.fromCompressedPubKey(List<int> pubkeyBytes, NetworkType? networkType) {
     _createFromHex(HEX.encode(pubkeyBytes), networkType);
     _publicKeyHash = HEX.encode(hash160(pubkeyBytes));
   }
@@ -110,8 +110,8 @@ class Address {
   ///
   /// Also see [NetworkType]
   Address.fromAddressBytes(List<int> addressBytes,
-      {AddressType addressType = AddressType.PUBKEY_HASH,
-      NetworkType networkType = NetworkType.MAIN}) {
+      {AddressType? addressType = AddressType.PUBKEY_HASH,
+      NetworkType? networkType = NetworkType.MAIN}) {
     _publicKeyHash = HEX.encode(addressBytes);
     _networkType = networkType;
     _addressType = addressType;
@@ -147,7 +147,7 @@ class Address {
   String toBase58() {
     // A stringified buffer is:
     //   1 byte version + data bytes + 4 bytes check code (a truncated hash)
-    var rawHash = Uint8List.fromList(HEX.decode(_publicKeyHash));
+    var rawHash = Uint8List.fromList(HEX.decode(_publicKeyHash!));
 
     return _getEncoded(rawHash);
   }
@@ -156,14 +156,14 @@ class Address {
   ///
   String toCashAddress() {
     return cash_address.Encode(cash_address.RawCashAddress(
-        addressBytes: HEX.decode(_publicKeyHash),
+        addressBytes: HEX.decode(_publicKeyHash!),
         networkType: networkType,
         addressType: addressType,
         prefix: cash_address.getPrefixFromNetworkType(networkType)));
   }
 
   String toXAddress() {
-    final pubKeyBytes = HEX.decode(_publicKeyHash);
+    final pubKeyBytes = HEX.decode(_publicKeyHash!);
     final script = BCHScript();
     if (_addressType == AddressType.PUBKEY_HASH) {
       script.add(OpCodes.OP_DUP);
@@ -201,7 +201,7 @@ class Address {
   }
 
   /// Returns the public key hash `ripemd160(sha256(public_key))` encoded as a  hexadecimal string
-  String toHex() {
+  String? toHex() {
     return _publicKeyHash;
   }
 
@@ -238,13 +238,13 @@ class Address {
     final rawAddressData = cash_address.Decode(address, prefix);
     _networkType = rawAddressData.networkType;
     _addressType = rawAddressData.addressType;
-    _publicKeyHash = HEX.encode(rawAddressData.addressBytes);
+    _publicKeyHash = HEX.encode(rawAddressData.addressBytes!);
   }
 
   void _fromXAddress(String address) {
     final rawAddressData = xaddress.XAddress.Decode(address);
     _networkType = rawAddressData.network;
-    final payload = rawAddressData.payload;
+    final payload = rawAddressData.payload!;
     final script = BCHScript.fromByteArray(Uint8List.fromList(payload)).chunks;
     if (script.length == 5 &&
         script[0].opcodenum == OpCodes.OP_DUP &&
@@ -283,7 +283,7 @@ class Address {
     _networkType = networkType;
   }
 
-  void _createFromHex(String hexPubKey, NetworkType networkType) {
+  void _createFromHex(String hexPubKey, NetworkType? networkType) {
     // make an assumption about PKH vs PSH for naked address generation
     var versionByte;
     if (networkType == NetworkType.MAIN) {
@@ -304,20 +304,20 @@ class Address {
   /// computation is then passed to the `ripemd160()` digest function.
   ///
   /// The returned value is HEX-encoded
-  String get address => _publicKeyHash;
+  String? get address => _publicKeyHash;
 
   /// An alias for the [address] property
-  String get pubkeyHash160 => _publicKeyHash;
+  String? get pubkeyHash160 => _publicKeyHash;
 
   /// Returns a list of network types supported by this address
   ///
   /// This is only really needed because BCH has three different test networks
   /// which technically share the same integer value when encoded, but for
   /// which it is useful to have a type-level distinction during development
-  List<NetworkType> get networkTypes => _networkTypes;
+  List<NetworkType>? get networkTypes => _networkTypes;
 
   /// Returns the specific Network Type that this Address is compatible with
-  NetworkType get networkType => _networkType;
+  NetworkType? get networkType => _networkType;
 
   /// Returns the type of "standard transaction" this Address is meant to be used for.
   ///
@@ -327,7 +327,7 @@ class Address {
   /// to be associated with.
   ///
   /// See documentation for [Transaction]
-  AddressType get addressType => _addressType;
+  AddressType? get addressType => _addressType;
 
   /// Returns the legacy version byte for toBase58.
   int get legacyVersionByte {

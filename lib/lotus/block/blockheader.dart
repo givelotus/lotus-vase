@@ -55,12 +55,12 @@ class BlockHeader {
       '10000000000000000000000000000000000000000000000000000000000000000',
       radix: 16);
 
-  int _version;
-  List<int> _prevHash;
-  List<int> _merkleRoot;
-  int _time;
-  int _bits;
-  int _nonce;
+  int? _version;
+  List<int>? _prevHash;
+  List<int>? _merkleRoot;
+  int? _time;
+  int? _bits;
+  int? _nonce;
 
   /// Constructs a new block header
   ///
@@ -143,8 +143,8 @@ class BlockHeader {
     return {
       'hash': HEX.encode(hash),
       'version': _version,
-      'prevHash': HEX.encode(_prevHash.reversed.toList()),
-      'merkleRoot': HEX.encode(_merkleRoot.reversed.toList()),
+      'prevHash': HEX.encode(_prevHash!.reversed.toList()),
+      'merkleRoot': HEX.encode(_merkleRoot!.reversed.toList()),
       'time': _time,
       'bits': _bits,
       'nonce': _nonce
@@ -154,7 +154,7 @@ class BlockHeader {
   /// Returns *true* if the timestamp is smaller than the [BlockHeader.MAX_TIME_OFFSET], *false* otherwise.
   bool hasValidTimestamp() {
     var currentTime = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    if (time > currentTime + BlockHeader.MAX_TIME_OFFSET) {
+    if (time! > currentTime + BlockHeader.MAX_TIME_OFFSET) {
       return false;
     }
     return true;
@@ -176,10 +176,10 @@ class BlockHeader {
   /// [targetBits] - The difficulty target to calculate. If this is *null* the currently set target in the header is returned.
   ///
   /// Returns the difficulty target
-  BigInt getTargetDifficulty({int targetBits}) {
+  BigInt getTargetDifficulty({int? targetBits}) {
     targetBits ??= _bits;
 
-    var target = BigInt.from(targetBits & 0xffffff);
+    var target = BigInt.from(targetBits! & 0xffffff);
     var mov = 8 * ((targetBits >> 24) - 3);
     while (mov-- > 0) {
       target = target * BigInt.from(2);
@@ -189,8 +189,8 @@ class BlockHeader {
 
   /// Returns the difficulty target of this block header
   double getDifficulty() {
-    var nShift = (_bits >> 24) & 0xff;
-    var dDiff = 0x0000ffff / (_bits & 0x00ffffff);
+    var nShift = (_bits! >> 24) & 0xff;
+    var dDiff = 0x0000ffff / (_bits! & 0x00ffffff);
 
     while (nShift < 29) {
       dDiff *= 256.0;
@@ -236,43 +236,43 @@ class BlockHeader {
   }
 
   /// Returns the block header's nonce value
-  int get nonce => _nonce;
+  int? get nonce => _nonce;
 
   /// Sets this block header's nonce value
-  set nonce(int newNonce) {
+  set nonce(int? newNonce) {
     _nonce = newNonce;
   }
 
   /// Returns the block header's target difficulty
-  int get bits => _bits;
+  int? get bits => _bits;
 
   /// Returns the timestamp for this block header. Time is in seconds since unix epoch.
-  int get time => _time;
+  int? get time => _time;
 
   /// Sets the block header's timestamp.
-  set time(int newTime) {
+  set time(int? newTime) {
     _time = newTime;
   }
 
   /// Returns the block header
-  int get version => _version;
+  int? get version => _version;
 
   /// Returns the byte buffer representing the sha256 hash of the transaction merkle root
-  List<int> get merkleRoot => _merkleRoot;
+  List<int>? get merkleRoot => _merkleRoot;
 
   /// Returns the sha256 hash of the previous block header
-  List<int> get prevHash => _prevHash;
+  List<int>? get prevHash => _prevHash;
 
   /// Returns this block header serialized in byte array form
   List<int> get buffer {
     var writer = ByteDataWriter();
 
-    writer.writeInt32(_version, Endian.little);
-    writer.write(_prevHash);
-    writer.write(_merkleRoot);
-    writer.writeUint32(_time, Endian.little);
-    writer.writeUint32(_bits, Endian.little);
-    writer.writeUint32(_nonce, Endian.little);
+    writer.writeInt32(_version!, Endian.little);
+    writer.write(_prevHash!);
+    writer.write(_merkleRoot!);
+    writer.writeUint32(_time!, Endian.little);
+    writer.writeUint32(_bits!, Endian.little);
+    writer.writeUint32(_nonce!, Endian.little);
 
     return writer.toBytes().toList();
   }

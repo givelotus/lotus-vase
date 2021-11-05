@@ -6,9 +6,9 @@ import 'encoding/convertbits.dart';
 const defaultPrefix = 'bitcoincash';
 
 class RawCashAddress {
-  AddressType addressType;
-  NetworkType networkType;
-  List<int> addressBytes;
+  AddressType? addressType;
+  NetworkType? networkType;
+  List<int>? addressBytes;
 
   String prefix;
 
@@ -86,13 +86,13 @@ int calculateChecksum(String prefix, List<int> packedaddr) {
 RawCashAddress Decode(String address,
     [String defaultPrefix = globalDefaultPrefix]) {
   final splitAddress = SplitAddress(address, defaultPrefix);
-  if (splitAddress.address.toUpperCase() != splitAddress.address &&
-      splitAddress.address.toLowerCase() != splitAddress.address) {
+  if (splitAddress.address!.toUpperCase() != splitAddress.address &&
+      splitAddress.address!.toLowerCase() != splitAddress.address) {
     throw AddressFormatException(
         'cashaddress contains mixed upper and lowercase characters');
   }
 
-  final decoded = fromBase32(splitAddress.address);
+  final decoded = fromBase32(splitAddress.address!);
   // Ensure the checksum is zero when decoding
   final chksum = calculateChecksum(splitAddress.prefix, decoded);
   if (chksum != 0) {
@@ -107,8 +107,8 @@ RawCashAddress Decode(String address,
 // SplitAddress takes a cashaddr string and returns the network prefix, and
 // the base32 payload separately.
 class SplitAddress {
-  String prefix;
-  String address;
+  late String prefix;
+  String? address;
 
   SplitAddress(String fullAddress, String defaultPrefix) {
     final idx = fullAddress.indexOf(':');
@@ -144,7 +144,7 @@ NetworkType getNetworkTypeFromPrefix(String prefix) {
 
 /// getPrefixFromNetworkType converts a Network Type to a
 /// cashaddress prefix for generating accesses appropriately.
-String getPrefixFromNetworkType(NetworkType type) {
+String getPrefixFromNetworkType(NetworkType? type) {
   switch (type) {
     case NetworkType.MAIN:
       return 'bitcoincash';
@@ -175,7 +175,7 @@ AddressType getAddressTypeFromByte(int addressType) {
 /// format. The checksum bits must already be removed.
 RawCashAddress unpackAddress(List<int> packedaddr, String prefix) {
   // Re-pack the 5-bit packed address to 8bits.
-  final output = ConvertBits(5, 8, packedaddr, false);
+  final output = ConvertBits(5, 8, packedaddr, false)!;
 
   final extrabits = output.length * 5 % 8;
   if (extrabits >= 5) {
@@ -204,7 +204,7 @@ RawCashAddress unpackAddress(List<int> packedaddr, String prefix) {
 // ToCashAddr expects a RawAddress and a prefix, and returns the CashAddr URI,
 // and possibly an error.
 String Encode(RawCashAddress address) {
-  final packed = packAddress(address);
+  final packed = packAddress(address)!;
   final paddingForChecksum = packed.sublist(0);
   paddingForChecksum.addAll([0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -219,9 +219,9 @@ String Encode(RawCashAddress address) {
 // packAddress takes a RawAddress and converts it's payload to a 5-bit packed
 // representation.  The first byte represents the address type, and the size
 // of the payload.
-List<int> packAddress(RawCashAddress address) {
+List<int>? packAddress(RawCashAddress address) {
   final version = address.version << 3;
-  final size = address.addressBytes.length;
+  final size = address.addressBytes!.length;
   var encodedSize = 0;
   switch (size * 8) {
     case 160:
@@ -255,7 +255,7 @@ List<int> packAddress(RawCashAddress address) {
   final version_byte = version | encodedSize;
   final input = <int>[];
   input.add(version_byte);
-  input.addAll(address.addressBytes);
+  input.addAll(address.addressBytes!);
   final out = ConvertBits(8, 5, input, true);
 
   return out;

@@ -60,10 +60,10 @@ final operationButtonStyle = TextButton.styleFrom(
 typedef CalculatorButtonAction = void Function(List<String> stack);
 
 class CalculatorButtonDefinition {
-  IconData icon;
-  CalculatorButtonAction action;
-  String text;
-  ButtonStyle style;
+  IconData? icon;
+  CalculatorButtonAction? action;
+  String? text;
+  ButtonStyle? style;
 
   CalculatorButtonDefinition({this.icon, this.text, this.action, this.style});
 }
@@ -72,13 +72,15 @@ final CalculatorButtonAction NOP = (items) => items;
 
 typedef PushLambda = CalculatorButtonAction Function(String Number);
 CalculatorButtonAction pushNumber(String number) {
-  return (List<String> stack) {
-    stack.add(number);
+  return (List<String>? stack) {
+    stack!.add(number);
   };
 }
 
 CalculatorButtonAction pushOperation(String operator) {
   return (List<String> stack) {
+    if (stack.isEmpty) return;
+
     final lastItem = stack.removeLast();
     // Replace opertators
     if (!operators.contains(lastItem)) {

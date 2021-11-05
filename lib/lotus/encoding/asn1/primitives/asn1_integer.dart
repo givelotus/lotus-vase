@@ -10,7 +10,7 @@ class ASN1Integer extends ASN1Object {
   ///
   /// The integer value
   ///
-  BigInt integer;
+  BigInt? integer;
 
   ///
   /// Create an [ASN1Integer] entity with the given BigInt [integer].
@@ -29,7 +29,7 @@ class ASN1Integer extends ASN1Object {
   ///
   ASN1Integer.fromBytes(Uint8List encodedBytes)
       : super.fromBytes(encodedBytes) {
-    integer = ASN1Utils.decodeBigInt(valueBytes);
+    integer = ASN1Utils.decodeBigInt(valueBytes!);
   }
 
   ///
@@ -43,21 +43,21 @@ class ASN1Integer extends ASN1Object {
   /// Throws an [UnsupportedAsn1EncodingRuleException] if the given [encodingRule] is not supported.
   ///
   @override
-  Uint8List encode(
+  Uint8List? encode(
       {ASN1EncodingRule encodingRule = ASN1EncodingRule.ENCODING_DER}) {
     if (encodingRule != ASN1EncodingRule.ENCODING_DER) {
       throw UnsupportedAsn1EncodingRuleException(encodingRule);
     }
-    if (integer.bitLength == 0) {
+    if (integer!.bitLength == 0) {
       if (integer == BigInt.from(-1)) {
         valueBytes = Uint8List.fromList([0xff]);
       } else {
         valueBytes = Uint8List.fromList([0]);
       }
     } else {
-      valueBytes = ASN1Utils.encodeBigInt(integer);
+      valueBytes = ASN1Utils.encodeBigInt(integer!);
     }
-    valueByteLength = valueBytes.length;
+    valueByteLength = valueBytes!.length;
     return super.encode();
   }
 
