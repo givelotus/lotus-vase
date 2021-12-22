@@ -36,7 +36,7 @@ abstract class CKDSerializer {
 
     // ignore: unused_local_variable
     var version =
-        HEX.encode(_versionBytes.map((elem) => elem!.toUnsigned(8)).toList());
+        HEX.encode(_versionBytes.map((elem) => elem.toUnsigned(8)).toList());
   }
 
   // TODO: FIX Rewrite using the Buffer class
