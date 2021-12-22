@@ -43,6 +43,7 @@ dependencies:
   provider: ^6.0.1
   flutter_secure_storage: ^4.2.1
   pool: ^1.5.0
+  flutter_native_splash: ^1.3.2
 
 dev_dependencies:
   flutter_test:
@@ -57,7 +58,8 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/cashew_logo.png"
+  image_path_android: assets/icon/app_icon_android.png
+  image_path_ios: assets/icon/app_icon_ios.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
