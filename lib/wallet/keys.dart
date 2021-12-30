@@ -44,26 +44,27 @@ class KeyInfo {
   }
 }
 
-List<KeyInfo>? constructChildKeys(
-    {required HDPrivateKey rootKey,
-    int? childKeyCount,
-    NetworkType network = constants.network}) {
+List<KeyInfo>? constructChildKeys({
+  required HDPrivateKey rootKey,
+  required int childKeyCount,
+  NetworkType network = constants.network,
+}) {
   // Default electron cash path
 
-  final generateKeys =
-      (priorList, generationRootKey, isChange, isDeprecated, number) =>
-          priorList.followedBy(List<KeyInfo>.generate(
-              childKeyCount!,
-              (index) => KeyInfo(
-                    // TODO: Remove this keyIndex crap. it makes it very hard to handle
-                    // finding various other values because we have this unnecessary
-                    // surrogate key
-                    keyIndex: index + priorList.length as int?,
-                    key: generationRootKey.deriveChildNumber(index).privateKey,
-                    isChange: isChange,
-                    isDeprecated: isDeprecated,
-                    network: network,
-                  )));
+  final generateKeys = (Iterable<KeyInfo> priorList, generationRootKey,
+          bool isChange, bool isDeprecated, int number) =>
+      priorList.followedBy(List<KeyInfo>.generate(
+          number,
+          (index) => KeyInfo(
+                // TODO: Remove this keyIndex crap. it makes it very hard to handle
+                // finding various other values because we have this unnecessary
+                // surrogate key
+                keyIndex: index + priorList.length as int?,
+                key: generationRootKey.deriveChildNumber(index).privateKey,
+                isChange: isChange,
+                isDeprecated: isDeprecated,
+                network: network,
+              )));
 
   final btcParentKey = rootKey.deriveChildKey("m/44'/0'");
   final bchParentKey = rootKey.deriveChildKey("m/44'/145'");
@@ -73,8 +74,12 @@ List<KeyInfo>? constructChildKeys(
   final withLotusDerivationKeys = generateKeys(<KeyInfo>[],
       lotusParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(0),
       false,
-      false,
+      true,
       childKeyCount);
+
+  // Marking only the first key as not deprecated
+  withLotusDerivationKeys.first.isDeprecated = false;
+
   final withLotusChangeKeys = generateKeys(
       withLotusDerivationKeys,
       lotusParentKey.deriveChildNumber(0, hardened: true).deriveChildNumber(1),
