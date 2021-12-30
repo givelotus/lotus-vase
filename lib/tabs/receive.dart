@@ -26,7 +26,6 @@ class ReceiveTab extends StatelessWidget {
     final balanceNotifier = viewModel.balance;
 
     final keys = viewModel.wallet!.keys.keys!.sublist(0);
-    keys.shuffle();
 
     final keyInfo = keys.firstWhere((keyInfo) =>
         keyInfo.isChange == false && keyInfo.isDeprecated == false);
