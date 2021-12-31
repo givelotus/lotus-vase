@@ -1,16 +1,17 @@
-import 'package:vase/lotus/utils/parse_uri.dart';
-import 'package:vase/viewmodel.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'dart:core';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:vase/lotus/utils/parse_uri.dart';
+import 'package:vase/viewmodel.dart';
 
-import './send_info.dart';
 import './sendModel.dart';
-import '../component/balance_display.dart';
+import './send_info.dart';
+import '../../constants.dart';
 import '../../lotus/utils/parse_uri.dart';
+import '../component/balance_display.dart';
 
 class SendTab extends StatefulWidget {
   final PageController controller;
@@ -33,6 +34,7 @@ class _SendTabState extends State<SendTab> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
     var screenDimension = MediaQuery.of(context).size;
 
     // WE don't want to be redrawing
@@ -98,8 +100,11 @@ class _SendTabState extends State<SendTab> {
                   )),
         ),
         Positioned(
-          top: screenDimension.height * .1,
-          child: BalanceDisplay(balanceNotifier: balanceNotifier),
+          top: topPadding,
+          child: Container(
+              constraints: BoxConstraints(maxWidth: screenDimension.width),
+              padding: stdPadding,
+              child: BalanceDisplay(balanceNotifier: balanceNotifier)),
         ),
         Positioned(
           bottom: 35.0,
