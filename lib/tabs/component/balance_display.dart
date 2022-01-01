@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../lotus/utils/format_amount.dart';
@@ -21,9 +23,10 @@ class BalanceDisplay extends StatelessWidget {
           child: ValueListenableBuilder<WalletBalance?>(
               valueListenable: balanceNotifier,
               builder: (context, balance, child) {
-                if (balance != null && balance.error != null) {
+                final error = balance?.error;
+                if (error != null) {
                   return Text(
-                    balance.error.toString(),
+                    showFriendlyError(error),
                     style: TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -52,4 +55,12 @@ class BalanceDisplay extends StatelessWidget {
       ),
     );
   }
+}
+
+String showFriendlyError(Exception error) {
+  if (error is SocketException) {
+    return 'Error connecting to the network. Please restart the app.';
+  }
+
+  return error.toString();
 }

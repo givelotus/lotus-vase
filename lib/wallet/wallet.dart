@@ -132,7 +132,6 @@ class Wallet {
       await updateUtxos(client: client);
     } catch (err) {
       print(err);
-      print("ERROR");
       updateBalance(WalletBalance(balance: null, error: err as Exception?));
       return;
     }
