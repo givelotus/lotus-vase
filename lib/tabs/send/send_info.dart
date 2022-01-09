@@ -16,15 +16,17 @@ import '../../lotus/transaction/transaction.dart';
 import '../component/payment_amount_display.dart';
 import '../component/balance_display.dart';
 
+const MIN_SATS = 1024;
+
 List<String> canSend(int amount, String address, int balance) {
   final errors = <String>[];
 
-  if (amount < 1024) {
-    errors.add('Amount too low');
+  if (amount < MIN_SATS) {
+    errors.add('Minimum send amount is $MIN_SATS satoshi');
   }
 
   if (amount > balance) {
-    errors.add('Insufficient funds');
+    errors.add('Wallet balance too low');
   }
 
   try {
@@ -58,20 +60,17 @@ Future showError(BuildContext context, String errMessage) {
 }
 
 class SendInfo extends StatelessWidget {
-  final ValueNotifier<CalculatorData> keyboardNotifier;
-
-  SendInfo({Key? key})
-      : keyboardNotifier = ValueNotifier<CalculatorData>(
-            CalculatorData(amount: 0, function: ''));
-
   @override
   Widget build(context) {
     final walletModel = Provider.of<WalletModel>(context, listen: false);
     final balanceNotifier = walletModel.balance;
     final sendModel = Provider.of<SendModel>(context, listen: false);
+    final keyboardNotifier =
+        ValueNotifier<CalculatorData>(CalculatorData(amount: 0, function: ''));
 
     keyboardNotifier.addListener(() {
       sendModel.sendAmount = keyboardNotifier.value.amount;
+      sendModel.errors = [];
     });
 
     void sendTransaction(BuildContext context, String address, int amount) {
@@ -122,85 +121,73 @@ class SendInfo extends StatelessWidget {
         ),
       ),
       body: Padding(
-          padding: stdPadding,
-          child: SafeArea(
-              child: Column(
-            children: [
-              Expanded(child:
-                  Consumer<SendModel>(builder: (context, viewModel, child) {
-                final errors = canSend(
-                    viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress ?? '',
-                    walletModel.balance.value!.balance ?? 0);
-                return Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.end,
+        padding: stdPadding,
+        child: SafeArea(
+          child: Consumer<SendModel>(
+            builder: (context, viewModel, child) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (viewModel.errors.isNotEmpty)
+                    Text(
+                      'Not able to send:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                          fontSize: 15),
+                    ),
+                  for (final error in viewModel.errors)
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        text: error,
+                        style: TextStyle(color: Colors.red, fontSize: 15),
+                      ),
+                    ),
+                  BalanceDisplay(balanceNotifier: balanceNotifier),
+                  AddressDisplay(onTap: pasteAddress),
+                  PaymentAmountDisplay(
+                      amount: viewModel.sendAmount ?? 0,
+                      function: keyboardNotifier.value.function ?? ''),
+                  Row(
                     children: [
-                      errors.isEmpty
-                          ? <Widget>[]
-                          : [
-                              Row(children: [
-                                Expanded(
-                                    child: Text('Not able to send:',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.red,
-                                            fontSize: 15)))
-                              ])
-                            ],
-                      errors
-                          .map((errorText) => Row(children: [
-                                Expanded(
-                                    child: RichText(
-                                  textAlign: TextAlign.center,
-                                  text: TextSpan(
-                                    text: errorText,
-                                    style: TextStyle(
-                                        color: Colors.red, fontSize: 15),
-                                  ),
-                                ))
-                              ]))
-                          .toList()
-                    ].expand((row) => row).toList());
-              })),
-              BalanceDisplay(balanceNotifier: balanceNotifier),
-              AddressDisplay(onTap: pasteAddress),
-              Row(children: [
-                Expanded(
-                    child: Consumer<SendModel>(
-                        builder: (context, viewModel, child) =>
-                            PaymentAmountDisplay(
-                                amount: viewModel.sendAmount ?? 0,
-                                function:
-                                    keyboardNotifier.value.function ?? '')))
-              ]),
-              Consumer<SendModel>(builder: (context, viewModel, child) {
-                final errors = canSend(
-                    viewModel.sendAmount ?? 0,
-                    viewModel.sendToAddress ?? '',
-                    walletModel.balance.value!.balance ?? 0);
-                return Row(children: [
-                  Expanded(
-                      child: ElevatedButton(
-                    autofocus: true,
-                    onPressed: errors.isEmpty
-                        ? () {
-                            sendTransaction(context, viewModel.sendToAddress!,
-                                viewModel.sendAmount!);
-                          }
-                        : null,
-                    child: Text('Send'),
-                  ))
-                ]);
-              }),
-              CalculatorKeyboard(
-                  dataNotifier: keyboardNotifier,
-                  initialValue: (sendModel.sendAmount ?? '').toString()),
-              // Confirm Amount button widget writes to global SendModel
-              // and then switches to Slide to send button:
-            ],
-          ))),
+                      Expanded(
+                        child: ElevatedButton(
+                          autofocus: true,
+                          onPressed: viewModel.errors.isEmpty
+                              ? () {
+                                  final errs = canSend(
+                                      viewModel.sendAmount ?? 0,
+                                      viewModel.sendToAddress ?? '',
+                                      walletModel.balance.value!.balance ?? 0);
+
+                                  viewModel.errors = errs;
+
+                                  if (errs.isEmpty) {
+                                    sendTransaction(
+                                        context,
+                                        viewModel.sendToAddress!,
+                                        viewModel.sendAmount!);
+                                  }
+                                }
+                              : null,
+                          child: Text('Send'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (child != null) child
+                ],
+              );
+            },
+            child: CalculatorKeyboard(
+              dataNotifier: keyboardNotifier,
+              initialValue: '${sendModel.sendAmount ?? ''}',
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
