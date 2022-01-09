@@ -67,7 +67,6 @@ class SendInfo extends StatefulWidget {
 }
 
 class _SendInfoState extends State<SendInfo> {
-  var submitted = false;
   var errors = [];
 
   @override
