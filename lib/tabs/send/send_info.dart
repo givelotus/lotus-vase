@@ -59,14 +59,7 @@ Future showError(BuildContext context, String errMessage) {
       });
 }
 
-class SendInfo extends StatefulWidget {
-  SendInfo({Key? key});
-
-  @override
-  State<SendInfo> createState() => _SendInfoState();
-}
-
-class _SendInfoState extends State<SendInfo> {
+class SendInfo extends StatelessWidget {
   @override
   Widget build(context) {
     final walletModel = Provider.of<WalletModel>(context, listen: false);
@@ -76,7 +69,6 @@ class _SendInfoState extends State<SendInfo> {
         ValueNotifier<CalculatorData>(CalculatorData(amount: 0, function: ''));
 
     keyboardNotifier.addListener(() {
-      print('${keyboardNotifier.value.amount}');
       sendModel.sendAmount = keyboardNotifier.value.amount;
       sendModel.errors = [];
     });
