@@ -67,8 +67,6 @@ class SendInfo extends StatefulWidget {
 }
 
 class _SendInfoState extends State<SendInfo> {
-  var errors = [];
-
   @override
   Widget build(context) {
     final walletModel = Provider.of<WalletModel>(context, listen: false);
@@ -78,8 +76,9 @@ class _SendInfoState extends State<SendInfo> {
         ValueNotifier<CalculatorData>(CalculatorData(amount: 0, function: ''));
 
     keyboardNotifier.addListener(() {
+      print('${keyboardNotifier.value.amount}');
       sendModel.sendAmount = keyboardNotifier.value.amount;
-      errors = [];
+      sendModel.errors = [];
     });
 
     void sendTransaction(BuildContext context, String address, int amount) {
@@ -137,7 +136,7 @@ class _SendInfoState extends State<SendInfo> {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  if (errors.isNotEmpty)
+                  if (viewModel.errors.isNotEmpty)
                     Text(
                       'Not able to send:',
                       textAlign: TextAlign.center,
@@ -146,7 +145,7 @@ class _SendInfoState extends State<SendInfo> {
                           color: Colors.red,
                           fontSize: 15),
                     ),
-                  for (final error in errors)
+                  for (final error in viewModel.errors)
                     RichText(
                       textAlign: TextAlign.center,
                       text: TextSpan(
@@ -164,16 +163,14 @@ class _SendInfoState extends State<SendInfo> {
                       Expanded(
                         child: ElevatedButton(
                           autofocus: true,
-                          onPressed: errors.isEmpty
+                          onPressed: viewModel.errors.isEmpty
                               ? () {
                                   final errs = canSend(
                                       viewModel.sendAmount ?? 0,
                                       viewModel.sendToAddress ?? '',
                                       walletModel.balance.value!.balance ?? 0);
 
-                                  setState(() {
-                                    errors = errs;
-                                  });
+                                  viewModel.errors = errs;
 
                                   if (errs.isEmpty) {
                                     sendTransaction(
