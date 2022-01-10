@@ -1,3 +1,4 @@
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vase/tabs/settings.dart';
 import 'package:vase/tabs/receive.dart';
 import 'package:vase/tabs/send/send.dart';
@@ -8,11 +9,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider(create: (_) => WalletModel()),
-    ChangeNotifierProvider(create: (_) => SendModel()),
-  ], child: LotusApp()));
+void main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://c6a61e7ac13b413d8bb529c3c05b0ab1@o1111989.ingest.sentry.io/6141317';
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => WalletModel()),
+      ChangeNotifierProvider(create: (_) => SendModel()),
+    ], child: LotusApp())),
+  );
 }
 
 class LotusApp extends StatelessWidget {
