@@ -14,7 +14,7 @@ void main() {
     await tester.pumpWidget(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WalletModel()),
       ChangeNotifierProvider(create: (_) => SendModel()),
-    ], child: LotusApp()));
+    ], child: VaseApp()));
 
     final materialApp = find.byType(MaterialApp);
     final sendTab = find.byType(SendTab);
@@ -29,7 +29,7 @@ void main() {
     await tester.pumpWidget(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WalletModel()),
       ChangeNotifierProvider(create: (_) => SendModel()),
-    ], child: LotusApp()));
+    ], child: VaseApp()));
 
     final sendTab = find.byType(SendTab);
     final receiveTab = find.byType(ReceiveTab);
@@ -44,7 +44,7 @@ void main() {
     await tester.pumpWidget(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WalletModel()),
       ChangeNotifierProvider(create: (_) => SendModel()),
-    ], child: LotusApp()));
+    ], child: VaseApp()));
 
     final sendTab = find.byType(SendTab);
     expect(sendTab, findsOneWidget);
@@ -67,7 +67,7 @@ void main() {
     await tester.pumpWidget(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WalletModel()),
       ChangeNotifierProvider(create: (_) => SendModel()),
-    ], child: LotusApp()));
+    ], child: VaseApp()));
 
     final sendTab = find.byType(SendTab);
     expect(sendTab, findsOneWidget);
