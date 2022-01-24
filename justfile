@@ -1,5 +1,5 @@
 build-android:
-    flutter build appbundle --obfuscate --split-debug-info=/lotus-vase/out/android
+    flutter build appbundle --obfuscate --split-debug-info=build/app/outputs/symbols
 
 build-ios:
-    flutter build ipa --obfuscate --split-debug-info=/lotus-vase/out/ios
+    flutter build ipa --obfuscate --split-debug-info=build/app/outputs/symbols
