@@ -18,7 +18,7 @@ class TransactionMetadata {
 
 class WalletBalance {
   int? balance;
-  Exception? error;
+  dynamic error;
 
   WalletBalance({this.balance, this.error});
 }
@@ -132,7 +132,7 @@ class Wallet {
       await updateUtxos(client: client);
     } catch (err) {
       print(err);
-      updateBalance(WalletBalance(balance: null, error: err as Exception?));
+      updateBalance(WalletBalance(balance: null, error: err));
       return;
     }
     refreshBalanceLocal();

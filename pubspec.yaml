@@ -45,6 +45,8 @@ dependencies:
   pool: ^1.5.0
   flutter_native_splash: ^1.3.2
   sentry_flutter: ^6.2.2
+  package_info_plus: ^1.3.0
+  url_launcher: ^6.0.18
   
 
 dev_dependencies:

@@ -1,11 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:vase/constants.dart';
 import 'package:vase/viewmodel.dart';
 import 'package:vase/lotus/bip39/bip39.dart';
 import 'component/balance_display.dart';
+
+final packageInfoFuture = PackageInfo.fromPlatform();
 
 class SettingsTab extends StatelessWidget {
   SettingsTab({Key? key}) : super(key: key);
@@ -184,39 +189,90 @@ class SettingsTab extends StatelessWidget {
       );
     }
 
-    return SafeArea(
-        child: Padding(
-            padding: stdPadding,
-            child: Column(
+    Future<Null> Function() _launchUrl(String url) => () async {
+          if (await canLaunch(url)) {
+            await launch(url);
+          } else {
+            throw 'Could not launch $url';
+          }
+        };
+
+    return Scaffold(
+      appBar: CupertinoNavigationBar(
+        middle: const Text('Settings'),
+      ),
+      body: Column(
+        children: [
+          // settings menu
+          Expanded(
+            child: ListView(
               children: [
-                BalanceDisplay(balanceNotifier: balanceNotifier),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => showSeedDialog(),
-                        child: Text(
-                          'Show Seed',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
+                ListTile(
+                  title: const Text(
+                    'Wallet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
+                  ),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => showEnterSeedDialog(),
-                        child: Text(
-                          'Import Seed',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
+                ListTile(
+                  title: const Text('Seed Phrase'),
+                  leading: Icon(Icons.nature),
+                  trailing: Icon(Icons.keyboard_arrow_right),
+                  onTap: () => showSeedDialog(),
+                ),
+                ListTile(
+                  title: const Text('Import Seed Phrase'),
+                  leading: Icon(Icons.upload),
+                  trailing: Icon(Icons.keyboard_arrow_right),
+                  onTap: () => showEnterSeedDialog(),
+                ),
+                Divider(),
+                ListTile(
+                  title: const Text(
+                    'More',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                )
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Help'),
+                  leading: Icon(Icons.help),
+                  trailing: Icon(Icons.keyboard_arrow_right),
+                  onTap: _launchUrl('https://t.me/cashewwallet'),
+                ),
+                ListTile(
+                    title: const Text('Website'),
+                    leading: Icon(Icons.web),
+                    trailing: Icon(Icons.keyboard_arrow_right),
+                    onTap: _launchUrl('https://givelotus.org')),
+                ListTile(
+                  title: const Text('Community'),
+                  leading: Icon(Icons.group),
+                  trailing: Icon(Icons.keyboard_arrow_right),
+                  onTap: _launchUrl('https://t.me/givelotus'),
+                ),
+                ListTile(
+                  title: const Text('Version'),
+                  subtitle: FutureBuilder<PackageInfo>(
+                    future: packageInfoFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Text('${snapshot.data?.version}');
+                      }
+                      return SizedBox.shrink();
+                    },
+                  ),
+                  leading: Icon(Icons.info),
+                ),
               ],
-            )));
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
