@@ -135,7 +135,7 @@ class JSONRPCWebsocket {
 
     final response = await request.close();
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 101) {
       throw Exception('Bad response from server');
     }
 
