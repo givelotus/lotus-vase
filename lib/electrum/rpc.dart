@@ -134,6 +134,11 @@ class JSONRPCWebsocket {
     request.headers.add('Sec-WebSocket-Key', key);
 
     final response = await request.close();
+
+    if (response.statusCode != 200) {
+      throw Exception('Bad response from server');
+    }
+
     // todo check the status code, key etc
     final socket = await response.detachSocket();
 
