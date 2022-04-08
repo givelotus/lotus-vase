@@ -2,45 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vase/components/numpad/numpad.dart';
 import 'package:vase/components/numpad/numpad_model.dart';
-import 'package:vase/config/features.dart';
-import 'package:vase/config/theme.dart';
 
 class NumpadView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          children: [
-            IconButton(
-              splashRadius: AppTheme.splashRadius,
-              onPressed: () {},
-              icon: Icon(Icons.qr_code_scanner),
-            ),
-            const Spacer(),
-            Visibility(
-              visible: FeatureFlags.profiles,
-              child: IconButton(
-                splashRadius: AppTheme.splashRadius,
-                onPressed: () {},
-                icon: Icon(Icons.face),
-              ),
-            ),
-            Visibility(
-              visible: FeatureFlags.notifications,
-              child: IconButton(
-                splashRadius: AppTheme.splashRadius,
-                onPressed: () {},
-                icon: Icon(Icons.notifications),
-              ),
-            ),
-            IconButton(
-              splashRadius: AppTheme.splashRadius,
-              onPressed: () {},
-              icon: Icon(Icons.settings),
-            ),
-          ],
-        ),
         Expanded(
           flex: 2,
           child: Padding(
@@ -48,13 +15,17 @@ class NumpadView extends StatelessWidget {
             child: Center(
               child: Consumer<NumpadModel>(
                 builder: (context, model, widget) {
-                  print(model.items);
-                  return Text(
-                    model.items.map((e) => e.value).join(),
-                    style: TextStyle(
-                      fontSize: 56,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: model.items
+                        .map((e) => Text(
+                              e,
+                              style: TextStyle(
+                                fontSize: 56,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ))
+                        .toList(),
                   );
                 },
               ),
@@ -76,7 +47,10 @@ class NumpadView extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(elevation: 0),
-                  child: Text('Request'),
+                  child: Text(
+                    'Request',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onPressed: () {},
                 ),
               ),
@@ -84,7 +58,10 @@ class NumpadView extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(elevation: 0),
-                  child: Text('Send'),
+                  child: Text(
+                    'Send',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   onPressed: () {},
                 ),
               ),

@@ -6,7 +6,7 @@ import 'package:vase/main.dart';
 import 'package:vase/tabs/receive.dart';
 import 'package:vase/tabs/send/send.dart';
 import 'package:vase/tabs/send/sendModel.dart';
-import 'package:vase/tabs/settings.dart';
+import 'package:vase/features/settings/settings_page.dart';
 import 'package:vase/viewmodel.dart';
 
 void main() {
@@ -33,7 +33,7 @@ void main() {
 
     final sendTab = find.byType(SendTab);
     final receiveTab = find.byType(ReceiveTab);
-    final settingsTab = find.byType(SettingsTab);
+    final settingsTab = find.byType(SettingsPage);
 
     expect(sendTab, findsOneWidget);
     expect(receiveTab, findsNothing);
@@ -57,7 +57,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final receiveTab = find.byType(ReceiveTab);
-    final settingsTab = find.byType(SettingsTab);
+    final settingsTab = find.byType(SettingsPage);
 
     expect(receiveTab, findsOneWidget);
     expect(settingsTab, findsNothing);
@@ -80,7 +80,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final receiveTab = find.byType(ReceiveTab);
-    final settingsTab = find.byType(SettingsTab);
+    final settingsTab = find.byType(SettingsPage);
 
     expect(receiveTab, findsNothing);
     expect(settingsTab, findsOneWidget);

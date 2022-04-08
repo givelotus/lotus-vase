@@ -52,14 +52,14 @@ extension KeyValueExts on KeyValue {
 }
 
 final defaultOperation = (NumpadModel model, KeyValue value) {
-  model.addValue(value);
+  model.addValue(value.value);
 };
 
 final defaultValidator = (NumpadModel model) => model.items.length < MAX_LENGTH;
 
 final periodValidator = (NumpadModel model) =>
     defaultValidator(model) &&
-    model.items.indexWhere((element) => element == KeyValue.Period) == -1;
+    model.items.indexWhere((element) => element == KeyValue.Period.value) == -1;
 
 final backValidator = (NumpadModel model) => model.items.isNotEmpty;
 
