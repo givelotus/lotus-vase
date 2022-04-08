@@ -1,4 +1,4 @@
 class FeatureFlags {
-  static final profiles = false;
-  static final notifications = false;
+  static const profiles = false;
+  static const notifications = false;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -7,6 +8,7 @@ import 'package:vase/components/numpad/numpad_model.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
 import 'package:vase/features/qr_scan/qr_scan_page.dart';
+import 'package:vase/features/receive/receive_page.dart';
 import 'package:vase/features/settings/settings_page.dart';
 import 'package:vase/tabs/send/sendModel.dart';
 import 'package:vase/viewmodel.dart';
@@ -41,16 +43,21 @@ class VaseApp extends StatelessWidget {
       ),
       GoRoute(path: '/settings', builder: (ctx, state) => const SettingsPage()),
       GoRoute(path: '/qrscan', builder: (ctx, state) => const QRScanPage()),
+      GoRoute(path: '/receive', builder: (ctx, state) => const ReceivePage()),
     ],
   );
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return MaterialApp.router(
       title: 'Vase',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      theme: AppTheme.lotusTheme,
+      darkTheme: AppTheme.lotusTheme,
+      themeMode: ThemeMode.dark,
       routeInformationParser: router.routeInformationParser,
       routerDelegate: router.routerDelegate,
     );

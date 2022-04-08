@@ -23,57 +23,51 @@ class HomePage extends HookWidget {
     final navBarIndex = useState(0);
     final pageController = usePageController();
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  splashRadius: AppTheme.splashRadius,
-                  onPressed: () {
-                    context.push('/qrscan');
-                  },
-                  icon: Icon(Icons.qr_code_scanner),
-                ),
-                const Spacer(),
-                Visibility(
-                  visible: FeatureFlags.profiles,
-                  child: IconButton(
-                    splashRadius: AppTheme.splashRadius,
-                    onPressed: () {},
-                    icon: Icon(Icons.face),
-                  ),
-                ),
-                Visibility(
-                  visible: FeatureFlags.notifications,
-                  child: IconButton(
-                    splashRadius: AppTheme.splashRadius,
-                    onPressed: () {},
-                    icon: Icon(Icons.notifications),
-                  ),
-                ),
-                IconButton(
-                  splashRadius: AppTheme.splashRadius,
-                  onPressed: () {
-                    context.push('/settings');
-                  },
-                  icon: Icon(Icons.settings),
-                ),
-              ],
-            ),
-            Expanded(
-              child: PageView(
-                controller: pageController,
-                onPageChanged: _onPageChanged(navBarIndex),
-                children: [
-                  NumpadView(),
-                  // WalletView(),
-                ],
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          splashRadius: AppTheme.splashRadius,
+          onPressed: () {
+            context.push('/qrscan');
+          },
+          icon: Icon(Icons.qr_code_scanner),
         ),
+        actions: [
+          Visibility(
+            visible: FeatureFlags.profiles,
+            child: IconButton(
+              splashRadius: AppTheme.splashRadius,
+              onPressed: () {},
+              icon: Icon(Icons.face),
+            ),
+          ),
+          Visibility(
+            visible: FeatureFlags.notifications,
+            child: IconButton(
+              splashRadius: AppTheme.splashRadius,
+              onPressed: () {},
+              icon: Icon(Icons.notifications),
+            ),
+          ),
+          IconButton(
+            splashRadius: AppTheme.splashRadius,
+            onPressed: () {
+              context.push('/settings');
+            },
+            icon: Icon(Icons.settings),
+          ),
+        ],
       ),
+      body: PageView(
+        controller: pageController,
+        onPageChanged: _onPageChanged(navBarIndex),
+        children: [
+          NumpadView(),
+          // WalletView(),
+        ],
+      ),
+
       // bottomNavigationBar: BottomNavigationBar(
       //   onTap: _navigationTapped(pageController),
       //   currentIndex: navBarIndex.value,

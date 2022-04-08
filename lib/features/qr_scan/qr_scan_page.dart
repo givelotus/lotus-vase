@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:vase/config/colors.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/lotus/address.dart';
 import 'package:vase/lotus/transaction/transaction.dart';
@@ -35,88 +36,83 @@ class QRScanPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final dialogOpen = useState(false);
+    final overlay = QrScannerOverlayShape(
+      borderColor: AppColors.lotusPink,
+      borderRadius: 8,
+      borderWidth: 4,
+      cutOutSize: 300,
+    );
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            SizedBox(
-              height: 48,
-              width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Positioned(
-                    left: 0,
-                    child: IconButton(
-                      icon: Icon(Icons.navigate_before),
-                      onPressed: () => context.pop(),
-                      splashRadius: AppTheme.splashRadius,
-                    ),
-                  ),
-                  const Text(
-                    'QR Scanner',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
-              ),
+            QRView(
+              key: qrKey,
+              overlay: overlay,
+              onQRViewCreated: (controller) {
+                controller.scannedDataStream.listen((scanData) async {
+                  if (dialogOpen.value) {
+                    return;
+                  }
+
+                  final parseResult = parseSendURI(scanData.code);
+                  final address = parseResult.address ?? '';
+                  final amount = parseResult.amount ?? 0;
+
+                  if (address.isEmpty || amount <= 0) {
+                    _showSnackBar(context, 'Unable to parse QR code');
+                    return;
+                  }
+
+                  dialogOpen.value = true;
+
+                  await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      void _closeDialog() {
+                        Navigator.of(context).pop();
+                      }
+
+                      return AlertDialog(
+                        title: Text('Send Lotus?'),
+                        content:
+                            Text('You will send $amount Lotus to $address'),
+                        actions: [
+                          TextButton(
+                            onPressed: _closeDialog,
+                            child: const Text('CANCEL'),
+                          ),
+                          TextButton(
+                            child: const Text('OK'),
+                            onPressed: () async {
+                              final transaction = await _sendTransaction(
+                                  context, address, amount);
+                              _showSnackBar(
+                                  context, 'Sent! TxId: ${transaction?.id}');
+                              _closeDialog();
+                            },
+                          )
+                        ],
+                      );
+                    },
+                  );
+                  dialogOpen.value = false;
+                });
+              },
             ),
-            Expanded(
-              child: QRView(
-                key: qrKey,
-                onQRViewCreated: (controller) {
-                  controller.scannedDataStream.listen((scanData) {
-                    if (dialogOpen.value) {
-                      return;
-                    }
-
-                    final parseResult = parseSendURI(scanData.code);
-                    final address = parseResult.address ?? '';
-                    final amount = parseResult.amount ?? 0;
-
-                    if (address.isEmpty || amount <= 0) {
-                      _showSnackBar(context, 'Unable to parse QR code');
-                      return;
-                    }
-
-                    dialogOpen.value = true;
-
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        void _closeDialog() {
-                          Navigator.of(context).pop();
-                          dialogOpen.value = false;
-                        }
-
-                        return AlertDialog(
-                          title: Text('Send Lotus?'),
-                          content:
-                              Text('You will send $amount Lotus to $address'),
-                          actions: [
-                            TextButton(
-                              onPressed: _closeDialog,
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              child: const Text('Ok'),
-                              onPressed: () async {
-                                final transaction = await _sendTransaction(
-                                    context, address, amount);
-                                _showSnackBar(
-                                    context, 'Sent! TxId: ${transaction?.id}');
-                                _closeDialog();
-                              },
-                            )
-                          ],
-                        );
-                      },
-                    );
-                  });
-                },
+            Positioned(
+              top: 4,
+              child: ElevatedButton(
+                onPressed: () => context.pop(),
+                style: ElevatedButton.styleFrom(
+                  shape: CircleBorder(),
+                  primary: Colors.black26,
+                  elevation: 0,
+                  padding: EdgeInsets.all(12),
+                ),
+                child: Icon(Icons.close, color: Colors.white),
               ),
-            ),
+            )
           ],
         ),
       ),

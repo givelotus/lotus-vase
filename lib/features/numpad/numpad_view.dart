@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vase/components/numpad/numpad.dart';
 import 'package:vase/components/numpad/numpad_model.dart';
+import 'package:vase/tabs/component/balance_display.dart';
 
 class NumpadView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Expanded(
             child: Center(
               child: Consumer<NumpadModel>(
                 builder: (context, model, widget) {
@@ -31,44 +32,56 @@ class NumpadView extends StatelessWidget {
               ),
             ),
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          const Expanded(
             child: Center(child: NumpadWidget()),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+          const SizedBox(height: 16),
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(elevation: 0),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    padding: EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
                   child: Text(
                     'Request',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  onPressed: () {},
+                  onPressed: () => context.push('/receive'),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(elevation: 0),
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0,
+                    padding: EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
                   child: Text(
                     'Send',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   onPressed: () {},
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

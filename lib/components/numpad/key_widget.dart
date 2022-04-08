@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vase/config/theme.dart';
 
 class KeyWidgetOptions {
   final String label;
@@ -24,16 +25,15 @@ class KeyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: TextButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(40),
-        ),
+        shape: CircleBorder(),
       ),
       onPressed: onPressed,
       child: Text(
         label,
         style: TextStyle(
+          color: Theme.of(context).textTheme.button?.color,
           fontSize: 40,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
