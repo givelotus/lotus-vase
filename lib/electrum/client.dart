@@ -26,12 +26,11 @@ class ElectrumClient extends JSONRPCWebsocket {
   }
 
   Future<Object?> blockchainTransactionBroadcast(String transaction) {
-    return call('blockchain.transaction.broadcast', [transaction])
-        .then((value) => value);
+    return call('blockchain.transaction.broadcast', [transaction]);
   }
 
   Future<Object?> serverPing() {
-    return call('server.ping', []).then((value) => value);
+    return call('server.ping', []);
   }
 
   Future<List<ListUnspentResponseItem>> blockchainScripthashListunspent(
@@ -71,8 +70,7 @@ class ElectrumClient extends JSONRPCWebsocket {
   Future<Object?> blockchainScripthashSubscribe(
       String scripthash, SubscriptionHandler resultHandler) {
     return subscribe(
-            'blockchain.scripthash.subscribe', [scripthash], resultHandler)
-        .then((value) => value);
+        'blockchain.scripthash.subscribe', [scripthash], resultHandler);
   }
 }
 

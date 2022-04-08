@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:async';
 import 'dart:math';
 
 import 'package:json_annotation/json_annotation.dart';
@@ -30,7 +30,7 @@ class RPCRequest {
   @JsonKey(includeIfNull: true)
   final int? id;
   @JsonKey(includeIfNull: true)
-  final Object? params;
+  final dynamic params;
 
   RPCRequest(this.method, {this.id, this.params});
   factory RPCRequest.fromJson(Map<String, dynamic> json) =>
@@ -52,7 +52,7 @@ class Error implements Exception {
   @JsonKey(disallowNullValue: true)
   final String? message;
   @JsonKey(includeIfNull: true)
-  final Object? data;
+  final dynamic data;
 
   Error(this.code, this.message, {this.data});
   factory Error.fromJson(Map<String, dynamic> json) => _$ErrorFromJson(json);
@@ -69,7 +69,7 @@ class RPCResponse {
   @JsonKey(disallowNullValue: true)
   final String jsonrpc = '2.0';
   @JsonKey(includeIfNull: true)
-  final Object? result;
+  final dynamic result;
   @JsonKey(includeIfNull: true)
   final Error? error;
   @JsonKey(disallowNullValue: true)
@@ -82,7 +82,7 @@ class RPCResponse {
 }
 
 typedef ResponseHandler = void Function(RPCResponse response);
-typedef SubscriptionHandler = void Function(List<Object>? result);
+typedef SubscriptionHandler = void Function(List<dynamic> result);
 
 class GetBalanceResponse {
   GetBalanceResponse(this.confirmed, this.unconfirmed);
@@ -112,10 +112,10 @@ class JSONRPCWebsocket {
 
   void _handleNotification(RPCRequest notification) {
     final handler = subscriptions[notification.method!] ??
-        (List<Object>? params) {
+        (List<dynamic> params) {
           // TODO: Log error here - electrum misbehaving.
         };
-    handler(notification.params as List<Object>?);
+    handler(notification.params);
   }
 
   Future<void> connect(Uri address) async {
@@ -134,6 +134,11 @@ class JSONRPCWebsocket {
     request.headers.add('Sec-WebSocket-Key', key);
 
     final response = await request.close();
+
+    if (response.statusCode != 101) {
+      throw Exception('Bad response from server');
+    }
+
     // todo check the status code, key etc
     final socket = await response.detachSocket();
 
@@ -154,7 +159,7 @@ class JSONRPCWebsocket {
         return _handleNotification(notification);
       }
       return _handleResponse(response);
-    }, onError: (Object error) {
+    }, onError: (dynamic error) {
       print('RPC ERROR $error');
       if (disconnectHandler != null) {
         disconnectHandler!(error);
@@ -185,7 +190,7 @@ class JSONRPCWebsocket {
     return _rpcSocket;
   }
 
-  Future<dynamic> call(String method, Object params) {
+  Future<dynamic> call(String method, dynamic params) {
     final requestId = currentRequestId++;
     final completer = Completer();
 
@@ -207,7 +212,7 @@ class JSONRPCWebsocket {
   }
 
   Future<dynamic> subscribe(
-      String method, Object params, SubscriptionHandler handler) {
+      String method, dynamic params, SubscriptionHandler handler) {
     final requestId = currentRequestId++;
     final completer = Completer();
 
