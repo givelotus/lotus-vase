@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:vase/lotus/utils/sats.dart';
 
-import '../../../lotus/utils/format_amount.dart';
 import '../../constants.dart';
 import '../../wallet/wallet.dart';
 
@@ -43,7 +43,7 @@ class BalanceDisplay extends StatelessWidget {
                   );
                 }
                 return Text.rich(TextSpan(
-                  text: '${formatAmount(balance.balance)}',
+                  text: '${formatAmount(balance.balance ?? BigInt.zero)} ',
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,

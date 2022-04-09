@@ -4,28 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:vase/config/colors.dart';
-import 'package:vase/config/theme.dart';
-import 'package:vase/lotus/address.dart';
-import 'package:vase/lotus/transaction/transaction.dart';
+import 'package:vase/features/send/send_model.dart';
 import 'package:vase/lotus/utils/parse_uri.dart';
-import 'package:vase/viewmodel.dart';
 
 final qrKey = GlobalKey(debugLabel: 'QR');
 
 class QRScanPage extends HookWidget {
-  const QRScanPage();
-
-  Future<Transaction?> _sendTransaction(
-      BuildContext context, String address, int amount) async {
-    try {
-      final walletModel = context.read<WalletModel>();
-      return await walletModel.wallet
-          ?.sendTransaction(Address(address), BigInt.from(amount));
-    } catch (error) {
-      _showSnackBar(context, error.toString());
-      return null;
-    }
-  }
+  const QRScanPage({Key? key}) : super(key: key);
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -35,7 +20,7 @@ class QRScanPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dialogOpen = useState(false);
+    final scanned = useState(false);
     final overlay = QrScannerOverlayShape(
       borderColor: AppColors.lotusPink,
       borderRadius: 8,
@@ -51,52 +36,28 @@ class QRScanPage extends HookWidget {
               overlay: overlay,
               onQRViewCreated: (controller) {
                 controller.scannedDataStream.listen((scanData) async {
-                  if (dialogOpen.value) {
+                  // ensure we dont process multiple scan events
+                  if (scanned.value) {
                     return;
                   }
 
+                  scanned.value = true;
                   final parseResult = parseSendURI(scanData.code);
-                  final address = parseResult.address ?? '';
-                  final amount = parseResult.amount ?? 0;
+                  final address = parseResult.address;
+                  final amount = parseResult.amount;
 
-                  if (address.isEmpty || amount <= 0) {
+                  if (address.isEmpty || amount < BigInt.zero) {
                     _showSnackBar(context, 'Unable to parse QR code');
+                    scanned.value = false;
                     return;
                   }
 
-                  dialogOpen.value = true;
+                  final sendModel = context.read<SendModel>();
+                  sendModel.setAddress(address);
+                  sendModel.setAmount(amount);
 
-                  await showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      void _closeDialog() {
-                        Navigator.of(context).pop();
-                      }
-
-                      return AlertDialog(
-                        title: Text('Send Lotus?'),
-                        content:
-                            Text('You will send $amount Lotus to $address'),
-                        actions: [
-                          TextButton(
-                            onPressed: _closeDialog,
-                            child: const Text('CANCEL'),
-                          ),
-                          TextButton(
-                            child: const Text('OK'),
-                            onPressed: () async {
-                              final transaction = await _sendTransaction(
-                                  context, address, amount);
-                              _showSnackBar(
-                                  context, 'Sent! TxId: ${transaction?.id}');
-                              _closeDialog();
-                            },
-                          )
-                        ],
-                      );
-                    },
-                  );
-                  dialogOpen.value = false;
+                  context.push('/send');
+                  scanned.value = false;
                 });
               },
             ),
@@ -105,12 +66,12 @@ class QRScanPage extends HookWidget {
               child: ElevatedButton(
                 onPressed: () => context.pop(),
                 style: ElevatedButton.styleFrom(
-                  shape: CircleBorder(),
+                  shape: const CircleBorder(),
                   primary: Colors.black26,
                   elevation: 0,
-                  padding: EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(12),
                 ),
-                child: Icon(Icons.close, color: Colors.white),
+                child: const Icon(Icons.close, color: Colors.white),
               ),
             )
           ],

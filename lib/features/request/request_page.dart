@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:vase/components/numpad/numpad_model.dart';
 import 'package:vase/config/colors.dart';
 import 'package:vase/config/theme.dart';
+import 'package:vase/lotus/utils/sats.dart';
 import 'package:vase/viewmodel.dart';
 
 class RequestPage extends StatelessWidget {
@@ -17,7 +18,7 @@ class RequestPage extends StatelessWidget {
     return Uri(
         scheme: parsedAddress.scheme,
         path: parsedAddress.path,
-        queryParameters: {'amount': amount}).toString();
+        queryParameters: {'amount': '$lotusToSats(amount)'}).toString();
   }
 
   @override
@@ -58,13 +59,12 @@ class RequestPage extends StatelessWidget {
                     TextField(
                       readOnly: true,
                       decoration: const InputDecoration(
-                        labelText: 'Amount (XPI)',
+                        labelText: 'Amount',
                         labelStyle: TextStyle(color: AppColors.lotusPink),
                         border: InputBorder.none,
                       ),
-                      controller: TextEditingController(text: amount),
+                      controller: TextEditingController(text: '$amount XPI'),
                     ),
-                    const SizedBox(height: 16),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [

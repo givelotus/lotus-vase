@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import '../../../lotus/utils/format_amount.dart';
+import 'package:vase/lotus/utils/sats.dart';
 
 class PaymentAmountDisplay extends StatelessWidget {
   final int? amount;
@@ -27,7 +25,7 @@ class PaymentAmountDisplay extends StatelessWidget {
       Row(children: [
         Expanded(
             child: Text(
-          '= ${formatAmount(amount)}',
+          '= ${formatAmount(BigInt.from(amount ?? 0))}',
           textAlign: TextAlign.right,
           style: TextStyle(
               fontSize: Theme.of(context).textTheme.headline5!.fontSize,

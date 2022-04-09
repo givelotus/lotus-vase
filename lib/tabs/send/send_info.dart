@@ -93,7 +93,7 @@ class SendInfo extends StatelessWidget {
 
         // Use the unparsed version, so that it appears as it was originally copied
         sendModel.sendToAddress = parseResult.address ?? '';
-        sendModel.sendAmount = parseResult.amount ?? 0;
+        sendModel.sendAmount = parseResult.amount.toInt() ?? 0;
 
         keyboardNotifier.value = CalculatorData(
             amount: sendModel.sendAmount,
@@ -160,7 +160,8 @@ class SendInfo extends StatelessWidget {
                                   final errs = canSend(
                                       viewModel.sendAmount ?? 0,
                                       viewModel.sendToAddress ?? '',
-                                      walletModel.balance!.balance ?? 0);
+                                      walletModel.balance!.balance?.toInt() ??
+                                          0);
 
                                   viewModel.errors = errs;
 

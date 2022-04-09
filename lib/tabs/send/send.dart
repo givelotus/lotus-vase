@@ -64,7 +64,7 @@ class _SendTabState extends State<SendTab> {
 
             // Use the unparsed version, so that it appears as it was originally copied
             viewModel.sendToAddress = parseResult.address ?? '';
-            viewModel.sendAmount = parseResult.amount;
+            viewModel.sendAmount = parseResult.amount.toInt();
 
             Navigator.push(
                 context,

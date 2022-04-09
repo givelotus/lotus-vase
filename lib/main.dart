@@ -8,10 +8,10 @@ import 'package:vase/components/numpad/numpad_model.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
 import 'package:vase/features/qr_scan/qr_scan_page.dart';
-import 'package:vase/features/receive/receive_page.dart';
 import 'package:vase/features/request/request_page.dart';
+import 'package:vase/features/send/send_model.dart';
+import 'package:vase/features/send/send_page.dart';
 import 'package:vase/features/settings/settings_page.dart';
-import 'package:vase/tabs/send/sendModel.dart';
 import 'package:vase/viewmodel.dart';
 
 void main() async {
@@ -36,6 +36,8 @@ void main() async {
 }
 
 class VaseApp extends StatelessWidget {
+  VaseApp({Key? key}) : super(key: key);
+
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -45,6 +47,7 @@ class VaseApp extends StatelessWidget {
       GoRoute(path: '/settings', builder: (ctx, state) => const SettingsPage()),
       GoRoute(path: '/qrscan', builder: (ctx, state) => const QRScanPage()),
       GoRoute(path: '/request', builder: (ctx, state) => const RequestPage()),
+      GoRoute(path: '/send', builder: (ctx, state) => const SendPage()),
     ],
   );
 

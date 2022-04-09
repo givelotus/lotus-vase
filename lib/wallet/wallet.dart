@@ -17,7 +17,7 @@ class TransactionMetadata {
 }
 
 class WalletBalance {
-  int? balance;
+  BigInt? balance;
   dynamic error;
 
   WalletBalance({this.balance, this.error});
@@ -39,7 +39,7 @@ class Wallet {
 
   final Vault _vault = Vault([]);
 
-  int _balance = 0;
+  BigInt _balance = BigInt.zero;
 
   /// Gets the fees per byte.
   Future<BigInt> fetchFeePerByte() async {
@@ -120,7 +120,7 @@ class Wallet {
 
   /// Use locally stored UTXOs to refresh balance.
   void refreshBalanceLocal() {
-    _balance = _vault.calculateBalance().toInt();
+    _balance = _vault.calculateBalance();
     updateBalance(WalletBalance(balance: _balance));
   }
 
@@ -138,7 +138,7 @@ class Wallet {
     refreshBalanceLocal();
   }
 
-  int balanceSatoshis() {
+  BigInt balanceSatoshis() {
     return _balance;
   }
 

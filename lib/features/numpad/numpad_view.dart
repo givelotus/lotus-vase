@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:vase/components/numpad/numpad.dart';
 import 'package:vase/components/numpad/numpad_model.dart';
 import 'package:vase/config/colors.dart';
+import 'package:vase/features/send/send_model.dart';
+import 'package:vase/lotus/utils/sats.dart';
 import 'package:vase/viewmodel.dart';
 
 class NumpadView extends HookWidget {
@@ -73,7 +75,7 @@ class NumpadView extends HookWidget {
                     ),
                   )
                 : Text(
-                    '${walletModel.balance?.balance} XPI',
+                    formatAmount(walletModel.balance?.balance ?? BigInt.zero),
                     textAlign: TextAlign.center,
                   ),
           ),
@@ -127,7 +129,7 @@ class NumpadView extends HookWidget {
                           final walletModel = context.read<WalletModel>();
                           final numpadModel = context.read<NumpadModel>();
                           final balance = walletModel.balance?.balance;
-                          final amount = double.parse(numpadModel.value);
+                          final amount = lotusToSats(numpadModel.value);
 
                           if (balance == null || balance <= amount) {
                             controller.forward(from: 0);
@@ -137,6 +139,8 @@ class NumpadView extends HookWidget {
                             return;
                           }
 
+                          final sendModel = context.read<SendModel>();
+                          sendModel.setAmount(amount);
                           context.push('/send');
                         },
                 ),
