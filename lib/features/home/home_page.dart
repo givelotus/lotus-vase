@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:vase/config/features.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/numpad/numpad_view.dart';
+import 'package:vase/features/send/send_model.dart';
 
 class HomePage extends HookWidget {
   const HomePage({Key? key}) : super(key: key);
-
-  Function(int) _navigationTapped(PageController controller) => (int idx) {
-        controller.animateToPage(idx,
-            duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
-      };
 
   Function(int) _onPageChanged(ValueNotifier navBarIdx) => (int idx) {
         navBarIdx.value = idx;
@@ -28,9 +25,10 @@ class HomePage extends HookWidget {
         leading: IconButton(
           splashRadius: AppTheme.splashRadius,
           onPressed: () {
-            context.push('/qrscan');
+            context.read<SendModel>().setAmount(null);
+            context.push('/send?scan=true');
           },
-          icon: const Icon(Icons.qr_code_scanner),
+          icon: const Icon(Icons.qr_code),
         ),
         title: Image.asset(
           'assets/images/logo.png',
@@ -67,27 +65,10 @@ class HomePage extends HookWidget {
       body: PageView(
         controller: pageController,
         onPageChanged: _onPageChanged(navBarIndex),
-        children: [
+        children: const [
           NumpadView(),
         ],
       ),
-
-      // bottomNavigationBar: BottomNavigationBar(
-      //   onTap: _navigationTapped(pageController),
-      //   currentIndex: navBarIndex.value,
-      //   showSelectedLabels: false,
-      //   showUnselectedLabels: false,
-      //   items: [
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.app_registration_rounded),
-      //       label: 'Transfer',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.wallet_travel),
-      //       label: 'Wallet',
-      //     ),
-      //   ],
-      // ),
     );
   }
 }

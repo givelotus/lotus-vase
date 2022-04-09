@@ -123,26 +123,24 @@ class NumpadView extends HookWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  onPressed: loading
-                      ? null
-                      : () async {
-                          final walletModel = context.read<WalletModel>();
-                          final numpadModel = context.read<NumpadModel>();
-                          final balance = walletModel.balance?.balance;
-                          final amount = lotusToSats(numpadModel.value);
+                  onPressed: () async {
+                    final walletModel = context.read<WalletModel>();
+                    final numpadModel = context.read<NumpadModel>();
+                    final balance = walletModel.balance?.balance;
+                    final amount = lotusToSats(numpadModel.value);
 
-                          if (balance == null || balance <= amount) {
-                            controller.forward(from: 0);
-                            if (await Vibrate.canVibrate) {
-                              Vibrate.feedback(FeedbackType.heavy);
-                            }
-                            return;
-                          }
+                    // if (balance == null || balance <= amount) {
+                    //   controller.forward(from: 0);
+                    //   if (await Vibrate.canVibrate) {
+                    //     Vibrate.feedback(FeedbackType.heavy);
+                    //   }
+                    //   return;
+                    // }
 
-                          final sendModel = context.read<SendModel>();
-                          sendModel.setAmount(amount);
-                          context.push('/send');
-                        },
+                    final sendModel = context.read<SendModel>();
+                    sendModel.setAmount(amount);
+                    context.push('/send');
+                  },
                 ),
               ),
             ],

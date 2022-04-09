@@ -1,8 +1,14 @@
+import 'package:intl/intl.dart';
+
 const satsPerLotus = 1000000;
 final lotusPerSat = BigInt.from(1) / BigInt.from(satsPerLotus);
 
+final NumberFormat _formatter = NumberFormat()
+  ..minimumFractionDigits = 0
+  ..maximumFractionDigits = 8;
+
 String formatAmount(BigInt amount) {
-  return '${amount.toInt() * lotusPerSat} XPI';
+  return '${_formatter.format(amount.toInt() * lotusPerSat)} XPI';
 }
 
 BigInt lotusToSats(String amount) {
