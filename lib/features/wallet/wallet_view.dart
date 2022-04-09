@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vase/components/numpad/numpad_model.dart';
+import 'package:vase/features/numpad/numpad_model.dart';
 
 class WalletView extends StatelessWidget {
   @override

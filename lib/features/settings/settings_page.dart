@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/constants.dart';
 import 'package:vase/lotus/bip39/bip39.dart';
-import 'package:vase/viewmodel.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 
 final packageInfoFuture = PackageInfo.fromPlatform();
 

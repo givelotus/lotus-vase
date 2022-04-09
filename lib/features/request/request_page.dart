@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:vase/components/numpad/numpad_model.dart';
+import 'package:vase/features/numpad/numpad_model.dart';
 import 'package:vase/config/colors.dart';
 import 'package:vase/config/theme.dart';
-import 'package:vase/lotus/utils/sats.dart';
-import 'package:vase/viewmodel.dart';
+import 'package:vase/utils/currency.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 
 class RequestPage extends StatelessWidget {
   const RequestPage({Key? key}) : super(key: key);

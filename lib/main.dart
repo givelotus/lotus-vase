@@ -5,14 +5,14 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:vase/components/numpad/numpad_model.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
+import 'package:vase/features/numpad/numpad_model.dart';
 import 'package:vase/features/request/request_page.dart';
 import 'package:vase/features/send/send_model.dart';
 import 'package:vase/features/send/send_page.dart';
 import 'package:vase/features/settings/settings_page.dart';
-import 'package:vase/viewmodel.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,10 +82,17 @@ class LifecycleWatcher extends HookWidget {
   Widget build(BuildContext context) {
     useOnAppLifecycleStateChange(
       (prev, curr) async {
-        if (curr == AppLifecycleState.resumed) {
+        // run on all state changes but detached
+        if (curr != AppLifecycleState.detached) {
           final walletModel = context.read<WalletModel>();
+
           if (walletModel.initialized) {
-            walletModel.updateWallet();
+            await walletModel.writeToDisk();
+
+            // only update balance on resume
+            if (curr == AppLifecycleState.resumed) {
+              await walletModel.updateWallet();
+            }
           }
         }
       },

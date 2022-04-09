@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 
 const satsPerLotus = 1000000;
@@ -14,4 +15,8 @@ String formatAmount(BigInt amount) {
 BigInt lotusToSats(String amount) {
   final parsed = double.tryParse(amount) ?? 0;
   return BigInt.from((parsed * satsPerLotus).truncate());
+}
+
+List<String> formatNumpadInput(UnmodifiableListView<String> items) {
+  return _formatter.format(double.tryParse(items.join()) ?? 0).split('');
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:provider/provider.dart';
-import 'package:vase/components/numpad/key_widget.dart';
-import 'package:vase/components/numpad/numpad_model.dart';
+import 'package:vase/features/numpad/key_widget.dart';
+import 'package:vase/features/numpad/numpad_model.dart';
 
 enum KeyValue {
   Zero,

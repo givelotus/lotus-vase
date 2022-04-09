@@ -5,12 +5,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:vase/components/numpad/numpad.dart';
-import 'package:vase/components/numpad/numpad_model.dart';
+import 'package:vase/features/numpad/numpad.dart';
+import 'package:vase/features/numpad/numpad_model.dart';
 import 'package:vase/config/colors.dart';
 import 'package:vase/features/send/send_model.dart';
-import 'package:vase/lotus/utils/sats.dart';
-import 'package:vase/viewmodel.dart';
+import 'package:vase/utils/currency.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 
 class NumpadView extends HookWidget {
   const NumpadView({Key? key}) : super(key: key);
@@ -39,11 +39,21 @@ class NumpadView extends HookWidget {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: numpadModel.items
+                          children: formatNumpadInput(numpadModel.items)
                               .map((e) => Text(
                                     e,
-                                    style: const TextStyle(
-                                      fontSize: 80,
+                                    style: TextStyle(
+                                      fontSize: max(
+                                        72,
+                                        (96 -
+                                                (max(
+                                                        numpadModel
+                                                                .items.length -
+                                                            5,
+                                                        0)) *
+                                                    12)
+                                            .toDouble(),
+                                      ),
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ))

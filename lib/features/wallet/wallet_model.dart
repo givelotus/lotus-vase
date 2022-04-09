@@ -8,7 +8,7 @@ import 'package:vase/lotus/lotus.dart';
 import 'package:vase/wallet/keys.dart';
 import 'package:vase/wallet/wallet.dart';
 
-import 'electrum/client.dart';
+import '../../electrum/client.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 

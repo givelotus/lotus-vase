@@ -11,8 +11,8 @@ import 'package:vase/features/send/qr_view.dart';
 import 'package:vase/features/send/send_model.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/lotus/utils/parse_uri.dart';
-import 'package:vase/lotus/utils/sats.dart';
-import 'package:vase/viewmodel.dart';
+import 'package:vase/utils/currency.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 
 final qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -34,7 +34,6 @@ class SendPage extends HookWidget {
     final addressCtrl = useTextEditingController();
     addressCtrl.text = sendModel.address;
     final sendEnabled = amount != null && addressCtrl.text.isNotEmpty;
-    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
