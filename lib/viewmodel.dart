@@ -209,20 +209,6 @@ class WalletModel with ChangeNotifier {
     _seed = await readSeedFromDisk();
     _password = await readPasswordFromDisk();
 
-    // Read root key to avoid regenerating from seed
-    final xprivHex = await (_storage.read(key: STORAGE_XPUB_KEY)) ?? '';
-    final rootKey = HDPrivateKey.fromXpriv(xprivHex);
-
-    // Convert to key info
-    final childKeys = constructChildKeys(
-      rootKey: rootKey,
-      network: network,
-      // TODO: maybe this should be configurable and saved/restored
-      // However, it would be *nice* if we had a dynamic way to calculate
-      // more keys when loading the balance.
-      childKeyCount: defaultNumberOfChildKeys,
-    );
-
-    return Keys(seed, password, rootKey, childKeys, network: network);
+    return Keys.construct(_seed, _password);
   }
 }
