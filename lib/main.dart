@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -12,6 +11,7 @@ import 'package:vase/features/request/request_page.dart';
 import 'package:vase/features/send/send_model.dart';
 import 'package:vase/features/send/send_page.dart';
 import 'package:vase/features/settings/settings_page.dart';
+import 'package:vase/features/wallet/wallet_lifecycle_watcher.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
 
 void main() async {
@@ -62,7 +62,7 @@ class VaseApp extends StatelessWidget {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    return LifecycleWatcher(
+    return WalletLifecycleWatcher(
       child: MaterialApp.router(
         title: 'Vase',
         theme: AppTheme.lotusTheme,
@@ -70,33 +70,5 @@ class VaseApp extends StatelessWidget {
         routerDelegate: router.routerDelegate,
       ),
     );
-  }
-}
-
-class LifecycleWatcher extends HookWidget {
-  const LifecycleWatcher({Key? key, required this.child}) : super(key: key);
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    useOnAppLifecycleStateChange(
-      (prev, curr) async {
-        // run on all state changes but detached
-        if (curr != AppLifecycleState.detached) {
-          final walletModel = context.read<WalletModel>();
-
-          if (walletModel.initialized) {
-            await walletModel.writeToDisk();
-
-            // only update balance on resume
-            if (curr == AppLifecycleState.resumed) {
-              await walletModel.updateWallet();
-            }
-          }
-        }
-      },
-    );
-    return child;
   }
 }

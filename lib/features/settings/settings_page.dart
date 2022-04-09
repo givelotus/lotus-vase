@@ -7,7 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vase/config/theme.dart';
-import 'package:vase/constants.dart';
+import 'package:vase/config/constants.dart';
 import 'package:vase/lotus/bip39/bip39.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
 

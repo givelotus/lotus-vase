@@ -4,11 +4,10 @@ import 'package:intl/intl.dart';
 const satsPerLotus = 1000000;
 final lotusPerSat = BigInt.from(1) / BigInt.from(satsPerLotus);
 
-final NumberFormat _formatter = NumberFormat()
-  ..minimumFractionDigits = 0
-  ..maximumFractionDigits = 8;
+final NumberFormat _formatter = NumberFormat()..maximumFractionDigits = 8;
 
 String formatAmount(BigInt amount) {
+  _formatter.minimumFractionDigits = 0;
   return '${_formatter.format(amount.toInt() * lotusPerSat)} XPI';
 }
 
@@ -18,5 +17,11 @@ BigInt lotusToSats(String amount) {
 }
 
 List<String> formatNumpadInput(UnmodifiableListView<String> items) {
-  return _formatter.format(double.tryParse(items.join()) ?? 0).split('');
+  final suffix = items.last == '.' ? '.' : '';
+  final fractions = items.length - items.indexOf('.');
+  final fractionDigits =
+      fractions > 0 && fractions < items.length ? fractions - 1 : 0;
+  _formatter.minimumFractionDigits = fractionDigits;
+  return (_formatter.format(double.tryParse(items.join()) ?? 0) + suffix)
+      .split('');
 }

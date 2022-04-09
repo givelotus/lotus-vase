@@ -6,7 +6,7 @@ import 'package:vase/lotus/lotus.dart';
 import 'package:vase/wallet/vault.dart';
 import 'package:hex/hex.dart';
 
-import '../constants.dart';
+import '../config/constants.dart';
 import 'keys.dart';
 import '../electrum/client.dart';
 

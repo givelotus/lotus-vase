@@ -127,7 +127,7 @@ class SendPage extends HookWidget {
                           ),
                           onPressed: () async {
                             final data = await Clipboard.getData('text/plain');
-                            addressCtrl.text = data?.text ?? '';
+                            sendModel.setAddress(data?.text ?? '');
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Pasted address from clipboard'),

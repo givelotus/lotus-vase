@@ -66,6 +66,9 @@ final backValidator = (NumpadModel model) =>
     model.items.length > 1 ||
     (model.items.length == 1 && model.items.first != '0');
 
+bool zeroValidator(NumpadModel model) =>
+    defaultValidator(model) && backValidator(model);
+
 final backOperation = (NumpadModel model) {
   model.removeLast();
 };
@@ -108,6 +111,12 @@ class NumpadWidget extends StatelessWidget {
   void Function() _handleClick(NumpadModel model, KeyValue value) => () {
         switch (value) {
           case KeyValue.Zero:
+            if (zeroValidator(model)) {
+              defaultOperation(model, value);
+            } else {
+              _vibrate();
+            }
+            break;
           case KeyValue.One:
           case KeyValue.Two:
           case KeyValue.Three:

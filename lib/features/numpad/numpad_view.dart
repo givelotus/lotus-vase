@@ -44,7 +44,7 @@ class NumpadView extends HookWidget {
                                     e,
                                     style: TextStyle(
                                       fontSize: max(
-                                        72,
+                                        45,
                                         (96 -
                                                 (max(
                                                         numpadModel
