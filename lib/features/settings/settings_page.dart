@@ -114,83 +114,81 @@ class SettingsPage extends HookWidget {
     void showEnterSeedDialog() {
       showDialog(
         context: context,
-        builder: (context) => SimpleDialog(
+        builder: (context) => AlertDialog(
           title: const Text('Enter Seed Phrase'),
           contentPadding: stdPadding,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
-              child: Text('Seed'),
-            ),
-            Row(
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    maxLines: null,
-                    minLines: 2,
-                    controller: newSeedController,
-                    readOnly: false,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-                padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
-                child: Text(
-                  'Password (Optional)',
-                )),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    maxLines: null,
-                    minLines: 2,
-                    controller: newPasswordController,
-                    readOnly: false,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Container(
+                Padding(
                   padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
-                  height: 60.0,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      final mnemonicGenerator = Mnemonic();
-                      final enteredSeed =
-                          newSeedController.text.trim().toLowerCase();
-                      final enteredPassword =
-                          newPasswordController.text.trim().toLowerCase();
-
-                      if (!mnemonicGenerator.validateMnemonic(enteredSeed)) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Invalid Seed Phrase'),
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
-                        return;
-                      }
-
-                      final walletModel = context.read<WalletModel>();
-                      // This will regenerate everything
-                      walletModel.setSeed(enteredSeed,
-                          password: enteredPassword);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Save'),
-                  ),
+                  child: Text('Seed'),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        maxLines: null,
+                        minLines: 2,
+                        controller: newSeedController,
+                        readOnly: false,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                    padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
+                    child: Text(
+                      'Password (Optional)',
+                    )),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        maxLines: null,
+                        minLines: 2,
+                        controller: newPasswordController,
+                        readOnly: false,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            )
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                final mnemonicGenerator = Mnemonic();
+                final enteredSeed = newSeedController.text.trim().toLowerCase();
+                final enteredPassword =
+                    newPasswordController.text.trim().toLowerCase();
+
+                if (!mnemonicGenerator.validateMnemonic(enteredSeed)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Invalid Seed Phrase'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                  return;
+                }
+
+                final walletModel = context.read<WalletModel>();
+                // This will regenerate everything
+                walletModel.setSeed(enteredSeed, password: enteredPassword);
+                Navigator.of(context).pop();
+              },
+              child: Text('Save'),
+            ),
           ],
         ),
       );

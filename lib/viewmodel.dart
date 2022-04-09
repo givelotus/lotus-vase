@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:vase/lotus/lotus.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import 'package:vase/wallet/wallet.dart';
-import 'package:vase/wallet/keys.dart';
 import 'package:vase/constants.dart';
+import 'package:vase/lotus/lotus.dart';
+import 'package:vase/wallet/keys.dart';
+import 'package:vase/wallet/wallet.dart';
 
 import 'electrum/client.dart';
 
@@ -43,7 +42,7 @@ class WalletModel with ChangeNotifier {
   WalletModel()
       : _storage = const FlutterSecureStorage(),
         balance = WalletBalance() {
-    initializeModel(); // Run in background.
+    initializeModel();
   }
 
   Future<void> initializeModel() async {
@@ -121,13 +120,11 @@ class WalletModel with ChangeNotifier {
   }
 
   Future<String?> readSchemaVersion() {
-    const storage = FlutterSecureStorage();
-    return storage.read(key: SCHEMA_VERSION_KEY);
+    return _storage.read(key: SCHEMA_VERSION_KEY);
   }
 
   Future<void> writeSchemaVersion() {
-    const storage = FlutterSecureStorage();
-    return storage.write(
+    return _storage.write(
         key: SCHEMA_VERSION_KEY, value: CURRENT_SCHEMA_VERSION);
   }
 

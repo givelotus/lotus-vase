@@ -17,8 +17,8 @@ class NumpadView extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final walletModel = context.watch<WalletModel>();
-    final loading = walletModel.balance?.balance == null;
+    final balance =
+        context.select<WalletModel, BigInt?>((model) => model.balance?.balance);
     final controller =
         useAnimationController(duration: const Duration(milliseconds: 200));
     return Padding(
@@ -64,7 +64,7 @@ class NumpadView extends HookWidget {
               borderRadius: BorderRadius.circular(40),
               color: AppColors.lotusPurple1,
             ),
-            child: loading
+            child: balance == null
                 ? const Center(
                     child: SizedBox(
                       height: 16,
@@ -75,7 +75,7 @@ class NumpadView extends HookWidget {
                     ),
                   )
                 : Text(
-                    formatAmount(walletModel.balance?.balance ?? BigInt.zero),
+                    formatAmount(balance),
                     textAlign: TextAlign.center,
                   ),
           ),
@@ -129,13 +129,13 @@ class NumpadView extends HookWidget {
                     final balance = walletModel.balance?.balance;
                     final amount = lotusToSats(numpadModel.value);
 
-                    // if (balance == null || balance <= amount) {
-                    //   controller.forward(from: 0);
-                    //   if (await Vibrate.canVibrate) {
-                    //     Vibrate.feedback(FeedbackType.heavy);
-                    //   }
-                    //   return;
-                    // }
+                    if (balance == null || balance <= amount) {
+                      controller.forward(from: 0);
+                      if (await Vibrate.canVibrate) {
+                        Vibrate.feedback(FeedbackType.heavy);
+                      }
+                      return;
+                    }
 
                     final sendModel = context.read<SendModel>();
                     sendModel.setAmount(amount);
