@@ -36,13 +36,13 @@ class WalletModel with ChangeNotifier {
   // Internally use a ValueNotifier here, as we don't want the entire wallet
   // to refresh when this field is updated.
   // We should probably introduce a secondary model of some sort.
-  final ValueNotifier<WalletBalance?> balance;
+  WalletBalance? balance;
   final FlutterSecureStorage _storage;
 
   // TODO: Storage should be injected
   WalletModel()
-      : _storage = FlutterSecureStorage(),
-        balance = ValueNotifier<WalletBalance?>(WalletBalance()) {
+      : _storage = const FlutterSecureStorage(),
+        balance = WalletBalance() {
     initializeModel(); // Run in background.
   }
 
@@ -74,7 +74,10 @@ class WalletModel with ChangeNotifier {
       // Don't notify listeners. Initialize will do that
       _wallet = await generateNewWallet(_seed, password: _password);
     }
-    wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+    wallet!.balanceUpdateHandler = (balance) {
+      this.balance = balance;
+      notifyListeners();
+    };
     wallet!.initialize();
     initialized = true;
   }
@@ -94,12 +97,15 @@ class WalletModel with ChangeNotifier {
   void setSeed(String newValue, {String password = ''}) {
     _seed = newValue;
     _password = password;
-    balance.value = null;
+    balance = null;
     _initialized = false;
     notifyListeners();
     generateNewWallet(_seed, password: _password).then((newWallet) {
       _wallet = newWallet;
-      wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+      wallet!.balanceUpdateHandler = (balance) {
+        this.balance = balance;
+        notifyListeners();
+      };
       wallet!.initialize();
       initialized = true;
     });
@@ -115,12 +121,12 @@ class WalletModel with ChangeNotifier {
   }
 
   Future<String?> readSchemaVersion() {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     return storage.read(key: SCHEMA_VERSION_KEY);
   }
 
   Future<void> writeSchemaVersion() {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     return storage.write(
         key: SCHEMA_VERSION_KEY, value: CURRENT_SCHEMA_VERSION);
   }

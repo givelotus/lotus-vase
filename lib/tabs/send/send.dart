@@ -99,13 +99,13 @@ class _SendTabState extends State<SendTab> {
                     ),
                   )),
         ),
-        Positioned(
-          top: topPadding,
-          child: Container(
-              constraints: BoxConstraints(maxWidth: screenDimension.width),
-              padding: stdPadding,
-              child: BalanceDisplay(balanceNotifier: balanceNotifier)),
-        ),
+        // Positioned(
+        //   top: topPadding,
+        //   child: Container(
+        //       constraints: BoxConstraints(maxWidth: screenDimension.width),
+        //       padding: stdPadding,
+        //       child: BalanceDisplay(balanceNotifier: balanceNotifier)),
+        // ),
         Positioned(
           bottom: 35.0,
           left: 20.0,

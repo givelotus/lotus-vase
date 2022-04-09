@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
-const MAX_LENGTH = 9;
+const maxLength = 7;
 
 class NumpadModel extends ChangeNotifier {
   final List<String> _items = ['0'];
@@ -11,8 +11,8 @@ class NumpadModel extends ChangeNotifier {
   String get value => _items.join();
 
   void addValue(String value) {
-    if (_items.length < MAX_LENGTH) {
-      if (_items.length == 1 && _items.first == '0') {
+    if (_items.length < maxLength) {
+      if (_items.length == 1 && _items.first == '0' && value != '.') {
         _items.removeLast();
       }
       _items.add(value);

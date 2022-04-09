@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:provider/provider.dart';
 import 'package:vase/components/numpad/key_widget.dart';
 import 'package:vase/components/numpad/numpad_model.dart';
@@ -55,13 +56,15 @@ final defaultOperation = (NumpadModel model, KeyValue value) {
   model.addValue(value.value);
 };
 
-final defaultValidator = (NumpadModel model) => model.items.length < MAX_LENGTH;
+final defaultValidator = (NumpadModel model) => model.items.length < maxLength;
 
 final periodValidator = (NumpadModel model) =>
     defaultValidator(model) &&
     model.items.indexWhere((element) => element == KeyValue.Period.value) == -1;
 
-final backValidator = (NumpadModel model) => model.items.isNotEmpty;
+final backValidator = (NumpadModel model) =>
+    model.items.length > 1 ||
+    (model.items.length == 1 && model.items.first != '0');
 
 final backOperation = (NumpadModel model) {
   model.removeLast();
@@ -91,7 +94,16 @@ final List<List<KeyValue>> rows = [
 ];
 
 class NumpadWidget extends StatelessWidget {
-  const NumpadWidget({Key? key}) : super(key: key);
+  const NumpadWidget({Key? key, required this.controller}) : super(key: key);
+
+  final AnimationController controller;
+
+  void _vibrate() async {
+    controller.forward(from: 0);
+    if (await Vibrate.canVibrate) {
+      Vibrate.feedback(FeedbackType.heavy);
+    }
+  }
 
   void Function() _handleClick(NumpadModel model, KeyValue value) => () {
         switch (value) {
@@ -105,20 +117,24 @@ class NumpadWidget extends StatelessWidget {
           case KeyValue.Seven:
           case KeyValue.Eight:
           case KeyValue.Nine:
-            print('in case');
             if (defaultValidator(model)) {
-              print('operating');
               defaultOperation(model, value);
+            } else {
+              _vibrate();
             }
             break;
           case KeyValue.Period:
             if (periodValidator(model)) {
               defaultOperation(model, value);
+            } else {
+              _vibrate();
             }
             break;
           case KeyValue.Back:
             if (backValidator(model)) {
               backOperation(model);
+            } else {
+              _vibrate();
             }
             break;
           default:

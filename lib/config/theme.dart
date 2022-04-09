@@ -8,7 +8,7 @@ class AppTheme {
       primary: AppColors.lotusPink,
       secondary: AppColors.lotusPink,
     ),
-    scaffoldBackgroundColor: AppColors.lotusPurple3,
+    scaffoldBackgroundColor: AppColors.lotusPurple4,
     textTheme: const TextTheme(
       bodyText1: TextStyle(
         color: Colors.white,

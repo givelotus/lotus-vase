@@ -4,14 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:vase/config/features.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/numpad/numpad_view.dart';
-import 'package:vase/features/wallet/wallet_view.dart';
 
 class HomePage extends HookWidget {
-  const HomePage();
+  const HomePage({Key? key}) : super(key: key);
 
   Function(int) _navigationTapped(PageController controller) => (int idx) {
         controller.animateToPage(idx,
-            duration: Duration(milliseconds: 200), curve: Curves.easeIn);
+            duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
       };
 
   Function(int) _onPageChanged(ValueNotifier navBarIdx) => (int idx) {
@@ -31,15 +30,21 @@ class HomePage extends HookWidget {
           onPressed: () {
             context.push('/qrscan');
           },
-          icon: Icon(Icons.qr_code_scanner),
+          icon: const Icon(Icons.qr_code_scanner),
         ),
+        title: Image.asset(
+          'assets/images/logo.png',
+          width: 40,
+          height: 40,
+        ),
+        centerTitle: true,
         actions: [
           Visibility(
             visible: FeatureFlags.profiles,
             child: IconButton(
               splashRadius: AppTheme.splashRadius,
               onPressed: () {},
-              icon: Icon(Icons.face),
+              icon: const Icon(Icons.face),
             ),
           ),
           Visibility(
@@ -47,7 +52,7 @@ class HomePage extends HookWidget {
             child: IconButton(
               splashRadius: AppTheme.splashRadius,
               onPressed: () {},
-              icon: Icon(Icons.notifications),
+              icon: const Icon(Icons.notifications),
             ),
           ),
           IconButton(
@@ -55,7 +60,7 @@ class HomePage extends HookWidget {
             onPressed: () {
               context.push('/settings');
             },
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
           ),
         ],
       ),
@@ -64,7 +69,6 @@ class HomePage extends HookWidget {
         onPageChanged: _onPageChanged(navBarIndex),
         children: [
           NumpadView(),
-          // WalletView(),
         ],
       ),
 

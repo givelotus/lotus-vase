@@ -211,7 +211,7 @@ class SettingsPage extends HookWidget {
         leading: IconButton(
           splashRadius: AppTheme.splashRadius,
           onPressed: () => context.pop(),
-          icon: Icon(Icons.navigate_before),
+          icon: const Icon(Icons.navigate_before),
         ),
         title: const Text(
           'Settings',

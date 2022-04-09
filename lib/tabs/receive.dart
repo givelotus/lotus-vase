@@ -104,7 +104,7 @@ class ReceiveTab extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BalanceDisplay(balanceNotifier: balanceNotifier),
+          // BalanceDisplay(balanceNotifier: balanceNotifier),
           Text(
             'Receive Funds',
             style: Theme.of(context).textTheme.headline6,

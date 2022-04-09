@@ -9,6 +9,7 @@ import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
 import 'package:vase/features/qr_scan/qr_scan_page.dart';
 import 'package:vase/features/receive/receive_page.dart';
+import 'package:vase/features/request/request_page.dart';
 import 'package:vase/features/settings/settings_page.dart';
 import 'package:vase/tabs/send/sendModel.dart';
 import 'package:vase/viewmodel.dart';
@@ -43,7 +44,7 @@ class VaseApp extends StatelessWidget {
       ),
       GoRoute(path: '/settings', builder: (ctx, state) => const SettingsPage()),
       GoRoute(path: '/qrscan', builder: (ctx, state) => const QRScanPage()),
-      GoRoute(path: '/receive', builder: (ctx, state) => const ReceivePage()),
+      GoRoute(path: '/request', builder: (ctx, state) => const RequestPage()),
     ],
   );
 

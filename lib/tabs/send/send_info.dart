@@ -145,7 +145,7 @@ class SendInfo extends StatelessWidget {
                         style: TextStyle(color: Colors.red, fontSize: 15),
                       ),
                     ),
-                  BalanceDisplay(balanceNotifier: balanceNotifier),
+                  // BalanceDisplay(balanceNotifier: balanceNotifier),
                   AddressDisplay(onTap: pasteAddress),
                   PaymentAmountDisplay(
                       amount: viewModel.sendAmount ?? 0,
@@ -160,7 +160,7 @@ class SendInfo extends StatelessWidget {
                                   final errs = canSend(
                                       viewModel.sendAmount ?? 0,
                                       viewModel.sendToAddress ?? '',
-                                      walletModel.balance.value!.balance ?? 0);
+                                      walletModel.balance!.balance ?? 0);
 
                                   viewModel.errors = errs;
 
