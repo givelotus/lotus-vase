@@ -5,7 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:pointycastle/digests/sha256.dart';
 
 import 'package:vase/lotus/lotus.dart';
-import 'package:vase/constants.dart' as constants;
+import 'package:vase/config/constants.dart' as constants;
 
 Uint8List calculateScriptHash(Address? address) {
   final p2pkhBuilder = P2PKHLockBuilder(address);

@@ -2,6 +2,8 @@ PODS:
   - Flutter (1.0.0)
   - flutter_secure_storage (3.3.1):
     - Flutter
+  - flutter_vibrate (0.0.1):
+    - Flutter
   - MTBBarcodeScanner (5.0.11)
   - package_info_plus (0.4.5):
     - Flutter
@@ -21,6 +23,7 @@ PODS:
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - flutter_vibrate (from `.symlinks/plugins/flutter_vibrate/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - qr_code_scanner (from `.symlinks/plugins/qr_code_scanner/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
@@ -36,6 +39,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_secure_storage:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  flutter_vibrate:
+    :path: ".symlinks/plugins/flutter_vibrate/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   qr_code_scanner:
@@ -48,6 +53,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_secure_storage: 7953c38a04c3fdbb00571bcd87d8e3b5ceb9daec
+  flutter_vibrate: 9f4c2ab57008965f78969472367c329dd77eb801
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
   package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
   qr_code_scanner: bb67d64904c3b9658ada8c402e8b4d406d5d796e

@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:vase/lotus/lotus.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-
-import 'package:vase/wallet/wallet.dart';
+import 'package:vase/config/constants.dart';
+import 'package:vase/lotus/lotus.dart';
 import 'package:vase/wallet/keys.dart';
-import 'package:vase/constants.dart';
+import 'package:vase/wallet/wallet.dart';
 
-import 'electrum/client.dart';
+import '../../electrum/client.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 
@@ -36,14 +35,14 @@ class WalletModel with ChangeNotifier {
   // Internally use a ValueNotifier here, as we don't want the entire wallet
   // to refresh when this field is updated.
   // We should probably introduce a secondary model of some sort.
-  final ValueNotifier<WalletBalance?> balance;
+  WalletBalance? balance;
   final FlutterSecureStorage _storage;
 
   // TODO: Storage should be injected
   WalletModel()
-      : _storage = FlutterSecureStorage(),
-        balance = ValueNotifier<WalletBalance?>(WalletBalance()) {
-    initializeModel(); // Run in background.
+      : _storage = const FlutterSecureStorage(),
+        balance = WalletBalance() {
+    initializeModel();
   }
 
   Future<void> initializeModel() async {
@@ -74,7 +73,10 @@ class WalletModel with ChangeNotifier {
       // Don't notify listeners. Initialize will do that
       _wallet = await generateNewWallet(_seed, password: _password);
     }
-    wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+    wallet!.balanceUpdateHandler = (balance) {
+      this.balance = balance;
+      notifyListeners();
+    };
     wallet!.initialize();
     initialized = true;
   }
@@ -94,12 +96,15 @@ class WalletModel with ChangeNotifier {
   void setSeed(String newValue, {String password = ''}) {
     _seed = newValue;
     _password = password;
-    balance.value = null;
+    balance = null;
     _initialized = false;
     notifyListeners();
     generateNewWallet(_seed, password: _password).then((newWallet) {
       _wallet = newWallet;
-      wallet!.balanceUpdateHandler = (balance) => this.balance.value = balance;
+      wallet!.balanceUpdateHandler = (balance) {
+        this.balance = balance;
+        notifyListeners();
+      };
       wallet!.initialize();
       initialized = true;
     });
@@ -115,13 +120,11 @@ class WalletModel with ChangeNotifier {
   }
 
   Future<String?> readSchemaVersion() {
-    final storage = FlutterSecureStorage();
-    return storage.read(key: SCHEMA_VERSION_KEY);
+    return _storage.read(key: SCHEMA_VERSION_KEY);
   }
 
   Future<void> writeSchemaVersion() {
-    final storage = FlutterSecureStorage();
-    return storage.write(
+    return _storage.write(
         key: SCHEMA_VERSION_KEY, value: CURRENT_SCHEMA_VERSION);
   }
 
@@ -206,20 +209,6 @@ class WalletModel with ChangeNotifier {
     _seed = await readSeedFromDisk();
     _password = await readPasswordFromDisk();
 
-    // Read root key to avoid regenerating from seed
-    final xprivHex = await (_storage.read(key: STORAGE_XPUB_KEY)) ?? '';
-    final rootKey = HDPrivateKey.fromXpriv(xprivHex);
-
-    // Convert to key info
-    final childKeys = constructChildKeys(
-      rootKey: rootKey,
-      network: network,
-      // TODO: maybe this should be configurable and saved/restored
-      // However, it would be *nice* if we had a dynamic way to calculate
-      // more keys when loading the balance.
-      childKeyCount: defaultNumberOfChildKeys,
-    );
-
-    return Keys(seed, password, rootKey, childKeys, network: network);
+    return Keys.construct(_seed, _password);
   }
 }
