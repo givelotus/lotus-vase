@@ -26,46 +26,42 @@ class NumpadView extends HookWidget {
       child: Column(
         children: [
           Expanded(
-            child: Center(
-              child: Consumer<NumpadModel>(
-                builder: (context, numpadModel, widget) {
-                  return AnimatedBuilder(
-                    animation: controller,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(
-                          10 * sin(controller.value * 5 * pi),
-                          0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: formatNumpadInput(numpadModel.items)
-                              .map((e) => Text(
-                                    e,
-                                    style: TextStyle(
-                                      fontSize: max(
-                                        45,
-                                        (96 -
-                                                (max(
-                                                        numpadModel
-                                                                .items.length -
-                                                            5,
-                                                        0)) *
-                                                    12)
-                                            .toDouble(),
-                                      ),
-                                      fontWeight: FontWeight.w700,
+            child: Consumer<NumpadModel>(
+              builder: (context, numpadModel, widget) {
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(
+                        10 * sin(controller.value * 5 * pi),
+                        0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: formatNumpadInput(numpadModel.items)
+                            .map((e) => Text(
+                                  e,
+                                  style: TextStyle(
+                                    fontSize: max(
+                                      45,
+                                      (96 -
+                                              (max(numpadModel.items.length - 5,
+                                                      0)) *
+                                                  12)
+                                          .toDouble(),
                                     ),
-                                  ))
-                              .toList(),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
+          const SizedBox(height: 24),
           Container(
             constraints: const BoxConstraints(minHeight: 36),
             width: 200,
@@ -89,11 +85,9 @@ class NumpadView extends HookWidget {
                     textAlign: TextAlign.center,
                   ),
           ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Center(child: NumpadWidget(controller: controller)),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          NumpadWidget(controller: controller),
+          const SizedBox(height: 32),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -154,7 +148,7 @@ class NumpadView extends HookWidget {
                 ),
               ),
             ],
-          ),
+          )
         ],
       ),
     );

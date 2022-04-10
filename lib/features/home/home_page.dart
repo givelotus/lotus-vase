@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vase/config/features.dart';
 import 'package:vase/config/theme.dart';
+import 'package:vase/features/home/dynamic_scroll_view.dart';
 import 'package:vase/features/numpad/numpad_view.dart';
 import 'package:vase/features/send/send_model.dart';
 
@@ -66,7 +67,7 @@ class HomePage extends HookWidget {
         controller: pageController,
         onPageChanged: _onPageChanged(navBarIndex),
         children: const [
-          NumpadView(),
+          DynamicScrollView(child: NumpadView()),
         ],
       ),
     );

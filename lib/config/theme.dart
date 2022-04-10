@@ -31,4 +31,5 @@ class AppTheme {
   );
 
   static const double splashRadius = 24;
+  static const double xsHeight = 700;
 }
