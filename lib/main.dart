@@ -47,12 +47,7 @@ class VaseApp extends StatelessWidget {
       ),
       GoRoute(path: '/settings', builder: (ctx, state) => const SettingsPage()),
       GoRoute(path: '/request', builder: (ctx, state) => const RequestPage()),
-      GoRoute(
-          path: '/send',
-          builder: (ctx, state) {
-            final scan = state.queryParams['scan'] == 'true';
-            return SendPage(scan: scan);
-          }),
+      GoRoute(path: '/send', builder: (ctx, state) => const SendPage()),
     ],
   );
 
