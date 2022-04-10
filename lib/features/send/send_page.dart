@@ -17,9 +17,7 @@ import 'package:vase/features/wallet/wallet_model.dart';
 final qrKey = GlobalKey(debugLabel: 'QR');
 
 class SendPage extends HookWidget {
-  const SendPage({Key? key, required this.scan}) : super(key: key);
-
-  final bool scan;
+  const SendPage({Key? key}) : super(key: key);
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -30,10 +28,14 @@ class SendPage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final sendModel = context.watch<SendModel>();
-    final amount = sendModel.amount;
+    final amountCtrl = useTextEditingController();
     final addressCtrl = useTextEditingController();
+
+    amountCtrl.text =
+        sendModel.amount > BigInt.zero ? formatAmount(sendModel.amount) : '';
     addressCtrl.text = sendModel.address;
-    final sendEnabled = amount != null && addressCtrl.text.isNotEmpty;
+    final sendEnabled =
+        amountCtrl.text.isNotEmpty && addressCtrl.text.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -63,7 +65,7 @@ class SendPage extends HookWidget {
 
                   sendModel.setAddress(address);
 
-                  if (scan) {
+                  if (sendModel.amount == BigInt.zero) {
                     sendModel.setAmount(amount);
                   }
                 },
@@ -74,37 +76,60 @@ class SendPage extends HookWidget {
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
-                    TextField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Amount',
-                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                        hintText: 'Scan barcode',
-                        labelStyle: TextStyle(color: AppColors.lotusPink),
-                        border: InputBorder.none,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IntrinsicWidth(
+                        child: TextField(
+                          minLines: 1,
+                          maxLines: 2,
+                          readOnly: true,
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            floatingLabelBehavior: FloatingLabelBehavior.always,
+                            hintText: 'Scan qr code',
+                            labelStyle:
+                                const TextStyle(color: AppColors.lotusPink),
+                            border: InputBorder.none,
+                            suffixIcon: amountCtrl.text.isNotEmpty
+                                ? IconButton(
+                                    splashRadius: AppTheme.splashRadius,
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: Colors.white70,
+                                    ),
+                                    onPressed: () {
+                                      sendModel.setAmount(BigInt.zero);
+                                    },
+                                  )
+                                : null,
+                          ),
+                          controller: amountCtrl,
+                        ),
                       ),
-                      controller: TextEditingController(
-                          text: amount != null ? formatAmount(amount) : ''),
                     ),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
                           child: TextField(
+                            minLines: 1,
                             maxLines: 2,
                             readOnly: true,
                             decoration: InputDecoration(
                               labelText: 'Address',
                               floatingLabelBehavior:
                                   FloatingLabelBehavior.always,
-                              hintText: 'Paste or scan barcode',
+                              hintText: 'Paste or scan qr code',
                               labelStyle:
                                   const TextStyle(color: AppColors.lotusPink),
                               border: InputBorder.none,
                               suffixIcon: addressCtrl.text.isNotEmpty
                                   ? IconButton(
                                       splashRadius: AppTheme.splashRadius,
-                                      icon: const Icon(Icons.close),
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.white70,
+                                      ),
                                       onPressed: () {
                                         sendModel.setAddress("");
                                       },
@@ -203,7 +228,7 @@ class TransactionModal extends HookWidget {
     final error = useState(false);
     final txIdCtrl = useTextEditingController();
     final sendModel = context.watch<SendModel>();
-    final amount = sendModel.amount ?? BigInt.zero;
+    final amount = sendModel.amount;
     final address = sendModel.address;
     return ConstrainedBox(
       constraints: success.value
