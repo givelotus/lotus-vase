@@ -73,7 +73,7 @@ class SendPage extends HookWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Align(
@@ -237,7 +237,7 @@ class TransactionModal extends HookWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             child: Center(
               child: loading.value
                   ? const CircularProgressIndicator()
@@ -246,7 +246,7 @@ class TransactionModal extends HookWidget {
                       children: [
                         if (success.value) ...[
                           Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(16),
                             decoration: const ShapeDecoration(
                               color: Colors.green,
                               shape: CircleBorder(),

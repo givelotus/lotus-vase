@@ -45,7 +45,7 @@ class RequestPage extends HookWidget {
         centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: address.isNotEmpty
               ? Column(

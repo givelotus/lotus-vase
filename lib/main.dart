@@ -60,6 +60,7 @@ class VaseApp extends StatelessWidget {
     return WalletLifecycleWatcher(
       child: MaterialApp.router(
         title: 'Vase',
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.lotusTheme,
         routeInformationParser: router.routeInformationParser,
         routerDelegate: router.routerDelegate,
