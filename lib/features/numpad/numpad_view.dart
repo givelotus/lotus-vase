@@ -5,20 +5,22 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:vase/config/colors.dart';
 import 'package:vase/features/numpad/numpad.dart';
 import 'package:vase/features/numpad/numpad_model.dart';
-import 'package:vase/config/colors.dart';
 import 'package:vase/features/send/send_model.dart';
-import 'package:vase/utils/currency.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
+import 'package:vase/utils/currency.dart';
 
 class NumpadView extends HookWidget {
   const NumpadView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final balance =
+    final walletBalance =
         context.select<WalletModel, BigInt?>((model) => model.balance?.balance);
+    final walletError =
+        context.select<WalletModel, dynamic>((model) => model.balance?.error);
     final controller =
         useAnimationController(duration: const Duration(milliseconds: 200));
     final height = MediaQuery.of(context).size.height;
@@ -73,14 +75,26 @@ class NumpadView extends HookWidget {
                   Container(
                     constraints: BoxConstraints(minHeight: 36 * scaleFactor),
                     width: 200,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      color: AppColors.lotusPurple1,
-                    ),
-                    child: Center(
-                      child: balance == null
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        primary: Colors.white,
+                        backgroundColor: AppColors.lotusPurple1,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 16,
+                        ),
+                      ),
+                      onPressed: walletError != null
+                          ? () {
+                              final walletModel = context.read<WalletModel>();
+                              walletModel.resetBalance();
+                              walletModel.updateWallet();
+                            }
+                          : null,
+                      child: walletBalance == null && walletError == null
                           ? SizedBox(
                               height: 16 * scaleFactor,
                               width: 16 * scaleFactor,
@@ -88,13 +102,32 @@ class NumpadView extends HookWidget {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text(
-                              formatAmount(balance),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 16,
-                              ),
-                            ),
+                          : walletBalance == null
+                              ? FittedBox(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${walletError ?? 'Error fetching balance'}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(
+                                        Icons.replay,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Text(
+                                  formatAmount(walletBalance),
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
                     ),
                   ),
                   const SizedBox(height: 16),

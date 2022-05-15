@@ -81,6 +81,11 @@ class WalletModel with ChangeNotifier {
     initialized = true;
   }
 
+  void resetBalance() {
+    balance = WalletBalance();
+    notifyListeners();
+  }
+
   Future<void> updateWallet() async {
     wallet!.initialize();
   }

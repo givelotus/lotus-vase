@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
-
 import 'package:vase/lotus/networks.dart';
 
 const network = NetworkType.MAIN;
 
+final networkMainUrls = [
+  'https://lotus.sunglasses.dev:50004',
+  'https://fulcrum.cashweb.io'
+];
+
 // Wallet constants
-const electrumUrlMap = {
-  NetworkType.MAIN: ['https://fulcrum.cashweb.io'],
+final electrumUrlMap = <NetworkType, List<String>>{
+  NetworkType.MAIN: networkMainUrls,
   NetworkType.TEST: ['https://tfulcrum.cashweb.io'],
+  NetworkType.REGTEST: [],
+  NetworkType.SCALINGTEST: [],
 };
 
-final electrumUrls = electrumUrlMap[network];
+final electrumUrls = electrumUrlMap[network] ?? networkMainUrls;
 const inputSize = 148;
 const outputSize = 34;
 const defaultFeePerByte = 10;

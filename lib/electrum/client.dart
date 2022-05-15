@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:vase/electrum/rpc.dart';
 
@@ -80,11 +81,11 @@ class ElectrumFactory {
   ElectrumFactory(this.urls, {this.onConnected});
 
   ElectrumClient? _client;
-  List<String>? urls;
+  List<String> urls;
   ConnectHandler? onConnected;
 
   /// Builds client if non-existent and attempts to connect before resolving.
-  Future<ElectrumClient?> getInstance({int retry = 2}) async {
+  Future<ElectrumClient?> getInstance({int retry = 4}) async {
     try {
       if (_client == null) {
         _client = ElectrumClient(disconnectHandler: (error) {
@@ -92,9 +93,12 @@ class ElectrumFactory {
           _client?.dispose();
           _client = null;
         });
-        final urls = this.urls!.sublist(0);
-        urls.shuffle();
-        await _client?.connect(Uri.parse(urls[0]));
+
+        print("retry $retry");
+
+        final urls = this.urls.sublist(0);
+        final url = urls[retry % urls.length];
+        await _client?.connect(Uri.parse(url));
 
         print('rpc called connect $onConnected');
 
