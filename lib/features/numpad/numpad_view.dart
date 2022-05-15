@@ -111,6 +111,7 @@ class NumpadView extends HookWidget {
                                         textAlign: TextAlign.center,
                                         style: const TextStyle(
                                           fontSize: 16,
+                                          color: Colors.white,
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -126,6 +127,7 @@ class NumpadView extends HookWidget {
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 16,
+                                    color: Colors.white,
                                   ),
                                 ),
                     ),
