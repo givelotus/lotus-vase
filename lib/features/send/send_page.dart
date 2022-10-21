@@ -54,7 +54,12 @@ class SendPage extends HookWidget {
             Expanded(
               child: QRView(
                 onScanResult: (qr.Barcode scanData) {
-                  final parseResult = parseSendURI(scanData.code);
+                  final code = scanData.code;
+                  if (code == null) {
+                    return;
+                  }
+
+                  final parseResult = parseSendURI(code);
                   final address = parseResult.address;
                   final amount = parseResult.amount;
 
