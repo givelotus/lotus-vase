@@ -3,16 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart' as qr;
 import 'package:slide_to_confirm/slide_to_confirm.dart';
 import 'package:vase/config/colors.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/send/qr_view.dart';
 import 'package:vase/features/send/send_model.dart';
+import 'package:vase/features/wallet/wallet_model.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/lotus/utils/parse_uri.dart';
 import 'package:vase/utils/currency.dart';
-import 'package:vase/features/wallet/wallet_model.dart';
 
 final qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -53,13 +52,12 @@ class SendPage extends HookWidget {
           children: [
             Expanded(
               child: QRView(
-                onScanResult: (qr.Barcode scanData) {
-                  final code = scanData.code;
-                  if (code == null) {
+                onScanResult: (String? result) {
+                  if (result == null) {
                     return;
                   }
 
-                  final parseResult = parseSendURI(code);
+                  final parseResult = parseSendURI(result);
                   final address = parseResult.address;
                   final amount = parseResult.amount;
 
