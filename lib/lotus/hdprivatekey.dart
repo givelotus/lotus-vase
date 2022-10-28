@@ -73,8 +73,8 @@ class HDPrivateKey extends CKDSerializer {
   ///
   HDPrivateKey.fromSeed(String seed, NetworkType networkType) {
     // I = HMAC-SHA512(Key = "Bitcoin seed", Data = S)
-    var I = HDUtils.hmacSha512WithKey(
-        utf8.encode('Bitcoin seed') as Uint8List, HEX.decode(seed) as Uint8List);
+    var I = HDUtils.hmacSha512WithKey(utf8.encode('Bitcoin seed') as Uint8List,
+        HEX.decode(seed) as Uint8List);
 
     // Ensure the bytes are interpreted as positive by adding a padding.
     var masterKey = I.sublist(0, 32);
@@ -164,7 +164,7 @@ class HDPrivateKey extends CKDSerializer {
         ? paddedKey + seriList
         : publicKey!.point!.getEncoded(true) + seriList;
     var I = HDUtils.hmacSha512WithKey(
-        Uint8List.fromList(chainCode as List<int>), Uint8List.fromList(dataConcat));
+        Uint8List.fromList(chainCode), Uint8List.fromList(dataConcat));
 
     var lhs = I.sublist(0, 32);
     var childChainCode = I.sublist(32, 64);

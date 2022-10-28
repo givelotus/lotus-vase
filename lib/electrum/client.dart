@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:vase/electrum/rpc.dart';
 
@@ -18,7 +17,7 @@ class ElectrumClient extends JSONRPCWebsocket {
 
   ElectrumClient({DisconnectHandler? disconnectHandler})
       : super(disconnectHandler: disconnectHandler) {
-    _pingTimer = Timer(Duration(seconds: 30), () {
+    _pingTimer = Timer(const Duration(seconds: 30), () {
       if (rpcSocket != null) {
         print('ping');
         serverPing();

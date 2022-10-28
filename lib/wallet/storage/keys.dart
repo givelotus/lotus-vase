@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:vase/lotus/lotus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:vase/lotus/lotus.dart';
 
 import '../keys.dart';
 
@@ -23,7 +23,7 @@ class KeyStorageMetadata {
   }
 
   static Future<KeyStorageMetadata> readFromDisk() async {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final storageMetadataString =
         await (storage.read(key: _getDatabaseKey())) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
@@ -31,7 +31,7 @@ class KeyStorageMetadata {
   }
 
   Future<void> writeToDisk() async {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final serialized = jsonEncode(toJson());
     await storage.write(key: _getDatabaseKey(), value: serialized);
   }
@@ -57,7 +57,7 @@ class StoredKey {
   }
 
   static Future<StoredKey> readFromDisk(int number) async {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final storageMetadataString =
         await (storage.read(key: _getDatabaseKey(number))) ?? '';
     final storageMetadataJson = jsonDecode(storageMetadataString);
@@ -65,7 +65,7 @@ class StoredKey {
   }
 
   Future<void> writeToDisk(int number) async {
-    final storage = FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final serialized = jsonEncode(toJson());
     await storage.write(key: _getDatabaseKey(number), value: serialized);
   }
