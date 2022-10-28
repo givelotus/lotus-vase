@@ -47,7 +47,7 @@ class SettingsPage extends HookWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (showSeedTextController.text.isEmpty)
-                      Center(child: CircularProgressIndicator()),
+                      const Center(child: CircularProgressIndicator()),
                     if (showSeedTextController.text.isNotEmpty) ...[
                       Row(
                         children: [
@@ -57,13 +57,13 @@ class SettingsPage extends HookWidget {
                               minLines: 2,
                               controller: showSeedTextController,
                               readOnly: true,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                               ),
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.fromLTRB(6, 0, 6, 0),
+                            padding: const EdgeInsets.fromLTRB(6, 0, 6, 0),
                             child: OutlinedButton(
                               onPressed: () {
                                 Clipboard.setData(
@@ -72,18 +72,18 @@ class SettingsPage extends HookWidget {
                                   ),
                                 );
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                  const SnackBar(
                                     content: Text('Copied seed to Clipboard'),
                                     duration: Duration(seconds: 1),
                                   ),
                                 );
                               },
-                              child: Icon(Icons.copy),
+                              child: const Icon(Icons.copy),
                             ),
                           ),
                         ],
                       ),
-                      Padding(
+                      const Padding(
                           padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
                           child: Text(
                             'Password (Optional)',
@@ -95,7 +95,7 @@ class SettingsPage extends HookWidget {
                             minLines: 2,
                             controller: showPasswordTextController,
                             readOnly: true,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                             ),
                           ),
@@ -122,7 +122,7 @@ class SettingsPage extends HookWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
+                const Padding(
                   padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
                   child: Text('Seed'),
                 ),
@@ -134,14 +134,14 @@ class SettingsPage extends HookWidget {
                         minLines: 2,
                         controller: newSeedController,
                         readOnly: false,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
                       ),
                     ),
                   ],
                 ),
-                Padding(
+                const Padding(
                     padding: EdgeInsets.fromLTRB(0, 12, 0, 12),
                     child: Text(
                       'Password (Optional)',
@@ -154,7 +154,7 @@ class SettingsPage extends HookWidget {
                         minLines: 2,
                         controller: newPasswordController,
                         readOnly: false,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -174,7 +174,7 @@ class SettingsPage extends HookWidget {
 
                 if (!mnemonicGenerator.validateMnemonic(enteredSeed)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Invalid Seed Phrase'),
                       duration: Duration(seconds: 1),
                     ),
@@ -187,7 +187,7 @@ class SettingsPage extends HookWidget {
                 walletModel.setSeed(enteredSeed, password: enteredPassword);
                 Navigator.of(context).pop();
               },
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         ),
@@ -221,8 +221,8 @@ class SettingsPage extends HookWidget {
       ),
       body: ListView(
         children: [
-          ListTile(
-            title: const Text(
+          const ListTile(
+            title: Text(
               'Wallet',
               style: TextStyle(
                 fontSize: 16,
@@ -232,19 +232,19 @@ class SettingsPage extends HookWidget {
           ),
           ListTile(
             title: const Text('Seed Phrase'),
-            leading: Icon(Icons.nature),
-            trailing: Icon(Icons.keyboard_arrow_right),
+            leading: const Icon(Icons.nature),
+            trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () => showSeedDialog(),
           ),
           ListTile(
             title: const Text('Import Seed Phrase'),
-            leading: Icon(Icons.upload),
-            trailing: Icon(Icons.keyboard_arrow_right),
+            leading: const Icon(Icons.upload),
+            trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () => showEnterSeedDialog(),
           ),
-          Divider(),
-          ListTile(
-            title: const Text(
+          const Divider(),
+          const ListTile(
+            title: Text(
               'More',
               style: TextStyle(
                 fontSize: 16,
@@ -254,20 +254,20 @@ class SettingsPage extends HookWidget {
           ),
           ListTile(
             title: const Text('Help'),
-            leading: Icon(Icons.help),
-            trailing: Icon(Icons.keyboard_arrow_right),
+            leading: const Icon(Icons.help),
+            trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: _launchUrl('https://t.me/cashewwallet'),
           ),
           ListTile(
               title: const Text('Website'),
-              leading: Icon(Icons.web),
-              trailing: Icon(Icons.keyboard_arrow_right),
+              leading: const Icon(Icons.web),
+              trailing: const Icon(Icons.keyboard_arrow_right),
               onTap: _launchUrl('https://givelotus.org')),
           ListTile(
             title: const Text('Community'),
-            leading: Icon(Icons.group),
-            trailing: Icon(Icons.keyboard_arrow_right),
-            onTap: _launchUrl('https://t.me/givelotus'),
+            leading: const Icon(Icons.group),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            onTap: _launchUrl('https://discord.gg/ebbFsWRdgb'),
           ),
           ListTile(
             title: const Text('Version'),
@@ -277,10 +277,10 @@ class SettingsPage extends HookWidget {
                 if (snapshot.hasData) {
                   return Text('${snapshot.data?.version}');
                 }
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               },
             ),
-            leading: Icon(Icons.info),
+            leading: const Icon(Icons.info),
           ),
         ],
       ),
