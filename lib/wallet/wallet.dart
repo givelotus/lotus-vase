@@ -90,7 +90,7 @@ class Wallet {
   /// Fetch UTXOs from electrum then update vault.
   Future<void> updateUtxos({ElectrumClient? client}) async {
     client ??= await electrumFactory.getInstance();
-    final pool = Pool(5, timeout: Duration(seconds: 60));
+    final pool = Pool(5, timeout: const Duration(seconds: 60));
 
     final futures = keys.keys?.map((keyInfo) {
           final hexScriptHash = HEX.encode(keyInfo.scriptHash!);

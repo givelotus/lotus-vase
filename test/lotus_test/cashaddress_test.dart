@@ -1,12 +1,11 @@
 import 'package:test/test.dart';
-
-import 'package:vase/lotus/cashaddress.dart';
 import 'package:vase/lotus/address.dart';
+import 'package:vase/lotus/cashaddress.dart';
 
 void main() {
   test('can decode and encode to base58', () async {
-    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
-    final legacy = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
+    const cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    const legacy = '15h6MrWynwLTwhhYWNjw1RqCrhvKv3ZBsi';
     var address = Decode(cashaddr, 'bitcoincash');
     expect(
         Address.fromAddressBytes(address.addressBytes!,
@@ -17,7 +16,7 @@ void main() {
   });
 
   test('can decode and encode cashaddresses', () async {
-    final cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
+    const cashaddr = 'bitcoincash:qqeht8vnwag20yv8dvtcrd4ujx09fwxwsqqqw93w88';
     var address = Decode(cashaddr, 'bitcoincash');
     var encodedCashaddr = Encode(address);
 

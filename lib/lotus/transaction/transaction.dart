@@ -1,37 +1,31 @@
 import 'dart:collection';
 import 'dart:typed_data';
 
+import 'package:buffer/buffer.dart';
 import 'package:hex/hex.dart';
 import 'package:pointycastle/api.dart';
 import 'package:pointycastle/digests/sha256.dart';
 import 'package:pointycastle/ecc/api.dart';
 import 'package:pointycastle/macs/hmac.dart';
 import 'package:pointycastle/signers/ecdsa_signer.dart';
-import 'package:buffer/buffer.dart';
 
-import '../encoding/utils.dart';
-import '../signature.dart';
-import '../exceptions.dart';
-import '../sighash.dart';
 import '../address.dart';
+import '../constants.dart';
+import '../encoding/utils.dart';
+import '../exceptions.dart';
 import '../privatekey.dart';
 import '../publickey.dart';
 import '../script/bchscript.dart';
-import '../transaction/transaction_output.dart';
-import '../transaction/locking_script_builder.dart';
-import '../transaction/unlocking_script_builder.dart';
-import '../transaction/p2pkh_builder.dart';
+import '../sighash.dart';
+import '../signature.dart';
 import '../transaction/data_builder.dart';
-import '../constants.dart';
-
-import 'data_builder.dart';
+import '../transaction/locking_script_builder.dart';
+import '../transaction/p2pkh_builder.dart';
+import '../transaction/transaction_output.dart';
+import '../transaction/unlocking_script_builder.dart';
 import 'default_builder.dart';
 import 'signed_unlock_builder.dart';
 import 'transaction_input.dart';
-import 'transaction_output.dart';
-import 'locking_script_builder.dart';
-import 'p2pkh_builder.dart';
-import 'unlocking_script_builder.dart';
 
 enum FeeMethod { USER_SPECIFIES, WALLET_CALCULATES }
 
@@ -614,9 +608,9 @@ class Transaction {
     for (var i = 0; i < inputs.length; i++) {
       var txin = inputs[i];
 
-      var inputid = txin.prevTxnId! + ':' + txin.prevTxnOutputIndex.toString();
+      var inputid = '${txin.prevTxnId!}:${txin.prevTxnOutputIndex}';
       if (txinmap[inputid] != null) {
-        return 'transaction input ' + i.toString() + ' duplicate input';
+        return 'transaction input $i duplicate input';
       }
       txinmap[inputid] = true;
     }
@@ -629,7 +623,7 @@ class Transaction {
     } else {
       for (var i = 0; i < inputs.length; i++) {
         if (inputs[i] == null) {
-          return 'transaction input ' + i.toString() + ' has null input';
+          return 'transaction input $i has null input';
         }
       }
     }
@@ -741,10 +735,8 @@ class Transaction {
 
   void _checkForFeeErrors(BigInt unspent) {
     if ((_fee != null) && (_fee != unspent)) {
-      var errorMessage = 'Unspent value is ' +
-          unspent.toRadixString(10) +
-          ' but specified fee is ' +
-          _fee!.toRadixString(10);
+      var errorMessage =
+          'Unspent value is ${unspent.toRadixString(10)} but specified fee is ${_fee!.toRadixString(10)}';
       throw TransactionFeeException(errorMessage);
     }
 
@@ -756,10 +748,8 @@ class Transaction {
               'Fee is too large and no change address was provided');
         }
 
-        throw TransactionFeeException('expected less than ' +
-            maximumFee.toString() +
-            ' but got ' +
-            unspent.toString());
+        throw TransactionFeeException(
+            'expected less than $maximumFee but got $unspent');
       }
     }
   }
@@ -845,8 +835,8 @@ class Transaction {
   BigInt _recipientTotals() => _txnOutputs.fold(
       BigInt.zero, (BigInt prev, elem) => prev + elem.satoshis);
 
-  BigInt _inputTotals() =>
-      _txnInputs.fold(BigInt.zero, (BigInt prev, elem) => prev + elem.satoshis!);
+  BigInt _inputTotals() => _txnInputs.fold(
+      BigInt.zero, (BigInt prev, elem) => prev + elem.satoshis!);
 
   BigInt _recalculateChange() {
     var inputAmount = _inputTotals();

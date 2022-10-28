@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:vase/config/theme.dart';
 import 'package:vase/config/constants.dart';
-import 'package:vase/lotus/bip39/bip39.dart';
+import 'package:vase/config/theme.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
+import 'package:vase/lotus/bip39/bip39.dart';
 
 final packageInfoFuture = PackageInfo.fromPlatform();
 
@@ -194,9 +194,8 @@ class SettingsPage extends HookWidget {
       );
     }
 
-    Future<Null> Function() _launchUrl(String url) => () async {
-          if (await canLaunch(url)) {
-            await launch(url);
+    Future<void> Function() _launchUrl(String url) => () async {
+          if (!await launchUrl(Uri.parse(url))) {
           } else {
             throw 'Could not launch $url';
           }

@@ -41,7 +41,6 @@ class Networks {
 
       default:
         throw AddressFormatException('[$version] is not a valid network type.');
-        break;
     }
   }
 
@@ -63,7 +62,6 @@ class Networks {
 
       default:
         throw AddressFormatException('[$version] is not a valid address type.');
-        break;
     }
   }
 

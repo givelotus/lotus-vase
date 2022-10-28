@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vase/config/theme.dart';
 
 class KeyWidgetOptions {
   final String label;
@@ -25,7 +24,7 @@ class KeyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       style: TextButton.styleFrom(
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
       ),
       onPressed: onPressed,
       child: Text(

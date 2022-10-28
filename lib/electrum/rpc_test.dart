@@ -1,7 +1,8 @@
-import 'dart:isolate';
-import 'dart:io';
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+
 import 'package:test/test.dart';
 
 import 'client.dart';
@@ -52,7 +53,7 @@ void runFakeElectrum(FakeElectrumParams params) async {
 
 typedef RPCServerClientCallback = Future<void> Function(Uri? url);
 
-Future<Null> Function() withRPCServer(
+Future<void> Function() withRPCServer(
     List<Object> responses, RPCServerClientCallback clientTest) {
   return () async {
     var receivePort = ReceivePort();
