@@ -266,7 +266,7 @@ class SettingsPage extends HookWidget {
             title: const Text('Community'),
             leading: const Icon(Icons.group),
             trailing: const Icon(Icons.keyboard_arrow_right),
-            onTap: _launchUrl('https://t.me/givelotus'),
+            onTap: _launchUrl('https://discord.gg/ebbFsWRdgb'),
           ),
           ListTile(
             title: const Text('Version'),
