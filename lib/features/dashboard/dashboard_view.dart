@@ -20,10 +20,7 @@ class DashboardView extends HookWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          const Text(
-            "Balance",
-            style: TextStyle(fontSize: 20),
-          ),
+          const Text("BALANCE"),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: walletBalance == null && walletError == null
@@ -114,7 +111,7 @@ class QuickAction extends StatelessWidget {
           style: TextButton.styleFrom(
             shape: const CircleBorder(),
             padding: const EdgeInsets.all(12),
-            backgroundColor: AppColors.lotusPurple2,
+            backgroundColor: AppColors.lotusPurple1,
           ),
           child: Icon(
             icon,

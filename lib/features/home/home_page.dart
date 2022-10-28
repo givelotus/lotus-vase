@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:vase/config/colors.dart';
 import 'package:vase/config/features.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/dashboard/dashboard_view.dart';
@@ -59,6 +60,27 @@ class HomePage extends HookWidget {
         children: const [
           DashboardView(),
           NumpadView(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: AppColors.lotusPurple4,
+        currentIndex: navBarIndex.value,
+        onTap: (int idx) {
+          pageController.animateToPage(
+            idx,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calculate),
+            label: 'Numpad',
+          ),
         ],
       ),
     );
