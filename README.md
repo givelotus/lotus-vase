@@ -1,7 +1,10 @@
-# Vase
+# Vase Client
 
-Vase is a simple Lotus-compatible wallet that uses fulcrum
-as a backend.
+Flutter frontend for Vase
+
+# Vase Server
+
+Go backend for Vase
 
 # Licensing
 
