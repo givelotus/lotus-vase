@@ -30,8 +30,9 @@ class SendPage extends HookWidget {
     final amountCtrl = useTextEditingController();
     final addressCtrl = useTextEditingController();
 
-    amountCtrl.text =
-        sendModel.amount > BigInt.zero ? formatAmount(sendModel.amount) : '';
+    amountCtrl.text = sendModel.amount > BigInt.zero
+        ? formatAmount(amount: sendModel.amount)
+        : '';
     addressCtrl.text = sendModel.address;
     final sendEnabled =
         amountCtrl.text.isNotEmpty && addressCtrl.text.isNotEmpty;

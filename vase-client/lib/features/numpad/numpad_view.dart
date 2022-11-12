@@ -123,7 +123,10 @@ class NumpadView extends HookWidget {
                                   ),
                                 )
                               : Text(
-                                  formatAmount(walletBalance),
+                                  formatAmount(
+                                    amount: walletBalance,
+                                    maximumFractionDigits: 2,
+                                  ),
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 16,
