@@ -17,6 +17,7 @@ const CURRENT_SCHEMA_VERSION = '3';
 const STORAGE_SEED_KEY = 'seed';
 const STORAGE_PASSWORD_KEY = 'password';
 const STORAGE_XPUB_KEY = 'rootKey';
+const storageBalanceKey = 'balance';
 
 /// Generate a fresh wallet.
 Future<Wallet> generateNewWallet(String? seed,
@@ -46,6 +47,11 @@ class WalletModel with ChangeNotifier {
   }
 
   Future<void> initializeModel() async {
+    final balance = await _storage.read(key: storageBalanceKey);
+    if (balance != null) {
+      this.balance = WalletBalance(balance: BigInt.tryParse(balance));
+      notifyListeners();
+    }
     final readSucceed = await readFromDisk();
     if (!readSucceed) {
       try {
@@ -73,9 +79,11 @@ class WalletModel with ChangeNotifier {
       // Don't notify listeners. Initialize will do that
       _wallet = await generateNewWallet(_seed, password: _password);
     }
-    wallet!.balanceUpdateHandler = (balance) {
+    wallet!.balanceUpdateHandler = (balance) async {
       this.balance = balance;
       notifyListeners();
+      await _storage.write(
+          key: storageBalanceKey, value: balance.balance.toString());
     };
     wallet!.initialize();
     initialized = true;
