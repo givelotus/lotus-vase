@@ -21,6 +21,14 @@ BigInt lotusToSats(String amount) {
   return BigInt.from((parsed * satsPerLotus).truncate());
 }
 
+String satsToLotus(BigInt amount) {
+  final NumberFormat formatter = NumberFormat.decimalPattern("en_US")
+    ..turnOffGrouping()
+    ..minimumFractionDigits = 0
+    ..maximumFractionDigits = 8;
+  return formatter.format(amount.toInt() * lotusPerSat);
+}
+
 List<String> formatNumpadInput(UnmodifiableListView<String> items) {
   final suffix = items.last == '.' ? '.' : '';
   final fractions = items.length - items.indexOf('.');

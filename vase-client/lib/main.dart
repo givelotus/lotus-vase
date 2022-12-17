@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
-import 'package:vase/features/location/location_tracker.dart';
 import 'package:vase/features/numpad/numpad_model.dart';
 import 'package:vase/features/request/request_page.dart';
 import 'package:vase/features/send/send_model.dart';
@@ -59,14 +58,12 @@ class VaseApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
     return WalletLifecycleWatcher(
-      child: LocationSolicitor(
-        child: MaterialApp.router(
-          title: 'Vase',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lotusTheme,
-          routeInformationParser: router.routeInformationParser,
-          routerDelegate: router.routerDelegate,
-        ),
+      child: MaterialApp.router(
+        title: 'Vase',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lotusTheme,
+        routeInformationParser: router.routeInformationParser,
+        routerDelegate: router.routerDelegate,
       ),
     );
   }

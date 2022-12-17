@@ -13,7 +13,12 @@ import 'package:vase/features/wallet/wallet_model.dart';
 import 'package:vase/utils/currency.dart';
 
 class NumpadView extends HookWidget {
-  const NumpadView({Key? key}) : super(key: key);
+  const NumpadView({
+    Key? key,
+    this.onDoneTap,
+  }) : super(key: key);
+
+  final Function? onDoneTap;
 
   @override
   Widget build(BuildContext context) {
@@ -140,70 +145,86 @@ class NumpadView extends HookWidget {
                       width: width,
                       child: NumpadWidget(controller: controller)),
                   const SizedBox(height: 32),
-                  SizedBox(
-                    width: width,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                            ),
-                            child: const Text(
-                              'Request',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            onPressed: () => context.push('/request'),
+                  if (onDoneTap != null)
+                    SizedBox(
+                      width: min(width, 200),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          padding: const EdgeInsets.all(16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(40),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              elevation: 0,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
+                        child: const Text(
+                          'Done',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        onPressed: () async {
+                          final cb = onDoneTap;
+                          if (cb != null) {
+                            if (await isValid(context, controller)) {
+                              cb();
+                            }
+                          }
+                        },
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.all(16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              'Send',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                              child: const Text(
+                                'Request',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
+                              onPressed: () => context.push('/request'),
                             ),
-                            onPressed: () async {
-                              final walletModel = context.read<WalletModel>();
-                              final numpadModel = context.read<NumpadModel>();
-                              final balance = walletModel.balance?.balance;
-                              final amount = lotusToSats(numpadModel.value);
-
-                              if (balance == null || balance <= amount) {
-                                controller.forward(from: 0);
-                                if (await Vibrate.canVibrate) {
-                                  Vibrate.feedback(FeedbackType.heavy);
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                padding: const EdgeInsets.all(16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
+                              ),
+                              child: const Text(
+                                'Send',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (await isValid(context, controller)) {
+                                  context.push('/send');
                                 }
-                                return;
-                              }
-
-                              final sendModel = context.read<SendModel>();
-                              sendModel.setAmount(amount);
-                              context.push('/send');
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )
+                        ],
+                      ),
+                    )
                 ],
               ),
             ),
@@ -212,4 +233,23 @@ class NumpadView extends HookWidget {
       ),
     );
   }
+}
+
+Future<bool> isValid(BuildContext ctx, AnimationController controller) async {
+  final walletModel = ctx.read<WalletModel>();
+  final numpadModel = ctx.read<NumpadModel>();
+  final balance = walletModel.balance?.balance;
+  final amount = lotusToSats(numpadModel.value);
+
+  if (balance == null || balance <= amount) {
+    controller.forward(from: 0);
+    if (await Vibrate.canVibrate) {
+      Vibrate.feedback(FeedbackType.heavy);
+    }
+    return false;
+  }
+
+  final sendModel = ctx.read<SendModel>();
+  sendModel.setAmount(amount);
+  return true;
 }

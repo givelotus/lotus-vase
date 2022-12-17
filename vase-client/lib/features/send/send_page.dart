@@ -6,12 +6,15 @@ import 'package:provider/provider.dart';
 import 'package:slide_to_confirm/slide_to_confirm.dart';
 import 'package:vase/config/colors.dart';
 import 'package:vase/config/theme.dart';
+import 'package:vase/features/numpad/numpad_view.dart';
 import 'package:vase/features/send/qr_view.dart';
 import 'package:vase/features/send/send_model.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/lotus/utils/parse_uri.dart';
 import 'package:vase/utils/currency.dart';
+
+import '../numpad/numpad_model.dart';
 
 final qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -80,35 +83,53 @@ class SendPage extends HookWidget {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IntrinsicWidth(
-                        child: TextField(
-                          minLines: 1,
-                          maxLines: 2,
-                          readOnly: true,
-                          decoration: InputDecoration(
-                            labelText: 'Amount',
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            hintText: 'Scan qr code',
-                            labelStyle:
-                                const TextStyle(color: AppColors.lotusPink),
-                            border: InputBorder.none,
-                            suffixIcon: amountCtrl.text.isNotEmpty
-                                ? IconButton(
-                                    splashRadius: AppTheme.splashRadius,
-                                    icon: const Icon(
-                                      Icons.close,
-                                      color: Colors.white70,
-                                    ),
-                                    onPressed: () {
-                                      sendModel.setAmount(BigInt.zero);
-                                    },
-                                  )
-                                : null,
+                    InkWell(
+                      onTap: () {
+                        final sendModel = context.read<SendModel>();
+                        final numpadModel = context.read<NumpadModel>();
+                        numpadModel.setValue(satsToLotus(sendModel.amount));
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (ctx) => NumpadView(
+                            onDoneTap: () {
+                              Navigator.of(ctx).pop();
+                            },
                           ),
-                          controller: amountCtrl,
-                        ),
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: IgnorePointer(
+                              child: TextField(
+                                minLines: 1,
+                                maxLines: 2,
+                                readOnly: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Amount',
+                                  floatingLabelBehavior:
+                                      FloatingLabelBehavior.always,
+                                  hintText: 'Enter or scan qr code',
+                                  labelStyle:
+                                      TextStyle(color: AppColors.lotusPink),
+                                  border: InputBorder.none,
+                                ),
+                                controller: amountCtrl,
+                              ),
+                            ),
+                          ),
+                          if (amountCtrl.text.isNotEmpty)
+                            IconButton(
+                              splashRadius: AppTheme.splashRadius,
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white70,
+                              ),
+                              onPressed: () {
+                                sendModel.setAmount(BigInt.zero);
+                              },
+                            )
+                        ],
                       ),
                     ),
                     Row(

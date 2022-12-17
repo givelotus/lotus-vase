@@ -10,6 +10,12 @@ class NumpadModel extends ChangeNotifier {
 
   String get value => _items.join();
 
+  void setValue(String value) {
+    _items.clear();
+    _items.addAll(value.split(''));
+    notifyListeners();
+  }
+
   void addValue(String value) {
     if (_items.length < maxLength) {
       if (_items.length == 1 && _items.first == '0' && value != '.') {
