@@ -52,6 +52,7 @@ dependencies:
   flutter_vibrate: ^1.3.0
   slide_to_confirm: ^1.1.0
   mobile_scanner: ^2.0.0
+  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:

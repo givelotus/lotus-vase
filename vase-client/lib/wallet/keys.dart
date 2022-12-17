@@ -112,7 +112,13 @@ List<KeyInfo>? constructChildKeys({
 // Construct a brand new set of keys from a seed over a worker. Processing a
 // seed to an HDPrivateKey is fairly time consuming, thus it is done this way.cas
 void _constructKeys(KeyIsolateInput input) {
-  final seedHex = Mnemonic().toSeedHex(input.seed!, input.password ?? '');
+  final seed = input.seed;
+  if (seed == null) {
+    print("Seed was null");
+    return;
+  }
+
+  final seedHex = Mnemonic().toSeedHex(seed, input.password ?? '');
   //TOOD: Why do we use HEX everywhere? This library needs to be fixed.
   final rootKey = HDPrivateKey.fromSeed(seedHex, input.network);
 
