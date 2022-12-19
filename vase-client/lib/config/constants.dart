@@ -3,15 +3,9 @@ import 'package:vase/lotus/networks.dart';
 
 const network = NetworkType.MAIN;
 
-final networkMainUrls = [
-  'https://fulcrum.lotus.sunglasses.dev',
-  'https://fulcrum.cashweb.io'
-];
+final networkMainUrls = ['https://fulcrum.cashweb.io'];
 
-final networkTestUrls = [
-  'https://tfulcrum.lotus.sunglasses.dev',
-  'https://tfulcrum.cashweb.io'
-];
+final networkTestUrls = ['https://tfulcrum.cashweb.io'];
 
 // Wallet constants
 final electrumUrlMap = <NetworkType, List<String>>{

@@ -93,13 +93,11 @@ class ElectrumFactory {
           _client = null;
         });
 
-        print("retry $retry");
-
         final urls = this.urls.sublist(0);
         final url = urls[retry % urls.length];
         await _client?.connect(Uri.parse(url));
 
-        print('rpc called connect $onConnected');
+        print('rpc called connect on url=$url with retries=$retry');
 
         if (onConnected != null) {
           await onConnected!(_client);

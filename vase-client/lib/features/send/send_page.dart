@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -89,11 +91,17 @@ class SendPage extends HookWidget {
                         final numpadModel = context.read<NumpadModel>();
                         numpadModel.setValue(satsToLotus(sendModel.amount));
                         showModalBottomSheet(
+                          isScrollControlled: true,
                           context: context,
-                          builder: (ctx) => NumpadView(
-                            onDoneTap: () {
-                              Navigator.of(ctx).pop();
-                            },
+                          builder: (ctx) => ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxHeight: 600,
+                            ),
+                            child: NumpadView(
+                              onDoneTap: () {
+                                Navigator.of(ctx).pop();
+                              },
+                            ),
                           ),
                         );
                       },
