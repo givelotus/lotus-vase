@@ -1,16 +1,24 @@
 package main
 
 import (
-	"vase.givelotus.org/server/models"
 	"github.com/gin-gonic/gin"
-	"fmt"
+
+
+	"vase.givelotus.org/server/models"
+	"vase.givelotus.org/server/initializers"
 )
+
+
+func init(){
+	initializers.LoadEnvVariables()
+	initializers.ConnectToDB()
+	
+}
 
 func main() {
 	r := gin.New()
 
 	r.POST("/userinfo", func(c *gin.Context){
-		fmt.Print("heee")
 		var body struct {
 			Token string
 			Address string
