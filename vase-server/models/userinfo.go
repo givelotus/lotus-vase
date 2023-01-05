@@ -4,10 +4,13 @@ import (
 	"gorm.io/gorm"
 )
 
+
 type UserInfo struct {
 	gorm.Model
-	Token string
+	PushToken string
 	Address string
-	Longitude string
-	Latitude string
+	Location struct {
+		Longitude string
+		Latitude string
+	}
 }
