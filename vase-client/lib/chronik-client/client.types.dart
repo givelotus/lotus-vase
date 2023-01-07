@@ -1,3 +1,276 @@
+import 'dart:convert';
+
+import 'chronik.pb.dart' as proto;
+import 'hex.dart';
+
+BlockchainInfo convertToBlockchainInfo(
+  proto.BlockchainInfo blockchainInfo,
+) {
+  return BlockchainInfo(
+    tipHash: toHexRev(blockchainInfo.tipHash),
+    tipHeight: blockchainInfo.tipHeight,
+  );
+}
+
+Block convertToBlock(proto.Block block) {
+  return Block(
+    blockInfo: convertToBlockInfo(block.blockInfo),
+    blockDetails: convertToBlockDetails(block.blockDetails),
+    rawHeader: toHex(block.rawHeader),
+    txs: block.txs.map(convertToTx).toList(),
+  );
+}
+
+Tx convertToTx(proto.Tx tx) {
+  return Tx(
+    txid: toHexRev(tx.txid),
+    version: tx.version,
+    inputs: tx.inputs.map(convertToTxInput).toList(),
+    outputs: tx.outputs.map(convertToTxOutput).toList(),
+    lockTime: tx.lockTime,
+    slpTxData: convertToSlpTxData(tx.slpTxData),
+    slpErrorMsg: tx.slpErrorMsg.isNotEmpty ? tx.slpErrorMsg : null,
+    block: convertToBlockMeta(tx.block),
+    timeFirstSeen: tx.timeFirstSeen.toString(),
+    size: tx.size,
+    isCoinbase: tx.isCoinbase,
+    network: convertToNetwork(tx.network),
+  );
+}
+
+Utxo convertToUtxo(proto.Utxo utxo) {
+  return Utxo(
+    outpoint: OutPoint(
+      txid: toHexRev(utxo.outpoint.txid),
+      outIdx: utxo.outpoint.outIdx,
+    ),
+    blockHeight: utxo.blockHeight,
+    isCoinbase: utxo.isCoinbase,
+    value: utxo.value.toString(),
+    slpMeta: convertToSlpMeta(utxo.slpMeta),
+    slpToken: convertToSlpToken(utxo.slpToken),
+    network: convertToNetwork(utxo.network),
+  );
+}
+
+Token convertToToken(proto.Token token) {
+  return Token(
+    slpTxData: convertToSlpTokenTxData(token.slpTxData),
+    tokenStats: convertToTokenStats(token.tokenStats),
+    block: convertToBlockMeta(token.block),
+    timeFirstSeen: token.timeFirstSeen.toString(),
+    initialTokenQuantity: token.initialTokenQuantity.toString(),
+    containsBaton: token.containsBaton,
+    network: convertToNetwork(token.network),
+  );
+}
+
+OutPoint convertToOutPoint(proto.OutPoint outpoint) {
+  return OutPoint(
+    txid: toHexRev(outpoint.txid),
+    outIdx: outpoint.outIdx,
+  );
+}
+
+UtxoState convertToUxtoState(proto.UtxoState state) {
+  return UtxoState(
+    height: state.height,
+    isConfirmed: state.isConfirmed,
+    state: convertToUtxoStateVariant(state.state),
+  );
+}
+
+ScriptUtxos convertToScriptUtxos(proto.ScriptUtxos uxtos) {
+  return ScriptUtxos(
+    outputScript: toHex(uxtos.outputScript),
+    utxos: uxtos.utxos.map(convertToUtxo).toList(),
+  );
+}
+
+TokenStats convertToTokenStats(proto.TokenStats tokenStats) {
+  return TokenStats(
+    totalBurned: tokenStats.totalBurned,
+    totalMinted: tokenStats.totalMinted,
+  );
+}
+
+TxInput convertToTxInput(proto.TxInput input) {
+  return TxInput(
+    prevOut: OutPoint(
+      txid: toHexRev(input.prevOut.txid),
+      outIdx: input.prevOut.outIdx,
+    ),
+    inputScript: toHex(input.inputScript),
+    outputScript:
+        input.outputScript.isNotEmpty ? toHex(input.outputScript) : null,
+    value: input.value.toString(),
+    sequenceNo: input.sequenceNo,
+    slpBurn: convertToSlpBurn(input.slpBurn),
+    slpToken: convertToSlpToken(input.slpToken),
+  );
+}
+
+TxOutput convertToTxOutput(proto.TxOutput output) {
+  return TxOutput(
+    value: output.value.toString(),
+    outputScript: toHex(output.outputScript),
+    slpToken: convertToSlpToken(output.slpToken),
+    spentBy: OutPoint(
+      txid: toHexRev(output.spentBy.txid),
+      outIdx: output.spentBy.outIdx,
+    ),
+  );
+}
+
+SlpTxData convertToSlpTxData(proto.SlpTxData slpTxData) {
+  return SlpTxData(
+    slpMeta: convertToSlpMeta(slpTxData.slpMeta),
+    genesisInfo: convertToSlpGenesisInfo(slpTxData.genesisInfo),
+  );
+}
+
+SlpTokenTxData convertToSlpTokenTxData(proto.SlpTxData slpTxData) {
+  return SlpTokenTxData(
+    slpMeta: convertToSlpMeta(slpTxData.slpMeta),
+    genesisInfo: convertToSlpGenesisInfo(slpTxData.genesisInfo),
+  );
+}
+
+SlpMeta convertToSlpMeta(proto.SlpMeta slpMeta) {
+  SlpTokenType? tokenType;
+  switch (slpMeta.tokenType) {
+    case proto.SlpTokenType.FUNGIBLE:
+      tokenType = SlpTokenType.FUNGIBLE;
+      break;
+    case proto.SlpTokenType.NFT1_GROUP:
+      tokenType = SlpTokenType.NFT1_GROUP;
+      break;
+    case proto.SlpTokenType.NFT1_CHILD:
+      tokenType = SlpTokenType.NFT1_CHILD;
+      break;
+    case proto.SlpTokenType.UNKNOWN_TOKEN_TYPE:
+      tokenType = SlpTokenType.UNKNOWN_TOKEN_TYPE;
+      break;
+    default:
+      throw Exception('Invalid token type: ${slpMeta.tokenType}');
+  }
+  SlpTxType? txType;
+  switch (slpMeta.txType) {
+    case proto.SlpTxType.GENESIS:
+      txType = SlpTxType.GENESIS;
+      break;
+    case proto.SlpTxType.SEND:
+      txType = SlpTxType.SEND;
+      break;
+    case proto.SlpTxType.MINT:
+      txType = SlpTxType.MINT;
+      break;
+    case proto.SlpTxType.UNKNOWN_TX_TYPE:
+      txType = SlpTxType.UNKNOWN_TX_TYPE;
+      break;
+    default:
+      throw Exception('Invalid token type: ${slpMeta.txType}');
+  }
+  return SlpMeta(
+    tokenType: tokenType,
+    txType: txType,
+    tokenId: toHex(slpMeta.tokenId),
+    groupTokenId:
+        slpMeta.groupTokenId.length == 32 ? toHex(slpMeta.groupTokenId) : null,
+  );
+}
+
+SlpGenesisInfo convertToSlpGenesisInfo(proto.SlpGenesisInfo info) {
+  return SlpGenesisInfo(
+    tokenTicker: utf8.decode(info.tokenTicker),
+    tokenName: utf8.decode(info.tokenName),
+    tokenDocumentUrl: utf8.decode(info.tokenDocumentUrl),
+    tokenDocumentHash: toHex(info.tokenDocumentHash),
+    decimals: info.decimals,
+  );
+}
+
+BlockMetadata convertToBlockMeta(proto.BlockMetadata block) {
+  return BlockMetadata(
+    height: block.height,
+    hash: toHexRev(block.hash),
+    timestamp: block.timestamp.toString(),
+  );
+}
+
+BlockInfo convertToBlockInfo(proto.BlockInfo block) {
+  return BlockInfo(
+    hash: toHexRev(block.hash),
+    prevHash: toHexRev(block.prevHash),
+    height: block.height,
+    nBits: block.nBits,
+    timestamp: block.timestamp.toString(),
+    blockSize: block.blockSize.toString(),
+    numTxs: block.numTxs.toString(),
+    numInputs: block.numInputs.toString(),
+    numOutputs: block.numOutputs.toString(),
+    sumInputSats: block.sumInputSats.toString(),
+    sumCoinbaseOutputSats: block.sumCoinbaseOutputSats.toString(),
+    sumNormalOutputSats: block.sumNormalOutputSats.toString(),
+    sumBurnedSats: block.sumBurnedSats.toString(),
+  );
+}
+
+BlockDetails convertToBlockDetails(proto.BlockDetails blockDetails) {
+  return BlockDetails(
+    version: blockDetails.version,
+    merkleRoot: toHexRev(blockDetails.merkleRoot),
+    nonce: blockDetails.nonce.toString(),
+    medianTimestamp: blockDetails.medianTimestamp.toString(),
+  );
+}
+
+SlpBurn convertToSlpBurn(proto.SlpBurn burn) {
+  return SlpBurn(
+    token: convertToSlpToken(burn.token),
+    tokenId: toHex(burn.tokenId),
+  );
+}
+
+SlpToken convertToSlpToken(proto.SlpToken token) {
+  return SlpToken(
+    amount: token.amount.toString(),
+    isMintBaton: token.isMintBaton,
+  );
+}
+
+Network convertToNetwork(proto.Network network) {
+  switch (network) {
+    case proto.Network.BCH:
+      return Network.BCH;
+    case proto.Network.XEC:
+      return Network.XEC;
+    case proto.Network.XPI:
+      return Network.XPI;
+    case proto.Network.XRG:
+      return Network.XRG;
+    default:
+      throw Exception('Unknown network: $network');
+  }
+}
+
+UtxoStateVariant convertToUtxoStateVariant(
+  proto.UtxoStateVariant variant,
+) {
+  switch (variant) {
+    case proto.UtxoStateVariant.UNSPENT:
+      return UtxoStateVariant.UNSPENT;
+    case proto.UtxoStateVariant.SPENT:
+      return UtxoStateVariant.SPENT;
+    case proto.UtxoStateVariant.NO_SUCH_TX:
+      return UtxoStateVariant.NO_SUCH_TX;
+    case proto.UtxoStateVariant.NO_SUCH_OUTPUT:
+      return UtxoStateVariant.NO_SUCH_OUTPUT;
+    default:
+      throw Exception('Unknown UtxoStateVariant: $variant');
+  }
+}
+
 /// Current state of the blockchain. */
 class BlockchainInfo {
   /// Block hash of the current blockchain tip */
@@ -6,7 +279,10 @@ class BlockchainInfo {
   /// Current height of the blockchain */
   final int tipHeight;
 
-  BlockchainInfo(this.tipHash, this.tipHeight);
+  BlockchainInfo({
+    required this.tipHash,
+    required this.tipHeight,
+  });
 }
 
 /// A transaction on the blockchain or in the mempool. */
@@ -35,7 +311,7 @@ class Tx {
   /// unless trivially so. */
   final String? slpErrorMsg;
 
-  /// Block data for this tx, or undefined if not mined yet. */
+  /// Block data for this tx, or null if not mined yet. */
   final BlockMetadata? block;
 
   /// UNIX timestamp when this tx has first been seen in the mempool.
@@ -51,25 +327,26 @@ class Tx {
   /// Which network this tx is on. */
   final Network network;
 
-  Tx(
-      this.txid,
-      this.version,
-      this.inputs,
-      this.outputs,
-      this.lockTime,
-      this.slpTxData,
-      this.slpErrorMsg,
-      this.block,
-      this.timeFirstSeen,
-      this.size,
-      this.isCoinbase,
-      this.network);
+  Tx({
+    required this.txid,
+    required this.version,
+    required this.inputs,
+    required this.outputs,
+    required this.lockTime,
+    required this.slpTxData,
+    required this.slpErrorMsg,
+    required this.block,
+    required this.timeFirstSeen,
+    required this.size,
+    required this.isCoinbase,
+    required this.network,
+  });
 }
 
 /// An unspent transaction output (aka. UTXO, aka. "Coin") of a script. */
 class Utxo {
   /// Outpoint of the UTXO. */
-  final Outpoint outpoint;
+  final OutPoint outpoint;
 
   /// Which block this UTXO is in, or -1 if in the mempool. */
   final int blockHeight;
@@ -90,8 +367,15 @@ class Utxo {
   /// Which network this UTXO is on. */
   final Network network;
 
-  Utxo(this.outpoint, this.blockHeight, this.isCoinbase, this.value,
-      this.slpMeta, this.slpToken, this.network);
+  Utxo({
+    required this.outpoint,
+    required this.blockHeight,
+    required this.isCoinbase,
+    required this.value,
+    required this.slpMeta,
+    this.slpToken,
+    required this.network,
+  });
 }
 
 /// Data and stats about an SLP token. */
@@ -102,7 +386,7 @@ class Token {
   /// Current stats about this token, e.g. mfinal inted and burned amount. */
   final TokenStats tokenStats;
 
-  /// Block the GENESIS transaction has been mined in, or undefined if not mined yet. */
+  /// Block the GENESIS transaction has been mined in, or null if not mined yet. */
   final BlockMetadata? block;
 
   /// UNIX timestamp when the GENESIS transaction has first been seen in the mempool.
@@ -119,8 +403,15 @@ class Token {
   /// Which network this token is on. */
   final Network network;
 
-  Token(this.slpTxData, this.tokenStats, this.block, this.timeFirstSeen,
-      this.initialTokenQuantity, this.containsBaton, this.network);
+  Token({
+    required this.slpTxData,
+    required this.tokenStats,
+    required this.block,
+    required this.timeFirstSeen,
+    required this.initialTokenQuantity,
+    required this.containsBaton,
+    required this.network,
+  });
 }
 
 /// Block info about a block */
@@ -166,20 +457,21 @@ class BlockInfo {
   /// Total number of satoshis burned using OP_RETURN. */
   final String sumBurnedSats;
 
-  BlockInfo(
-      this.hash,
-      this.prevHash,
-      this.height,
-      this.nBits,
-      this.timestamp,
-      this.blockSize,
-      this.numTxs,
-      this.numInputs,
-      this.numOutputs,
-      this.sumInputSats,
-      this.sumCoinbaseOutputSats,
-      this.sumNormalOutputSats,
-      this.sumBurnedSats);
+  BlockInfo({
+    required this.hash,
+    required this.prevHash,
+    required this.height,
+    required this.nBits,
+    required this.timestamp,
+    required this.blockSize,
+    required this.numTxs,
+    required this.numInputs,
+    required this.numOutputs,
+    required this.sumInputSats,
+    required this.sumCoinbaseOutputSats,
+    required this.sumNormalOutputSats,
+    required this.sumBurnedSats,
+  });
 }
 
 /// Additional details about a block. */
@@ -196,7 +488,12 @@ class BlockDetails {
   /// Median-time-past (MTP) of the last 11 blocks. */
   final String medianTimestamp;
 
-  BlockDetails(this.version, this.merkleRoot, this.nonce, this.medianTimestamp);
+  BlockDetails({
+    required this.version,
+    required this.merkleRoot,
+    required this.nonce,
+    required this.medianTimestamp,
+  });
 }
 
 /// Block on the blockchain. */
@@ -214,7 +511,12 @@ class Block {
   /// (at least on all supported chains). */
   final List<Tx> txs;
 
-  Block(this.blockInfo, this.blockDetails, this.rawHeader, this.txs);
+  Block({
+    required this.blockInfo,
+    required this.blockDetails,
+    required this.rawHeader,
+    required this.txs,
+  });
 }
 
 /// Group of UTXOs by output script. */
@@ -225,7 +527,10 @@ class ScriptUtxos {
   /// UTXOs of the output script. */
   final List<Utxo> utxos;
 
-  ScriptUtxos(this.outputScript, this.utxos);
+  ScriptUtxos({
+    required this.outputScript,
+    required this.utxos,
+  });
 }
 
 /// Page of the transaction history. */
@@ -237,7 +542,10 @@ class TxHistoryPage {
   /// This changes based on the `pageSize` provided. */
   final int numPages;
 
-  TxHistoryPage(this.txs, this.numPages);
+  TxHistoryPage({
+    required this.txs,
+    required this.numPages,
+  });
 }
 
 /// SLP data about an SLP transaction. */
@@ -248,7 +556,10 @@ class SlpTxData {
   /// Genesis info, only present for GENESIS txs. */
   final SlpGenesisInfo? genesisInfo;
 
-  SlpTxData(this.slpMeta, this.genesisInfo);
+  SlpTxData({
+    required this.slpMeta,
+    required this.genesisInfo,
+  });
 }
 
 /// SLP data about an SLP transaction. */
@@ -259,7 +570,10 @@ class SlpTokenTxData {
   /// Genesis info of the token. */
   final SlpGenesisInfo genesisInfo;
 
-  SlpTokenTxData(this.slpMeta, this.genesisInfo);
+  SlpTokenTxData({
+    required this.slpMeta,
+    required this.genesisInfo,
+  });
 }
 
 /// Metadata about an SLP tx or UTXO. */
@@ -279,7 +593,12 @@ class SlpMeta {
   /// as first input. */
   final String? groupTokenId;
 
-  SlpMeta(this.tokenType, this.txType, this.tokenId, this.groupTokenId);
+  SlpMeta({
+    required this.tokenType,
+    required this.txType,
+    required this.tokenId,
+    required this.groupTokenId,
+  });
 }
 
 /// Stats about a token.
@@ -293,13 +612,16 @@ class TokenStats {
   /// Total number of tokens burned. */
   final String totalBurned;
 
-  TokenStats(this.totalMinted, this.totalBurned);
+  TokenStats({
+    required this.totalMinted,
+    required this.totalBurned,
+  });
 }
 
 /// Input of a tx, spends an output of a previous tx. */
 class TxInput {
   /// Pofinal ints to an output spent by this input. */
-  final Outpoint prevOut;
+  final OutPoint prevOut;
 
   /// Script unlocking the output, in hex encoding.
   /// Aka. `scriptSig` in bitcoind parlance. */
@@ -315,15 +637,22 @@ class TxInput {
   /// `sequence` field of the input; can be used for relative time locking. */
   final int sequenceNo;
 
-  /// SLP tokens burned by this input, or `undefined` if no burn occured. */
+  /// SLP tokens burned by this input, or `null` if no burn occured. */
   final SlpBurn? slpBurn;
 
-  /// SLP tokens spent by this input, or `undefined` if the tokens were burned
+  /// SLP tokens spent by this input, or `null` if the tokens were burned
   /// or if there were no tokens in the output spent by this input. */
   final SlpToken? slpToken;
 
-  TxInput(this.prevOut, this.inputScript, this.outputScript, this.value,
-      this.sequenceNo, this.slpBurn, this.slpToken);
+  TxInput({
+    required this.prevOut,
+    required this.inputScript,
+    required this.outputScript,
+    required this.value,
+    required this.sequenceNo,
+    required this.slpBurn,
+    required this.slpToken,
+  });
 }
 
 /// Output of a tx, creates new UTXOs. */
@@ -335,15 +664,20 @@ class TxOutput {
   /// Aka. `scriptPubKey` in bitcoind parlance. */
   final String outputScript;
 
-  /// SLP tokens locked up in this output, or `undefined` if no tokens were sent
+  /// SLP tokens locked up in this output, or `null` if no tokens were sent
   /// to this output. */
   final SlpToken? slpToken;
 
-  /// Transaction & input index spending this output, or undefined if
+  /// Transaction & input index spending this output, or null if
   /// unspent. */
-  final Outpoint? spentBy;
+  final OutPoint? spentBy;
 
-  TxOutput(this.value, this.outputScript, this.slpToken, this.spentBy);
+  TxOutput({
+    required this.value,
+    required this.outputScript,
+    required this.slpToken,
+    required this.spentBy,
+  });
 }
 
 /// Metadata of a block, used in transaction data. */
@@ -358,12 +692,16 @@ class BlockMetadata {
   /// unknown. */
   final String timestamp;
 
-  BlockMetadata(this.height, this.hash, this.timestamp);
+  BlockMetadata({
+    required this.height,
+    required this.hash,
+    required this.timestamp,
+  });
 }
 
 /// Outpoint referencing an output on the blockchain (or input for field
 /// `spentBy`). */
-class Outpoint {
+class OutPoint {
   /// Transaction referenced by this outpoint. */
   final String txid;
 
@@ -371,7 +709,10 @@ class Outpoint {
   /// (or input index if used in field `spentBy`). */
   final int outIdx;
 
-  Outpoint(this.txid, this.outIdx);
+  OutPoint({
+    required this.txid,
+    required this.outIdx,
+  });
 }
 
 /// SLP amount or whether this is a mfinal int baton, for inputs and outputs. */
@@ -382,7 +723,10 @@ class SlpToken {
   /// Whether this input/output is a mint baton. */
   final bool isMintBaton;
 
-  SlpToken(this.amount, this.isMintBaton);
+  SlpToken({
+    required this.amount,
+    required this.isMintBaton,
+  });
 }
 
 /// SLP burn; indicates burn of some tokens. */
@@ -391,10 +735,14 @@ class SlpBurn {
   final SlpToken token;
 
   /// Token ID of the burned SLP tokens, in human-readable (big-endian) hex
+
   /// encoding. */
   final String tokenId;
 
-  SlpBurn(this.token, this.tokenId);
+  SlpBurn({
+    required this.token,
+    required this.tokenId,
+  });
 }
 
 /// SLP info about a GENESIS transaction. */
@@ -415,8 +763,13 @@ class SlpGenesisInfo {
   /// Number of decimals of the GENESIS transaction. */
   final int decimals;
 
-  SlpGenesisInfo(this.tokenTicker, this.tokenName, this.tokenDocumentUrl,
-      this.tokenDocumentHash, this.decimals);
+  SlpGenesisInfo({
+    required this.tokenTicker,
+    required this.tokenName,
+    required this.tokenDocumentUrl,
+    required this.tokenDocumentHash,
+    required this.decimals,
+  });
 }
 
 /// State of a UTXO (from `validateUtxos`). */
@@ -433,87 +786,69 @@ class UtxoState {
   /// output doesn't exist. */
   final UtxoStateVariant state;
 
-  UtxoState(this.height, this.isConfirmed, this.state);
+  UtxoState({
+    required this.height,
+    required this.isConfirmed,
+    required this.state,
+  });
 }
 
 /// Message returned from the WebSocket. */
-enum SubscribeMsg {
-  Error,
-  MsgAddedToMempool,
-  MsgRemovedFromMempool,
-  MsgConfirmed,
-  MsgReorg,
-  MsgBlockConnected,
-  MsgBlockDisconnected
-}
+class SubscribeMsg {}
 
 /// A transaction has been added to the mempool. */
-class MsgAddedToMempool {
-  final type = "AddedToMempool";
-
+class MsgAddedToMempool extends SubscribeMsg {
   /// txid of the transaction, in 'human-readable' (big-endian) hex encoding. */
   final String txid;
 
-  MsgAddedToMempool(this.txid);
+  MsgAddedToMempool({required this.txid});
 }
 
 /// A transaction has been removed from the mempool,
 /// but not because of a confirmation (e.g. expiry, conflict, etc.).
-class MsgRemovedFromMempool {
-  final type = "RemovedFromMempool";
-
+class MsgRemovedFromMempool extends SubscribeMsg {
   /// txid of the transaction, in 'human-readable' (big-endian) hex encoding. */
   final String txid;
 
-  MsgRemovedFromMempool(this.txid);
+  MsgRemovedFromMempool({required this.txid});
 }
 
 /// A transaction has been confirmed in a block. */
-class MsgConfirmed {
-  final type = "Confirmed";
-
+class MsgConfirmed extends SubscribeMsg {
   /// txid of the transaction, in 'human-readable' (big-endian) hex encoding. */
   final String txid;
 
-  MsgConfirmed(this.txid);
+  MsgConfirmed({required this.txid});
 }
 
 /// A transaction used to be part of a block but now got re-orged.
 /// Usually, unless something malicious occurs, a "Confirmed" message is sent
 /// immediately afterwards.
-class MsgReorg {
-  final type = "Reorg";
-
+class MsgReorg extends SubscribeMsg {
   /// txid of the transaction, in 'human-readable' (big-endian) hex encoding. */
   final String txid;
 
-  MsgReorg(this.txid);
+  MsgReorg({required this.txid});
 }
 
 /// A new block has been added to the chain. Sent regardless of subscriptions. */
-class MsgBlockConnected {
-  final type = "BlockConnected";
-
+class MsgBlockConnected extends SubscribeMsg {
   /// block hash of the block, in 'human-readable' (big-endian) hex encoding. */
   final String blockHash;
 
-  MsgBlockConnected(this.blockHash);
+  MsgBlockConnected({required this.blockHash});
 }
 
 /// A block has been removed from the chain. Sent regardless of subscriptions. */
-class MsgBlockDisconnected {
-  final type = "BlockDisconnected";
-
+class MsgBlockDisconnected extends SubscribeMsg {
   /// block hash of the block, in 'human-readable' (big-endian) hex encoding. */
   final String blockHash;
 
-  MsgBlockDisconnected(this.blockHash);
+  MsgBlockDisconnected({required this.blockHash});
 }
 
 /// Reports an error, e.g. when a subscription is malformed. */
-class Error {
-  final type = "Error";
-
+class MsgError extends SubscribeMsg {
   /// Code for this error, e.g. "tx-not-found". */
   final String errorCode;
 
@@ -524,7 +859,11 @@ class Error {
   /// This is somewhat subjective, but can be used as a good heuristic. */
   final bool isUserError;
 
-  Error(this.errorCode, this.msg, this.isUserError);
+  MsgError({
+    required this.errorCode,
+    required this.msg,
+    required this.isUserError,
+  });
 }
 
 /// Different networks of txs/blocks/UTXOs.
@@ -570,3 +909,25 @@ enum UtxoStateVariant {
 /// - `p2tr-state`: Pay-to-Taproot (`OP_SCRIPTTYPE OP_1 <commitment> <state>`),
 ///   only on Lotus. Queries by the state. Payload is the 32 byte state.
 enum ScriptType { other, p2pk, p2pkh, p2sh, p2trCommitment, p2trState }
+
+class BroadcastTxResponse {
+  final String txid;
+
+  BroadcastTxResponse({required this.txid});
+}
+
+class BroadcastTxsResponse {
+  final List<String> txids;
+
+  BroadcastTxsResponse({required this.txids});
+}
+
+class Subscription {
+  final ScriptType scriptType;
+  final String scriptPayload;
+
+  Subscription({
+    required this.scriptType,
+    required this.scriptPayload,
+  });
+}

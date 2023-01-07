@@ -39,7 +39,7 @@ Tuple2<List<String>, Map<String, int>> initLut8b() {
 }
 // End Pre-Init
 
-String toHex(Uint8List buffer) {
+String toHex(List<int> buffer) {
   String out = "";
   for (var idx = 0, edx = buffer.length; idx < edx; ++idx) {
     out += lutHex8b[int.parse(buffer[idx].toString())];
@@ -47,7 +47,7 @@ String toHex(Uint8List buffer) {
   return out;
 }
 
-String toHexRev(Uint8List buffer) {
+String toHexRev(List<int> buffer) {
   String out = "";
   for (var idx = buffer.length - 1; idx >= 0; --idx) {
     out += lutHex8b[int.parse(buffer[idx].toString())];
