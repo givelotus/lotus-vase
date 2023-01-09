@@ -2,8 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-
-
 	"vase.givelotus.org/server/models"
 	"vase.givelotus.org/server/initializers"
 )
@@ -19,19 +17,12 @@ func main() {
 	r := gin.New()
 
 	r.POST("/userinfo", func(c *gin.Context){
-		var body struct {
-			Token string
-			Address string
-			Longitude string
-			Latitude string
-		}
-	
-		c.Bind(&body)
-	
-		info := models.UserInfo{Token: body.Token, Address: body.Address, Longitude: body.Longitude, Latitude: body.Latitude}
-	
+		var json models.UserInfo
+		c.BindJSON(&json)
+		
+
 		c.JSON(200, gin.H{
-			"info": info,
+			"info": json,
 		})
 	})
 
