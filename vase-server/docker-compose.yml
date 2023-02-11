@@ -1,6 +1,6 @@
 services:
   database:
-    image: postgres
+    image: postgis/postgis
     ports:
       - 5432:5432
     environment:
