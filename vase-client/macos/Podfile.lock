@@ -2,6 +2,10 @@ PODS:
   - flutter_secure_storage_macos (3.3.1):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
+  - location (0.0.1):
+    - FlutterMacOS
+  - mobile_scanner (0.0.1):
+    - FlutterMacOS
   - package_info_plus (0.0.1):
     - FlutterMacOS
   - Sentry (7.28.0):
@@ -17,6 +21,8 @@ PODS:
 DEPENDENCIES:
   - flutter_secure_storage_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - location (from `Flutter/ephemeral/.symlinks/plugins/location/macos`)
+  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
   - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - sentry_flutter (from `Flutter/ephemeral/.symlinks/plugins/sentry_flutter/macos`)
   - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
@@ -30,6 +36,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_secure_storage_macos/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  location:
+    :path: Flutter/ephemeral/.symlinks/plugins/location/macos
+  mobile_scanner:
+    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos
   package_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   sentry_flutter:
@@ -39,12 +49,14 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   flutter_secure_storage_macos: 6ceee8fbc7f484553ad17f79361b556259df89aa
-  FlutterMacOS: ae6af50a8ea7d6103d888583d46bd8328a7e9811
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  location: 7cdb0665bd6577d382b0a343acdadbcb7f964775
+  mobile_scanner: 35dc92ffdbd7934b0dbc411b1c731bc2ef23c2dc
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
   Sentry: 2c6053e4cfe6dea6608135dea1928ffbb4ecfba5
   sentry_flutter: fad3ef0917dc1afa7d242af0743696ed9a9a8864
   url_launcher_macos: 597e05b8e514239626bcf4a850fcf9ef5c856ec3
 
-PODFILE CHECKSUM: 6eac6b3292e5142cfc23bdeb71848a40ec51c14c
+PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.10.1
