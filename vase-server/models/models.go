@@ -7,14 +7,17 @@ import (
 )
 
 type Location struct {
-	gorm.Model
+	ID        uint    `gorm:"primaryKey"`
 	PushToken string  `json:"PushToken" gorm:"index"`
 	Longitude float32 `json:"Longitude"`
 	Latitude  float32 `json:"Latitude"`
+	// Just want to log which address was being used since there's no direct
+	// association between this and addresses, of which there could be multiple
+	Address string `json:"Address"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 type Address struct {
@@ -34,5 +37,5 @@ type User struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
