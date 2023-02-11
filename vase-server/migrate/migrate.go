@@ -5,12 +5,8 @@ import (
 	"vase.givelotus.org/server/models"
 )
 
-func init(){
+func main() {
 	initializers.LoadEnvVariables()
-	initializers.ConnectToDB()
+	DB := initializers.ConnectToDB()
+	DB.AutoMigrate(models.User{}, models.Address{}, models.Location{})
 }
-
-
-func main(){
-	initializers.DB.AutoMigrate(&models.UserInfo{})
-} 
