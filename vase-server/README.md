@@ -17,8 +17,22 @@ go install github.com/cosmtrek/air@latest
 
 **Ensure go and air are available in your path**
 
+- Start the database and setup tables
+
+```
+docker-compose up -d
+go run migrate/migrate.go
+```
+
+
 - Start server
 
 ```
 air
+```
+
+- Send a test post
+
+```
+./test-post.sh
 ```
