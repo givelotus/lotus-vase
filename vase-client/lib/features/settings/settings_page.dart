@@ -5,6 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vase/config/constants.dart';
 import 'package:vase/config/theme.dart';
@@ -195,10 +196,18 @@ class SettingsPage extends HookWidget {
     }
 
     Future<void> Function() _launchUrl(String url) => () async {
-          if (!await launchUrl(Uri.parse(url))) {
-          } else {
-            throw 'Could not launch $url';
+          final uri = Uri.tryParse(url);
+          if (uri == null) {
+            Sentry.captureMessage('Invalid URL: $url');
+            return;
           }
+
+          if (!await canLaunchUrl(uri)) {
+            Sentry.captureMessage('Could not launch $url');
+            return;
+          }
+
+          await launchUrl(uri);
         };
 
     return Scaffold(
@@ -266,7 +275,7 @@ class SettingsPage extends HookWidget {
             title: const Text('Community'),
             leading: const Icon(Icons.group),
             trailing: const Icon(Icons.keyboard_arrow_right),
-            onTap: _launchUrl('https://discord.gg/ebbFsWRdgb'),
+            onTap: _launchUrl('https://t.me/givelotus'),
           ),
           ListTile(
             title: const Text('Version'),

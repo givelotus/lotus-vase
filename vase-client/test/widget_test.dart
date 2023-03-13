@@ -9,7 +9,7 @@ import 'package:vase/features/wallet/wallet_model.dart';
 
 void main() {
   testWidgets('App launches', (WidgetTester tester) async {
-    final chronik = ChronikClient("");
+    final chronik = ChronikClient("http://localhost:8080");
     await tester.pumpWidget(MultiProvider(providers: [
       ChangeNotifierProvider(create: (_) => WalletModel(chronik)),
       ChangeNotifierProvider(create: (_) => SendModel()),
