@@ -120,7 +120,7 @@ class ChronikClient {
   }
 
   /// Create object that allows fetching script history or UTXOs. */
-  ScriptEndpoint script(ScriptType scriptType, String scriptPayload) {
+  ScriptEndpoint script(String scriptType, String scriptPayload) {
     return ScriptEndpoint(
         url: _url, scriptType: scriptType, scriptPayload: scriptPayload);
   }
@@ -134,7 +134,7 @@ class ChronikClient {
 /// Allows fetching script history and UTXOs. */
 class ScriptEndpoint {
   final String url;
-  final ScriptType scriptType;
+  final String scriptType;
   final String scriptPayload;
 
   ScriptEndpoint({
@@ -185,25 +185,33 @@ class ScriptEndpoint {
 
 /// Config for a WebSocket connection to Chronik.
 class WsConfig {
+  const WsConfig(
+      {this.onMessage,
+      this.onConnect,
+      this.onReconnect,
+      this.onError,
+      this.onEnd,
+      this.autoReconnect});
+
   /// Fired when a message is sent from the WebSocket.
-  void Function(SubscribeMsg)? onMessage;
+  final void Function(SubscribeMsg)? onMessage;
 
   /// Fired when a connection has been (re)established.
-  void Function(MessageEvent)? onConnect;
+  final void Function(MessageEvent)? onConnect;
 
   /// Fired after a connection has been unexpectedly closed, and before a
   /// reconnection attempt is made. Only fired if `autoReconnect` is true.
-  void Function()? onReconnect;
+  final void Function()? onReconnect;
 
   /// Fired when an error with the WebSocket occurs.
-  void Function(MessageEvent)? onError;
+  final void Function(MessageEvent)? onError;
 
   /// Fired after a connection has been manually closed, or if `autoReconnect`
   /// is false, if the WebSocket disconnects for any reason.
-  void Function()? onEnd;
+  final void Function()? onEnd;
 
   /// Whether to automatically reconnect on disconnect, default true.
-  bool? autoReconnect;
+  final bool? autoReconnect;
 }
 
 /// WebSocket connection to Chronik.
@@ -245,9 +253,14 @@ class WsEndpoint {
     _connect();
   }
 
+  /// Wait for the WebSocket to be connected.
+  waitForOpen() async {
+    await _ws?.ready;
+  }
+
   /// Subscribe to the given script type and payload.
   /// For "p2pkh", `scriptPayload` is the 20 byte key hash. */
-  subscribe(ScriptType scriptType, String scriptPayload) {
+  subscribe(String scriptType, String scriptPayload) {
     _subs.add(
         Subscription(scriptType: scriptType, scriptPayload: scriptPayload));
     if (_ws != null) {
@@ -259,7 +272,7 @@ class WsEndpoint {
   }
 
   /// Unsubscribe from the given script type and payload. */
-  unsubscribe(ScriptType scriptType, String scriptPayload) {
+  unsubscribe(String scriptType, String scriptPayload) {
     _subs = _subs
         .where(
           (sub) =>
@@ -284,7 +297,7 @@ class WsEndpoint {
 
   _connect() {
     _ws = WebSocketChannel.connect(Uri.parse(_wsUrl));
-    _ws?.stream.listen((e) => _handleMsg(e as MessageEvent),
+    _ws?.stream.listen((e) => _handleMsg(e),
         onError: (e) => onError?.call(e),
         onDone: () {
           // End if manually closed or no auto-reconnect
@@ -303,7 +316,7 @@ class WsEndpoint {
 
   _subUnsub({
     required bool isSubscribe,
-    required ScriptType scriptType,
+    required String scriptType,
     required String scriptPayload,
   }) {
     final encodedSubscription = proto.Subscription.fromJson(jsonEncode({
@@ -317,13 +330,9 @@ class WsEndpoint {
     _ws?.sink.add(encodedSubscription);
   }
 
-  _handleMsg(MessageEvent wsMsg) async {
-    if (onMessage == null) {
-      return;
-    }
-    final data =
-        wsMsg.data is Uint8List ? wsMsg.data : Uint8List.fromList(wsMsg.data);
+  _handleMsg(Uint8List data) async {
     final msg = proto.SubscribeMsg.fromBuffer(data);
+    print('Message received $msg');
     if (msg.hasError()) {
       onMessage?.call(MsgError(
         errorCode: msg.error.errorCode,

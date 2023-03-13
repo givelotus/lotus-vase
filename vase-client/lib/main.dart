@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:vase/chronik-client/client.dart';
 import 'package:vase/config/theme.dart';
 import 'package:vase/features/home/home_page.dart';
 import 'package:vase/features/numpad/numpad_model.dart';
@@ -16,24 +17,24 @@ import 'package:vase/features/wallet/wallet_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SentryFlutter.init(
-    (options) {
-      options.dsn =
-          'https://c6a61e7ac13b413d8bb529c3c05b0ab1@o1111989.ingest.sentry.io/6141317';
-      options.tracesSampleRate = kReleaseMode ? 1.0 : 0.0;
-      options.environment = kReleaseMode ? 'production' : 'development';
-    },
-    appRunner: () => runApp(
+  await SentryFlutter.init((options) {
+    options.dsn =
+        'https://c6a61e7ac13b413d8bb529c3c05b0ab1@o1111989.ingest.sentry.io/6141317';
+    options.tracesSampleRate = kReleaseMode ? 1.0 : 0.0;
+    options.environment = kReleaseMode ? 'production' : 'development';
+  }, appRunner: () async {
+    final chronik = ChronikClient("https://chronik.be.cash/xpi");
+    return runApp(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => WalletModel()),
+          ChangeNotifierProvider(create: (_) => WalletModel(chronik)),
           ChangeNotifierProvider(create: (_) => SendModel()),
           ChangeNotifierProvider(create: (_) => NumpadModel()),
         ],
         child: VaseApp(),
       ),
-    ),
-  );
+    );
+  });
 }
 
 class VaseApp extends StatelessWidget {

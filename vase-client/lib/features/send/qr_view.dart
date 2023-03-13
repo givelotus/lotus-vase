@@ -14,17 +14,22 @@ class QRView extends HookWidget {
     final throttledOnScanResult = throttle(onScanResult, 1000);
     return MobileScanner(
       fit: BoxFit.cover,
-      allowDuplicates: false,
-      onDetect: (barcode, args) {
-        throttledOnScanResult(barcode.rawValue);
+      onDetect: (capture) {
+        final barcodes = capture.barcodes;
+        for (final barcode in barcodes) {
+          final value = barcode.rawValue;
+          if (value != null) {
+            throttledOnScanResult(value);
+          }
+        }
       },
     );
   }
 }
 
-Function throttle(Function fn, int time) {
+Function(String) throttle(Function fn, int time) {
   var previous = 0;
-  return (dynamic args) {
+  return (String args) {
     var now = DateTime.now().millisecondsSinceEpoch;
     if (previous == 0 || now - previous >= time) {
       previous = now;

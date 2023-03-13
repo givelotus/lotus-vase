@@ -1,17 +1,17 @@
 import 'dart:collection';
 
-class Outpoint {
-  Outpoint(this.transactionId, this.vout, this.amount, this.height);
+class VaultOutpoint {
+  VaultOutpoint(this.transactionId, this.vout, this.amount, this.height);
   String? transactionId;
   int? vout;
   BigInt amount;
   int? height;
 }
 
-class Utxo {
-  Utxo(this.outpoint, this.keyIndex);
+class VaultUtxo {
+  VaultUtxo(this.outpoint, this.keyIndex);
 
-  Outpoint outpoint;
+  VaultOutpoint outpoint;
 
   /// Index of the associated private key.
   int? keyIndex;
@@ -19,8 +19,8 @@ class Utxo {
 
 /// The vault stores utxo outputs - that is, outputs together with
 /// information required to spend them.
-class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
-  Vault(Iterable<Utxo> utxos) : super() {
+class Vault extends SplayTreeMap<BigInt, List<VaultUtxo>> {
+  Vault(Iterable<VaultUtxo> utxos) : super() {
     addAllUtxos(utxos);
   }
 
@@ -37,7 +37,7 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Remove a utxo output.
-  void removeUtxo(Utxo utxo) {
+  void removeUtxo(VaultUtxo utxo) {
     update(utxo.outpoint.amount, (value) {
       value.removeWhere((checkUtxo) =>
           checkUtxo.outpoint.transactionId == utxo.outpoint.transactionId &&
@@ -47,7 +47,7 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Add a utxo output.
-  void addUtxo(Utxo utxo) {
+  void addUtxo(VaultUtxo utxo) {
     update(
       utxo.outpoint.amount,
       (value) {
@@ -59,8 +59,8 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Remove a utxo output at a given amount.
-  Utxo? popAt(BigInt amount) {
-    final List<Utxo>? utxos = remove(amount);
+  VaultUtxo? popAt(BigInt amount) {
+    final List<VaultUtxo>? utxos = remove(amount);
     if (utxos != null) {
       final popped = utxos.removeLast();
       if (utxos.isNotEmpty) {
@@ -73,7 +73,7 @@ class Vault extends SplayTreeMap<BigInt, List<Utxo>> {
   }
 
   /// Add multiple utxos.
-  void addAllUtxos(Iterable<Utxo> utxos) {
+  void addAllUtxos(Iterable<VaultUtxo> utxos) {
     for (final utxo in utxos) {
       addUtxo(utxo);
     }

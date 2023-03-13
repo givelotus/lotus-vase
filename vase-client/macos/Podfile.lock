@@ -4,17 +4,15 @@ PODS:
   - FlutterMacOS (1.0.0)
   - location (0.0.1):
     - FlutterMacOS
-  - mobile_scanner (0.0.1):
+  - mobile_scanner (3.0.0):
     - FlutterMacOS
   - package_info_plus (0.0.1):
     - FlutterMacOS
-  - Sentry (7.28.0):
-    - Sentry/Core (= 7.28.0)
-  - Sentry/Core (7.28.0)
+  - Sentry/HybridSDK (7.31.5)
   - sentry_flutter (0.0.1):
     - Flutter
     - FlutterMacOS
-    - Sentry (~> 7.28.0)
+    - Sentry/HybridSDK (= 7.31.5)
   - url_launcher_macos (0.0.1):
     - FlutterMacOS
 
@@ -51,12 +49,12 @@ SPEC CHECKSUMS:
   flutter_secure_storage_macos: 6ceee8fbc7f484553ad17f79361b556259df89aa
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   location: 7cdb0665bd6577d382b0a343acdadbcb7f964775
-  mobile_scanner: 35dc92ffdbd7934b0dbc411b1c731bc2ef23c2dc
+  mobile_scanner: ed7618fb749adc6574563e053f3b8e5002c13994
   package_info_plus: 02d7a575e80f194102bef286361c6c326e4c29ce
-  Sentry: 2c6053e4cfe6dea6608135dea1928ffbb4ecfba5
-  sentry_flutter: fad3ef0917dc1afa7d242af0743696ed9a9a8864
-  url_launcher_macos: 597e05b8e514239626bcf4a850fcf9ef5c856ec3
+  Sentry: 4c9babff9034785067c896fd580b1f7de44da020
+  sentry_flutter: b10ae7a5ddcbc7f04648eeb2672b5747230172f1
+  url_launcher_macos: c04e4fa86382d4f94f6b38f14625708be3ae52e2
 
 PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.3

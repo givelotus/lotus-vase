@@ -908,7 +908,14 @@ enum UtxoStateVariant {
 ///   Queries by the commitment. Payload is the 33 byte commitment.
 /// - `p2tr-state`: Pay-to-Taproot (`OP_SCRIPTTYPE OP_1 <commitment> <state>`),
 ///   only on Lotus. Queries by the state. Payload is the 32 byte state.
-enum ScriptType { other, p2pk, p2pkh, p2sh, p2trCommitment, p2trState }
+class ScriptType {
+  static const other = "other";
+  static const p2pk = "p2pk";
+  static const p2pkh = "p2pkh";
+  static const p2sh = "p2sh";
+  static const p2trCommitment = "p2trCommitment";
+  static const p2trState = "p2trState";
+}
 
 class BroadcastTxResponse {
   final String txid;
@@ -923,7 +930,7 @@ class BroadcastTxsResponse {
 }
 
 class Subscription {
-  final ScriptType scriptType;
+  final String scriptType;
   final String scriptPayload;
 
   Subscription({

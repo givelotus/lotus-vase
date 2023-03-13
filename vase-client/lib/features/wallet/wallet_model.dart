@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:vase/chronik-client/client.dart';
 import 'package:vase/config/constants.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/wallet/keys.dart';
 import 'package:vase/wallet/wallet.dart';
-
-import '../../electrum/client.dart';
 
 const SCHEMA_VERSION_KEY = 'schema_version';
 
@@ -20,12 +19,11 @@ const STORAGE_XPUB_KEY = 'rootKey';
 const storageBalanceKey = 'balance';
 
 /// Generate a fresh wallet.
-Future<Wallet> generateNewWallet(String? seed,
+Future<Wallet> generateNewWallet(String? seed, ChronikClient chronik,
     {NetworkType network = network, String? password = ''}) async {
   final keys = await Keys.construct(seed, password);
-  final electrumFactory = ElectrumFactory(electrumUrls);
 
-  return Wallet(keys, electrumFactory, network: network);
+  return Wallet(keys, network: network, chronik: chronik);
 }
 
 class WalletModel with ChangeNotifier {
@@ -38,9 +36,10 @@ class WalletModel with ChangeNotifier {
   // We should probably introduce a secondary model of some sort.
   WalletBalance? balance;
   final FlutterSecureStorage _storage;
+  final ChronikClient chronik;
 
   // TODO: Storage should be injected
-  WalletModel()
+  WalletModel(this.chronik)
       : _storage = const FlutterSecureStorage(),
         balance = WalletBalance() {
     initializeModel();
@@ -77,7 +76,7 @@ class WalletModel with ChangeNotifier {
         _seed = seed;
       }
       // Don't notify listeners. Initialize will do that
-      _wallet = await generateNewWallet(_seed, password: _password);
+      _wallet = await generateNewWallet(_seed, chronik, password: _password);
     }
     wallet!.balanceUpdateHandler = (balance) async {
       this.balance = balance;
@@ -112,7 +111,7 @@ class WalletModel with ChangeNotifier {
     balance = null;
     _initialized = false;
     notifyListeners();
-    generateNewWallet(_seed, password: _password).then((newWallet) {
+    generateNewWallet(_seed, chronik, password: _password).then((newWallet) {
       _wallet = newWallet;
       wallet!.balanceUpdateHandler = (balance) {
         this.balance = balance;
@@ -163,8 +162,8 @@ class WalletModel with ChangeNotifier {
 
       wallet = Wallet(
         keys,
-        ElectrumFactory(electrumUrls),
         network: network,
+        chronik: chronik,
       );
     } catch (err) {
       print(err);

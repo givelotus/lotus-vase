@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:pool/pool.dart';
 
+import 'package:hex/hex.dart';
+import 'package:pool/pool.dart';
+import 'package:vase/chronik-client/client.dart';
+import 'package:vase/chronik-client/client.types.dart';
 import 'package:vase/lotus/lotus.dart';
 import 'package:vase/wallet/vault.dart';
-import 'package:hex/hex.dart';
 
 import '../config/constants.dart';
 import 'keys.dart';
-import '../electrum/client.dart';
 
 class TransactionMetadata {
-  List<Utxo>? usedUtxos;
+  List<VaultUtxo>? usedUtxos;
   Transaction? transaction;
   TransactionMetadata({this.usedUtxos, this.transaction});
 }
@@ -27,13 +28,18 @@ typedef BalanceUpdateHandler = void Function(WalletBalance result);
 
 class Wallet {
   BalanceUpdateHandler? balanceUpdateHandler;
-  Wallet(this.keys, this.electrumFactory,
-      {this.network, this.balanceUpdateHandler}) {
-    electrumFactory.onConnected = (client) => startUtxoListeners(client);
+  Wallet(
+    this.keys, {
+    this.network,
+    this.balanceUpdateHandler,
+    required this.chronik,
+  }) {
+    _ws = chronik.ws(WsConfig(onConnect: (m) => startUtxoListenersChronik()));
   }
 
   NetworkType? network;
-  ElectrumFactory electrumFactory;
+  ChronikClient chronik;
+  WsEndpoint? _ws;
 
   Keys keys;
 
@@ -50,7 +56,6 @@ class Wallet {
   void addressUpdated(result) async {
     // Extract script hash from result (of form [scripthash, status])
     final scriptHash = result[0];
-    final client = await (electrumFactory.getInstance());
 
     final keyInfo =
         keys.findKeyByScriptHash(Uint8List.fromList(HEX.decode(scriptHash)));
@@ -59,21 +64,28 @@ class Wallet {
     _vault.removeByKeyIndex(keyInfo.keyIndex);
 
     // Refresh UTXOs
-    final unspentList =
-        await client?.blockchainScripthashListunspent(scriptHash) ?? [];
-    for (final unspent in unspentList) {
-      final outpoint = Outpoint(
-          unspent.tx_hash, unspent.tx_pos, unspent.value, unspent.height);
-
-      final spendable = Utxo(outpoint, keyInfo.keyIndex);
-
-      _vault.addUtxo(spendable);
+    final unspentUtxos =
+        await chronik.script(ScriptType.p2pkh, scriptHash).utxos();
+    // TODO: Remove keyIndex concept. It is not particularly necessary;
+    for (final unspent in unspentUtxos) {
+      for (final uxto in unspent.utxos) {
+        final spendable = VaultUtxo(
+          VaultOutpoint(
+            uxto.outpoint.txid,
+            uxto.outpoint.outIdx,
+            BigInt.from(int.parse(uxto.value)),
+            uxto.blockHeight,
+          ),
+          keyInfo.keyIndex,
+        );
+        _vault.addUtxo(spendable);
+      }
     }
     refreshBalanceLocal();
   }
 
   /// Start UTXO listeners.
-  Future<void> startUtxoListeners(ElectrumClient? client) async {
+  Future<void> startUtxoListenersChronik() async {
     for (final keyInfo in keys.keys!) {
       if (keyInfo.isDeprecated == true) {
         // We don't care about deprecated keys being listened to. Only load them
@@ -81,30 +93,34 @@ class Wallet {
         continue;
       }
       final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
-
-      await client!
-          .blockchainScripthashSubscribe(hexScriptHash, addressUpdated);
+      _ws?.subscribe(ScriptType.p2pkh, hexScriptHash);
     }
   }
 
   /// Fetch UTXOs from electrum then update vault.
-  Future<void> updateUtxos({ElectrumClient? client}) async {
-    client ??= await electrumFactory.getInstance();
+  Future<void> updateUtxosChronik() async {
     final pool = Pool(5, timeout: const Duration(seconds: 60));
 
     final futures = keys.keys?.map((keyInfo) {
           final hexScriptHash = HEX.encode(keyInfo.scriptHash!);
           return pool.withResource(() async {
             final unspentUtxos =
-                await client?.blockchainScripthashListunspent(hexScriptHash) ??
-                    [];
+                await chronik.script(ScriptType.p2pkh, hexScriptHash).utxos();
             // TODO: Remove keyIndex concept. It is not particularly necessary;
             for (final unspent in unspentUtxos) {
-              final outpoint = Outpoint(unspent.tx_hash, unspent.tx_pos,
-                  unspent.value, unspent.height);
-              final spendable = Utxo(outpoint, keyInfo.keyIndex);
-              _vault.removeUtxo(spendable);
-              _vault.addUtxo(spendable);
+              for (final uxto in unspent.utxos) {
+                final spendable = VaultUtxo(
+                  VaultOutpoint(
+                    uxto.outpoint.txid,
+                    uxto.outpoint.outIdx,
+                    BigInt.from(int.parse(uxto.value)),
+                    uxto.blockHeight,
+                  ),
+                  keyInfo.keyIndex,
+                );
+                _vault.removeUtxo(spendable);
+                _vault.addUtxo(spendable);
+              }
             }
           });
         }) ??
@@ -127,9 +143,7 @@ class Wallet {
   void initialize() async {
     // Wipe out the vault before refreshing UTXOs
     try {
-      final client = await electrumFactory.getInstance();
-
-      await updateUtxos(client: client);
+      await updateUtxosChronik();
     } catch (err) {
       print(err);
       updateBalance(WalletBalance(balance: null, error: err));
@@ -187,12 +201,13 @@ class Wallet {
 
     // Coin selection
     final signingKeys = <BCHPrivateKey>[];
-    final usedUtxos = <Utxo>[];
+    final usedUtxos = <VaultUtxo>[];
 
-    final Iterable<List<Utxo>> utxos = _vault.values;
+    final Iterable<List<VaultUtxo>> utxos = _vault.values;
     final allUtxos = utxos.expand((utxos) => utxos).toList();
     // Use oldest outpoints first
-    allUtxos.sort((Utxo a, Utxo b) => a.outpoint.height! - b.outpoint.height!);
+    allUtxos.sort(
+        (VaultUtxo a, VaultUtxo b) => a.outpoint.height! - b.outpoint.height!);
     var satoshis = BigInt.from(0);
 
     for (final utxo in allUtxos) {
@@ -243,8 +258,7 @@ class Wallet {
     final transactionHex = txnMetadata.transaction!.serialize();
 
     try {
-      final client = await (electrumFactory.getInstance());
-      await client?.blockchainTransactionBroadcast(transactionHex);
+      await chronik.broadcastTx(rawTx: transactionHex);
     } catch (err) {
       _vault.addAllUtxos(txnMetadata.usedUtxos!);
       print(err.toString());
