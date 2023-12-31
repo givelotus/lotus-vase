@@ -11,7 +11,7 @@ import 'package:vase/utils/currency.dart';
 import 'package:vase/features/wallet/wallet_model.dart';
 
 class RequestPage extends HookWidget {
-  const RequestPage({Key? key}) : super(key: key);
+  const RequestPage({super.key});
 
   String _createAddressUri(String address, String amount) {
     // Can't mutate the URI, so need a way to add query strings.
